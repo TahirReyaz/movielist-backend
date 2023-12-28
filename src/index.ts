@@ -5,11 +5,14 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import mongoose from 'mongoose';
+import dotenv from 'dotenv';
 
 import router from './router/index.js';
 
-console.log("mehhehhe");
-const MONGO_URL = "mongodb+srv://tahir:tahiradmin@cluster0.fzfekq1.mongodb.net/?retryWrites=true&w=majority";
+dotenv.config();
+
+console.log({mongo: process.env.MONGO_URL});
+const MONGO_URL = process.env.MONGO_URL;
 // Change the password to a more secure one
 
 const app = express();
