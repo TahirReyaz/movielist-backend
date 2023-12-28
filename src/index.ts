@@ -12,8 +12,6 @@ import router from './router/index.js';
 dotenv.config();
 
 console.log({mongo: process.env.MONGO_URL});
-const MONGO_URL = process.env.MONGO_URL;
-// Change the password to a more secure one
 
 const app = express();
 
@@ -32,7 +30,8 @@ server.listen(8080, () => {
 })
 
 mongoose.Promise = Promise;
-mongoose.connect(MONGO_URL);
+mongoose.connect(process.env.MONGO_URL);
+// Change the mongo password to a more secure one
 mongoose.connection.on('error', (error: Error) => console.log(error));
 
 app.use('/', router());

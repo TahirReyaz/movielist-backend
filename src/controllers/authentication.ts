@@ -13,12 +13,14 @@ export const login = async (req: express.Request, res: express.Response) => {
 
         const user = await getUserByEmail(email).select('+authentication.salt +authentication.password');
         if(!user) {
+            console.log('User not found');
             return res.sendStatus(400);
         }
 
         const expectedHash = authentication(user.authentication.salt, password);
 
         if(user.authentication.password != expectedHash) {
+            console.log("Wrong password");
             return res.sendStatus(403);
         }
 
