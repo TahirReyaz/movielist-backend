@@ -1,6 +1,11 @@
 import express from "express";
 
-import { deleteUserById, getUserById, getUsers } from "../db/users.js";
+import {
+  deleteUserById,
+  getUserById,
+  getUserByUsername,
+  getUsers,
+} from "../db/users.js";
 
 export const getAllUsers = async (
   req: express.Request,
@@ -8,6 +13,21 @@ export const getAllUsers = async (
 ) => {
   try {
     const users = await getUsers();
+
+    return res.status(200).json(users);
+  } catch (error) {
+    console.log(error);
+    return res.sendStatus(400);
+  }
+};
+
+export const getProfile = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const { username } = req.params;
+    const users = await getUserByUsername(username);
 
     return res.status(200).json(users);
   } catch (error) {
