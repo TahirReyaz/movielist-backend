@@ -27,6 +27,7 @@ const UserSchema = new mongoose.Schema({
       numOfEntries: Number,
     },
   ],
+  lists: [{ listtype: String, id: String }],
 });
 
 export type User = mongoose.InferSchemaType<typeof UserSchema>;

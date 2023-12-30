@@ -63,7 +63,7 @@ export const updateUser = async (
 
     // If the user with this id doesn't exist
     if (!user) {
-      return res.sendStatus(400);
+      return res.status(400).send({ message: "User not found" });
     }
 
     for (const key in req.body) {
