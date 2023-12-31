@@ -36,7 +36,10 @@ export const isOwner = async (
   next: express.NextFunction
 ) => {
   try {
-    const { id } = req.params;
+    let id = req.params.id;
+    if (!id) {
+      id = req.body.userid;
+    }
     const currentUserId = lodash.get(req, "identity._id") as string;
 
     if (currentUserId.toString() != id) {

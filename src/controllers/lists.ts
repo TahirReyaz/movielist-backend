@@ -1,7 +1,6 @@
 import express from "express";
 
 import {
-  List,
   createNewList,
   deleteListById,
   getListById,
@@ -18,7 +17,7 @@ export const getAllLists = async (
 
     return res.status(200).json(lists);
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.sendStatus(400);
   }
 };
@@ -30,7 +29,7 @@ export const getList = async (req: express.Request, res: express.Response) => {
 
     return res.status(200).json(list);
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.sendStatus(400);
   }
 };
@@ -46,7 +45,7 @@ export const deleteList = async (
 
     return res.json(deletedList);
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.sendStatus(400);
   }
 };
@@ -74,7 +73,7 @@ export const updateList = async (
 
     return res.status(200).json(list).end();
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.sendStatus(400);
   }
 };
@@ -110,7 +109,65 @@ export const createList = async (
 
     return res.status(200).json(list).end();
   } catch (error) {
-    console.log(error);
+    console.error(error);
+    return res.status(400).send({ message: "Some Error Occurred" });
+  }
+};
+
+export const addListItem = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const { listtype, mediaid, userid, mediatype } = req.body;
+
+    if (!listtype || !userid || !mediatype || !mediaid) {
+      return res.status(400).send({ message: "Missing Fields" });
+    }
+
+    const user = await getUserById(userid);
+    if (!user) {
+      return res.status(400).send({ message: "User Not Found" });
+    }
+
+    // If list already exists
+    if (user.lists && user.lists.length > 0) {
+      const existingListIndex = user.lists.findIndex(
+        (list) => list.listtype == listtype
+      );
+      if (existingListIndex != -1) {
+        const existingList = await getListById(
+          user.lists[existingListIndex].id
+        );
+        // If the item already exists
+        const existingItem = existingList.items.includes(mediaid);
+        if (existingItem) {
+          return res
+            .status(400)
+            .send({ message: "Item already exists in the list" });
+        }
+        // If item doesn't exist already
+        existingList.items.push(mediaid);
+        const updatedList = await existingList.save();
+        return res.status(200).json(updatedList).end();
+      }
+    }
+
+    // If list doesn't exist already
+    const list = await createNewList({
+      type: listtype,
+      items: [mediaid],
+      userid,
+      mediatype,
+    });
+
+    // add the list in the user
+    user.lists.push({ id: list._id.toString(), listtype });
+    await user.save();
+
+    return res.status(200).json(list).end();
+  } catch (error) {
+    console.error(error);
     return res.status(400).send({ message: "Some Error Occurred" });
   }
 };
