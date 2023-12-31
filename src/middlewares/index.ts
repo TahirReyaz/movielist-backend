@@ -18,7 +18,7 @@ export const isAuthenticated = async (
     const existingUser = await getUserBySessionToken(sessionToken);
 
     if (!existingUser) {
-      return res.sendStatus(403);
+      return res.status(403).send({ message: "Forbidden! user doesn't exist" });
     }
 
     lodash.merge(req, { identity: existingUser });

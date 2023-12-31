@@ -6,6 +6,7 @@ import {
   getUserByUsername,
   getUsers,
 } from "../db/users.js";
+import { deleteListById } from "../db/lists.js";
 
 export const getAllUsers = async (
   req: express.Request,
@@ -43,6 +44,12 @@ export const deleteUser = async (
   try {
     const { id } = req.params;
 
+    // First delete the associated lists
+    const { lists } = await getUserById(id);
+    lists.forEach(async (list) => {
+      await deleteListById(list.id);
+    });
+    // Then delete the user
     const deletedUser = await deleteUserById(id);
 
     return res.json(deletedUser);
