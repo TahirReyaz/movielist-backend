@@ -8,9 +8,9 @@ export const getBulkMedia = async (
   res: express.Response
 ) => {
   try {
-    const { media, type } = req.params;
+    const { mediatype, bulktype } = req.params;
     const response = await axios.get(
-      `${TMDB_ENDPOINT}/${media}/${type}?api_key=${process.env.TMDB_API_KEY}`
+      `${TMDB_ENDPOINT}/${mediatype}/${bulktype}?api_key=${process.env.TMDB_API_KEY}`
     );
     try {
       res.status(200).json(response.data.results);
@@ -21,5 +21,26 @@ export const getBulkMedia = async (
   } catch (error) {
     console.log(error);
     return res.sendStatus(400);
+  }
+};
+
+export const getMediaDetail = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const { mediatype, mediaid } = req.params;
+    const response = await axios.get(
+      `${TMDB_ENDPOINT}/${mediatype}/${mediaid}?api_key=${process.env.TMDB_API_KEY}`
+    );
+    try {
+      res.status(200).json(response.data);
+    } catch (error) {
+      console.log(error);
+      res.send({ message: "SOMETHING WENT WRONG" });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(400).send({ message: error });
   }
 };
