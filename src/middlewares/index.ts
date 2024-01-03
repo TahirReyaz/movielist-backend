@@ -1,7 +1,9 @@
 import express from "express";
 
-import { getUserBySessionToken } from "../db/users.js";
 import lodash from "lodash";
+
+import { getUserBySessionToken } from "../db/users.js";
+import { AUTH_COOKIE_NAME } from "../controllers/authentication.js";
 
 export const isAuthenticated = async (
   req: express.Request,
@@ -9,7 +11,7 @@ export const isAuthenticated = async (
   next: express.NextFunction
 ) => {
   try {
-    const sessionToken = req.cookies["TAHIR-AUTH"];
+    const sessionToken = req.cookies[AUTH_COOKIE_NAME];
 
     if (!sessionToken) {
       return res.status(400).send({ message: "Not logged in" });

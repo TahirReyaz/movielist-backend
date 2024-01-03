@@ -3,6 +3,8 @@ import express from "express";
 import { createUser, getUserByEmail } from "../db/users.js";
 import { authentication, random } from "../helpers/index.js";
 
+export const AUTH_COOKIE_NAME = "MOVIELIST-AUTH";
+
 export const login = async (req: express.Request, res: express.Response) => {
   try {
     const { email, password } = req.body;
@@ -36,7 +38,7 @@ export const login = async (req: express.Request, res: express.Response) => {
     await user.save();
 
     // set the cookie
-    res.cookie("MOVIELIST-AUTH", user.authentication.sessionToken, {
+    res.cookie(AUTH_COOKIE_NAME, user.authentication.sessionToken, {
       domain: "localhost",
       path: "/",
     });

@@ -13,11 +13,7 @@ dotenv.config();
 
 const app = express();
 
-app.use(
-  cors({
-    credentials: true,
-  })
-);
+app.use(cors({ credentials: true, origin: process.env.FRONTEND_URL }));
 
 app.use(compression());
 app.use(cookieParser());

@@ -149,7 +149,10 @@ export const addListItem = async (
         // If item doesn't exist already
         existingList.items.push(mediaid);
         const updatedList = await existingList.save();
-        return res.status(200).json(updatedList).end();
+        return res
+          .status(200)
+          .json({ ...updatedList, message: `Added to ${listtype} list` })
+          .end();
       }
     }
 
