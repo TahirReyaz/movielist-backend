@@ -73,7 +73,7 @@ export const isOwnList = async (
 
     if (currentUserId.toString() != userid) {
       return res.status(400).send({
-        message: "Now own list",
+        message: "Not own list",
       });
     }
 

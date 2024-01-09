@@ -85,7 +85,7 @@ export const createList = async (
   try {
     const { type, items, userid, mediatype } = req.body;
 
-    if (!type || !userid || !mediatype || !items || items.length == 0) {
+    if (!type || !userid || !mediatype || !items) {
       return res.status(400).send({ message: "Missing Fields" });
     }
 

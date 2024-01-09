@@ -1,0 +1,35 @@
+import mongoose from "mongoose";
+
+const ListEntrySchema = new mongoose.Schema({
+  mediaid: { type: String, required: true },
+  userid: { type: String, required: true },
+  listid: { type: String, required: true },
+  status: { type: String, required: true },
+  startDate: String,
+  endDate: String,
+  fav: Boolean,
+  progress: String,
+  rewatches: Number,
+  score: Number,
+  notes: String,
+  title: String,
+  poster: String,
+  backdrop: String,
+});
+
+export const ListEntryModel = mongoose.model("ListEntry", ListEntrySchema);
+
+export type ListEntry = mongoose.InferSchemaType<typeof ListEntrySchema>;
+
+export const getEntries = () => ListEntryModel.find();
+export const getEntryBySessionToken = (sessionToken: string) =>
+  ListEntryModel.findOne({
+    "authentication.sessionToken": sessionToken,
+  });
+export const getEntryById = (id: string) => ListEntryModel.findById(id);
+export const createNewEntry = (values: Record<string, any>) =>
+  new ListEntryModel(values).save().then((list) => list.toObject());
+export const deleteEntryById = (id: string) =>
+  ListEntryModel.findOneAndDelete({ _id: id });
+export const updateEntryById = (id: string, values: Record<string, any>) =>
+  ListEntryModel.findByIdAndUpdate(id, values);
