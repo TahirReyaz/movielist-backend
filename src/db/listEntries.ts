@@ -27,6 +27,8 @@ export const getEntryBySessionToken = (sessionToken: string) =>
     "authentication.sessionToken": sessionToken,
   });
 export const getEntryById = (id: string) => ListEntryModel.findById(id);
+export const getEntriesByUserId = (userid: string) =>
+  ListEntryModel.find({ userid: userid });
 export const createNewEntry = (values: Record<string, any>) =>
   new ListEntryModel(values).save().then((list) => list.toObject());
 export const deleteEntryById = (id: string) =>

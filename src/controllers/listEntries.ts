@@ -1,9 +1,11 @@
 import express from "express";
 
 import {
+  ListEntry,
   createNewEntry,
   deleteEntryById,
   getEntries,
+  getEntriesByUserId,
   getEntryById,
 } from "../db/listEntries.js";
 import { createNewList, getListById } from "../db/lists.js";
@@ -104,8 +106,19 @@ export const createListEntry = async (
       backdrop,
     } = req.body;
 
-    if (!userid || !mediaid || !status) {
+    if (!userid || !mediaid || !status || !mediatype) {
       return res.status(400).send({ message: "Missing Fields" });
+    }
+
+    // Check if this media already exists
+    const userEntries = await getEntriesByUserId(userid);
+    const existingEntry = userEntries.find(
+      (entry: ListEntry) => entry.mediaid === mediaid
+    );
+    if (existingEntry) {
+      return res
+        .status(400)
+        .send({ message: "Entry with the same media id already exists" });
     }
 
     const user = await getUserById(userid);
