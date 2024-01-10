@@ -4,6 +4,7 @@ import lodash from "lodash";
 
 import { getUserBySessionToken } from "../db/users.js";
 import { AUTH_COOKIE_NAME } from "../controllers/authentication.js";
+import { getEntryById } from "../db/listEntries.js";
 
 export const isAuthenticated = async (
   req: express.Request,
@@ -74,6 +75,33 @@ export const isOwnList = async (
     if (currentUserId.toString() != userid) {
       return res.status(400).send({
         message: "Not own list",
+      });
+    }
+
+    next();
+  } catch (error) {
+    console.log(error);
+    return res.sendStatus(400);
+  }
+};
+
+export const isOwnEntry = async (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) => {
+  try {
+    const { entryid } = req.params;
+
+    const currentUserId = lodash.get(req, "identity._id") as string;
+
+    const currentEntry = await getEntryById(entryid);
+
+    const { userid } = currentEntry;
+
+    if (currentUserId.toString() != userid) {
+      return res.status(400).send({
+        message: "Not own entry",
       });
     }
 

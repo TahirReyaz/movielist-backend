@@ -40,11 +40,11 @@ export const deleteEntry = async (
   res: express.Response
 ) => {
   try {
-    const { id } = req.params;
+    const { entryid } = req.params;
 
-    const deletedList = await deleteEntryById(id);
+    const deletedEntry = await deleteEntryById(entryid);
 
-    return res.json(deletedList);
+    return res.json(deletedEntry);
   } catch (error) {
     console.error(error);
     return res.status(400).send({ message: "Database error" });
