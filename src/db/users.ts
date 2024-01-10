@@ -27,7 +27,7 @@ const UserSchema = new mongoose.Schema({
       numOfEntries: Number,
     },
   ],
-  lists: [{ listtype: String, id: String }],
+  lists: { type: [{ listtype: String, id: String }], required: true },
 });
 
 export type User = mongoose.InferSchemaType<typeof UserSchema>;
@@ -49,3 +49,23 @@ export const deleteUserById = (id: string) =>
   UserModel.findOneAndDelete({ _id: id });
 export const updateUserById = (id: string, values: Record<string, any>) =>
   UserModel.findByIdAndUpdate(id, values);
+export const removeListItem = (listid: string, userid: string) =>
+  UserModel.findByIdAndUpdate(
+    { _id: userid },
+    {
+      $pull: {
+        lists: {
+          id: listid,
+        },
+      },
+      // lists: {
+      //   $filter: {
+      //     input: "$lists",
+      //     as: "item",
+      //     cond: {
+      //       "$$item.id": { $ne: listid },
+      //     },
+      //   },
+      // },
+    }
+  );

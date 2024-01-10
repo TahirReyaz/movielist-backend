@@ -6,7 +6,12 @@ import {
   getListById,
   getLists,
 } from "../db/lists.js";
-import { getUserById } from "../db/users.js";
+import { getUserById, removeListItem } from "../db/users.js";
+
+type userListItem = {
+  listtype: string;
+  id: string;
+};
 
 export const getAllLists = async (
   req: express.Request,
@@ -39,9 +44,22 @@ export const deleteList = async (
   res: express.Response
 ) => {
   try {
-    const { id } = req.params;
+    const { listid } = req.params;
 
-    const deletedList = await deleteListById(id);
+    const list = await getListById(listid);
+    if (!list) {
+      return res.status(400).send({ message: "List not found" });
+    }
+
+    // Remove the list from the user too
+    const user = await getUserById(list.userid);
+    if (!user) {
+      return res.status(400).send({ message: "Corresponding user not found" });
+    }
+
+    await removeListItem(listid, list.userid);
+
+    const deletedList = await deleteListById(listid);
 
     return res.json(deletedList);
   } catch (error) {
@@ -78,6 +96,7 @@ export const updateList = async (
   }
 };
 
+/////////////////////////////////Deprecated/////////////////////////////////
 export const createList = async (
   req: express.Request,
   res: express.Response

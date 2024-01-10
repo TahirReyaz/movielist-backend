@@ -44,6 +44,19 @@ export const deleteEntry = async (
   try {
     const { entryid } = req.params;
 
+    const entry = await getEntryById(entryid);
+    if (!entry) {
+      return res.status(400).send({ message: "Entry not found" });
+    }
+
+    // Remove the entry from the list too
+    const list = await getListById(entry.listid);
+    if (!list) {
+      return res.status(400).send({ message: "Corresponding list not found" });
+    }
+    list.items = list.items.filter((itemid) => entryid != itemid);
+    await list.save();
+
     const deletedEntry = await deleteEntryById(entryid);
 
     return res.json(deletedEntry);
@@ -106,7 +119,15 @@ export const createListEntry = async (
       backdrop,
     } = req.body;
 
-    if (!userid || !mediaid || !status || !mediatype) {
+    if (
+      !userid ||
+      !mediaid ||
+      !status ||
+      !mediatype ||
+      !title ||
+      !poster ||
+      !backdrop
+    ) {
       return res.status(400).send({ message: "Missing Fields" });
     }
 
@@ -133,11 +154,10 @@ export const createListEntry = async (
       let existingList;
       if (user.lists && user.lists.length > 0) {
         existingList = user.lists.find((list) => list.listtype == status);
-        list = await getListById(existingList.id);
       }
       if (!existingList) {
         const newList = await createNewList({
-          status,
+          type: status,
           userid,
           items: [],
           mediatype,
@@ -148,6 +168,8 @@ export const createListEntry = async (
         // add the list in the user
         user.lists.push({ id: newList._id.toString(), listtype: status });
         await user.save();
+      } else {
+        list = await getListById(existingList.id);
       }
     } else {
       list = await getListById(listid);
@@ -160,9 +182,9 @@ export const createListEntry = async (
       status,
       startDate,
       endDate,
-      fav,
-      progress,
-      rewatches,
+      fav: fav ? fav : false,
+      progress: progress ? progress : 0,
+      rewatches: rewatches ? rewatches : 0,
       score,
       notes,
       title,

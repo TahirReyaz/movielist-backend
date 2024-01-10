@@ -5,6 +5,7 @@ import lodash from "lodash";
 import { getUserBySessionToken } from "../db/users.js";
 import { AUTH_COOKIE_NAME } from "../controllers/authentication.js";
 import { getEntryById } from "../db/listEntries.js";
+import { getListById } from "../db/lists.js";
 
 export const isAuthenticated = async (
   req: express.Request,
@@ -64,12 +65,15 @@ export const isOwnList = async (
   next: express.NextFunction
 ) => {
   try {
-    const { userid } = req.body;
-    if (!userid) {
+    const { listid } = req.params;
+    if (!listid) {
       return res.status(400).send({
-        message: "Missing field: userid",
+        message: "Missing field: listid",
       });
     }
+
+    const list = await getListById(listid);
+    const { userid } = list;
     const currentUserId = lodash.get(req, "identity._id") as string;
 
     if (currentUserId.toString() != userid) {
@@ -97,7 +101,34 @@ export const isOwnEntry = async (
 
     const currentEntry = await getEntryById(entryid);
 
+    if (!currentEntry) {
+      return res.status(400).send({ message: "Entry not found" });
+    }
+
     const { userid } = currentEntry;
+
+    if (currentUserId.toString() != userid) {
+      return res.status(400).send({
+        message: "Not own entry",
+      });
+    }
+
+    next();
+  } catch (error) {
+    console.log(error);
+    return res.sendStatus(400);
+  }
+};
+
+export const isEntryCreater = async (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) => {
+  try {
+    const { userid } = req.body;
+
+    const currentUserId = lodash.get(req, "identity._id") as string;
 
     if (currentUserId.toString() != userid) {
       return res.status(400).send({
