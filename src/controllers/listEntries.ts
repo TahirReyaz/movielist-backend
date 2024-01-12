@@ -105,7 +105,7 @@ export const createListEntry = async (
       mediaid,
       userid,
       listid,
-      mediatype,
+      mediaType,
       status,
       startDate,
       endDate,
@@ -123,11 +123,28 @@ export const createListEntry = async (
       !userid ||
       !mediaid ||
       !status ||
-      !mediatype ||
+      !mediaType ||
       !title ||
       !poster ||
       !backdrop
     ) {
+      console.log({
+        mediaid,
+        userid,
+        listid,
+        mediaType,
+        status,
+        startDate,
+        endDate,
+        fav,
+        progress,
+        rewatches,
+        score,
+        notes,
+        title,
+        poster,
+        backdrop,
+      });
       return res.status(400).send({ message: "Missing Fields" });
     }
 
@@ -160,7 +177,7 @@ export const createListEntry = async (
           type: status,
           userid,
           items: [],
-          mediatype,
+          mediatype: mediaType,
         });
 
         list = await getListById(newList._id.toString());
@@ -176,6 +193,7 @@ export const createListEntry = async (
     }
 
     const entry = await createNewEntry({
+      mediaType,
       mediaid,
       userid,
       listid: listid ? listid : list._id,

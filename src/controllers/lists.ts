@@ -51,6 +51,9 @@ export const deleteList = async (
       return res.status(400).send({ message: "List not found" });
     }
 
+    // If there are entries, delete them too
+    // Use some deleteMany function
+
     // Remove the list from the user too
     const user = await getUserById(list.userid);
     if (!user) {
