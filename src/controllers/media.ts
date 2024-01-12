@@ -44,3 +44,24 @@ export const getMediaDetail = async (
     return res.status(400).send({ message: error });
   }
 };
+
+export const searchMulti = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const { query } = req.params;
+    const response = await axios.get(
+      `${TMDB_ENDPOINT}/search/multi?query=${query}&api_key=${process.env.TMDB_API_KEY}`
+    );
+    try {
+      res.status(200).json(response.data);
+    } catch (error) {
+      console.error(error);
+      res.send({ message: "SOMETHING WENT WRONG" });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(400).send({ message: error });
+  }
+};
