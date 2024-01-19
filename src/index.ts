@@ -23,13 +23,13 @@ const server = http.createServer(app);
 
 const port = process.env.PORT || 8080;
 
-server.listen(port, () => {
-  console.log("Server running on http://localhost:8080");
-});
-
 mongoose.Promise = Promise;
 mongoose.connect(process.env.MONGO_URL);
 // Change the mongo password to a more secure one
 mongoose.connection.on("error", (error: Error) => console.log(error));
 
 app.use("/", router());
+
+server.listen(port, () => {
+  console.log("Server running on http://localhost:", port);
+});
