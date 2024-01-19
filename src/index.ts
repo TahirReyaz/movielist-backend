@@ -21,7 +21,7 @@ app.use(bodyParser.json());
 
 const server = http.createServer(app);
 
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || 3000;
 
 mongoose.Promise = Promise;
 mongoose.connect(process.env.MONGO_URL);
