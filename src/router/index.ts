@@ -9,6 +9,9 @@ import entries from "./listEntries.js";
 const router = express.Router();
 
 export default (): express.Router => {
+  router.get("/", async (req, res) => {
+    res.send("HELLO WORLD");
+  });
   authentication(router);
   users(router);
   media(router);
