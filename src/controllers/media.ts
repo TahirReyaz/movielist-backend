@@ -12,12 +12,8 @@ export const getBulkMedia = async (
     const response = await axios.get(
       `${TMDB_ENDPOINT}/${mediatype}/${bulktype}?api_key=${process.env.TMDB_API_KEY}`
     );
-    try {
-      res.status(200).json(response.data.results);
-    } catch (error) {
-      console.log(error);
-      res.send({ message: "SOMETHING WENT WRONG" });
-    }
+    console.log(response.data);
+    res.status(200).json(response.data.results);
   } catch (error) {
     console.log(error);
     return res.sendStatus(400);
