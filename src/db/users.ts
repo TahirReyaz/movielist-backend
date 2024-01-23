@@ -28,6 +28,8 @@ const UserSchema = new mongoose.Schema({
     },
   ],
   lists: { type: [{ listtype: String, id: String }], required: true },
+  followers: [String],
+  following: [String],
 });
 
 export type User = mongoose.InferSchemaType<typeof UserSchema>;
@@ -58,14 +60,5 @@ export const removeListItem = (listid: string, userid: string) =>
           id: listid,
         },
       },
-      // lists: {
-      //   $filter: {
-      //     input: "$lists",
-      //     as: "item",
-      //     cond: {
-      //       "$$item.id": { $ne: listid },
-      //     },
-      //   },
-      // },
     }
   );

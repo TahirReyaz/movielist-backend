@@ -86,3 +86,28 @@ export const updateUser = async (
     return res.sendStatus(400);
   }
 };
+
+// When delete user is called, remove this user from the follower list of other users
+export const follow = async (req: express.Request, res: express.Response) => {
+  try {
+    const { userid, targetId } = req.body;
+
+    const user = await getUserById(userid);
+    const target = await getUserById(targetId);
+
+    // If the user with this id doesn't exist
+    if (!user || !target) {
+      return res.status(400).send({ message: "User not found" });
+    }
+
+    user.following.push(targetId);
+    await user.save();
+    target.followers.push(userid);
+    await target.save();
+
+    return res.status(200).json(user).end();
+  } catch (error) {
+    console.error(error);
+    return res.status(400).send({ message: "Some error occurred" });
+  }
+};
