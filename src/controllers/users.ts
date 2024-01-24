@@ -88,9 +88,13 @@ export const updateUser = async (
 };
 
 // When delete user is called, remove this user from the follower list of other users
-export const follow = async (req: express.Request, res: express.Response) => {
+export const followUser = async (
+  req: express.Request,
+  res: express.Response
+) => {
   try {
-    const { userid, targetId } = req.body;
+    const { userid } = req.body;
+    const { targetId } = req.params;
 
     const user = await getUserById(userid);
     const target = await getUserById(targetId);
