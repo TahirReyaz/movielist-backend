@@ -8,6 +8,10 @@ import {
 } from "../db/users.js";
 import { deleteListById } from "../db/lists.js";
 
+interface idsString {
+  ids: string;
+}
+
 export const getAllUsers = async (
   req: express.Request,
   res: express.Response
@@ -16,6 +20,25 @@ export const getAllUsers = async (
     const users = await getUsers();
 
     return res.status(200).json(users);
+  } catch (error) {
+    console.error(error);
+    return res.sendStatus(400);
+  }
+};
+
+export const getBulkUsers = async (
+  req: express.Request<{}, {}, {}, idsString>,
+  res: express.Response
+) => {
+  try {
+    const { ids } = req.query;
+    const idArray = ids.split(",");
+
+    const users = await getUsers();
+
+    return res
+      .status(200)
+      .json(users.filter((user) => idArray.includes(user._id.toString())));
   } catch (error) {
     console.error(error);
     return res.sendStatus(400);

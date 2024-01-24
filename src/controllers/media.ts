@@ -12,7 +12,6 @@ export const getBulkMedia = async (
     const response = await axios.get(
       `${TMDB_ENDPOINT}/${mediatype}/${bulktype}?api_key=${process.env.TMDB_API_KEY}`
     );
-    console.log(response.data);
     res.status(200).json(response.data.results);
   } catch (error) {
     console.log(error);
