@@ -8,12 +8,14 @@
     "sourceMap": false,
     "removeComments": true,
     "allowSyntheticDefaultImports": true,
-    "outDir": "./dist",
+    "outDir": "./",
     "noImplicitAny": true,
     "baseUrl": "./src",
     "rootDir": "./",
     "paths": {
       "*": ["*", "src/*"]
     }
-  }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
 }
