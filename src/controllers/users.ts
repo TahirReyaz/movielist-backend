@@ -5,8 +5,8 @@ import {
   getUserById,
   getUserByUsername,
   getUsers,
-} from "../db/users.js";
-import { deleteListById } from "../db/lists.js";
+} from "../db/users";
+import { deleteListById } from "../db/lists";
 
 interface idsString {
   ids: string;

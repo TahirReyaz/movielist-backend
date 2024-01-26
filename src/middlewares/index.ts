@@ -2,10 +2,10 @@ import express from "express";
 
 import lodash from "lodash";
 
-import { getUserBySessionToken } from "../db/users.js";
-import { AUTH_COOKIE_NAME } from "../controllers/authentication.js";
-import { getEntryById } from "../db/listEntries.js";
-import { getListById } from "../db/lists.js";
+import { getUserBySessionToken } from "../db/users";
+import { AUTH_COOKIE_NAME } from "../controllers/authentication";
+import { getEntryById } from "../db/listEntries";
+import { getListById } from "../db/lists";
 
 export const isAuthenticated = async (
   req: express.Request,

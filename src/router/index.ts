@@ -1,10 +1,10 @@
 import express from "express";
 
-import authentication from "./authentication.js";
-import users from "./users.js";
-import media from "./media.js";
-import lists from "./lists.js";
-import entries from "./listEntries.js";
+import authentication from "./authentication";
+import users from "./users";
+import media from "./media";
+import lists from "./lists";
+import entries from "./listEntries";
 
 const router = express.Router();
 

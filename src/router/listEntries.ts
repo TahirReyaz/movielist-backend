@@ -6,13 +6,13 @@ import {
   isOwnEntry,
   isOwnList,
   isOwner,
-} from "../middlewares/index.js";
+} from "../middlewares";
 import {
   createListEntry,
   deleteEntry,
   getAllListEntries,
   getEntry,
-} from "../controllers/listEntries.js";
+} from "../controllers/listEntries";
 
 export default (router: express.Router) => {
   router.get("/entries", isAuthenticated, getAllListEntries);

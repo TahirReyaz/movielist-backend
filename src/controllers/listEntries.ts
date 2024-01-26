@@ -7,9 +7,9 @@ import {
   getEntries,
   getEntriesByUserId,
   getEntryById,
-} from "../db/listEntries.js";
-import { createNewList, getListById } from "../db/lists.js";
-import { getUserById } from "../db/users.js";
+} from "../db/listEntries";
+import { createNewList, getListById } from "../db/lists";
+import { getUserById } from "../db/users";
 
 export const getAllListEntries = async (
   req: express.Request,

@@ -5,8 +5,8 @@ import {
   deleteListById,
   getListById,
   getLists,
-} from "../db/lists.js";
-import { getUserById, removeListItem } from "../db/users.js";
+} from "../db/lists";
+import { getUserById, removeListItem } from "../db/users";
 
 type userListItem = {
   listtype: string;

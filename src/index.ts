@@ -7,7 +7,7 @@ import compression from "compression";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 
-import router from "./router/index.js";
+import router from "./router";
 
 dotenv.config();
 

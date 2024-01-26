@@ -5,9 +5,9 @@ import {
   getAllLists,
   getList,
   updateList,
-} from "../controllers/lists.js";
+} from "../controllers/lists";
 import express from "express";
-import { isAuthenticated, isOwnList, isOwner } from "../middlewares/index.js";
+import { isAuthenticated, isOwnList, isOwner } from "../middlewares";
 
 export default (router: express.Router) => {
   router.get("/lists", isAuthenticated, getAllLists);

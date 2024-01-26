@@ -7,8 +7,8 @@ import {
   getProfile,
   followUser,
   getBulkUsers,
-} from "../controllers/users.js";
-import { isAuthenticated, isOwner } from "../middlewares/index.js";
+} from "../controllers/users";
+import { isAuthenticated, isOwner } from "../middlewares";
 
 export default (router: express.Router) => {
   router.get("/users", isAuthenticated, getAllUsers);
