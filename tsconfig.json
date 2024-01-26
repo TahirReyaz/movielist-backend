@@ -8,7 +8,7 @@
     "sourceMap": false,
     "removeComments": true,
     "allowSyntheticDefaultImports": true,
-    "outDir": "./",
+    "outDir": "./dist",
     "noImplicitAny": true,
     "baseUrl": "./src",
     "rootDir": "./",
