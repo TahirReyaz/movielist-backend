@@ -24,5 +24,5 @@ Some of the cool features of this bot are:
 ## Features
 
 - Create a mongodb user using email, username, password and manage hashing through crypto
-- Different apis for creating a list. For frontend use, creating a list when user clicks on a add to list button using userid, mediaid, mediatype and listtype
+- Different apis for creating a list. For frontend use, creating a list when user clicks on a add to list button using userid, mediaid, mediaType and listType
 - Api for fetching various public media list and media details from tmdb movie details api

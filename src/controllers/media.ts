@@ -8,9 +8,9 @@ export const getBulkMedia = async (
   res: express.Response
 ) => {
   try {
-    const { mediatype, bulktype } = req.params;
+    const { mediaType, bulktype } = req.params;
     const response = await axios.get(
-      `${TMDB_ENDPOINT}/${mediatype}/${bulktype}?api_key=${process.env.TMDB_API_KEY}`
+      `${TMDB_ENDPOINT}/${mediaType}/${bulktype}?api_key=${process.env.TMDB_API_KEY}`
     );
     res.status(200).json(response.data.results);
   } catch (error) {
@@ -24,9 +24,9 @@ export const getMediaDetail = async (
   res: express.Response
 ) => {
   try {
-    const { mediatype, mediaid } = req.params;
+    const { mediaType, mediaid } = req.params;
     const response = await axios.get(
-      `${TMDB_ENDPOINT}/${mediatype}/${mediaid}?api_key=${process.env.TMDB_API_KEY}`
+      `${TMDB_ENDPOINT}/${mediaType}/${mediaid}?api_key=${process.env.TMDB_API_KEY}`
     );
     try {
       res.status(200).json(response.data);

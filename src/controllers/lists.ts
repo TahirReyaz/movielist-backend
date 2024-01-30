@@ -9,7 +9,7 @@ import {
 import { getUserById, removeListItem } from "../db/users";
 
 type userListItem = {
-  listtype: string;
+  listType: string;
   id: string;
 };
 
@@ -105,9 +105,9 @@ export const createList = async (
   res: express.Response
 ) => {
   try {
-    const { type, items, userid, mediatype } = req.body;
+    const { type, items, userid, mediaType } = req.body;
 
-    if (!type || !userid || !mediatype || !items) {
+    if (!type || !userid || !mediaType || !items) {
       return res.status(400).send({ message: "Missing Fields" });
     }
 
@@ -117,16 +117,16 @@ export const createList = async (
     }
 
     if (user.lists && user.lists.length > 0) {
-      const existingList = user.lists.find((list) => list.listtype == type);
+      const existingList = user.lists.find((list) => list.listType == type);
       if (existingList) {
         return res.status(400).send({ message: "List already exists" });
       }
     }
 
-    const list = await createNewList({ type, items, userid, mediatype });
+    const list = await createNewList({ type, items, userid, mediaType });
 
     // add the list in the user
-    user.lists.push({ id: list._id.toString(), listtype: type });
+    user.lists.push({ id: list._id.toString(), listType: type });
     await user.save();
 
     return res.status(200).json(list).end();
@@ -141,9 +141,9 @@ export const addListItem = async (
   res: express.Response
 ) => {
   try {
-    const { listtype, mediaid, userid, mediatype } = req.body;
+    const { listType, mediaid, userid, mediaType } = req.body;
 
-    if (!listtype || !userid || !mediatype || !mediaid) {
+    if (!listType || !userid || !mediaType || !mediaid) {
       return res.status(400).send({ message: "Missing Fields" });
     }
 
@@ -155,7 +155,7 @@ export const addListItem = async (
     // If list already exists
     if (user.lists && user.lists.length > 0) {
       const existingListIndex = user.lists.findIndex(
-        (list) => list.listtype == listtype
+        (list) => list.listType == listType
       );
       if (existingListIndex != -1) {
         const existingList = await getListById(
@@ -173,21 +173,21 @@ export const addListItem = async (
         const updatedList = await existingList.save();
         return res
           .status(200)
-          .json({ ...updatedList, message: `Added to ${listtype} list` })
+          .json({ ...updatedList, message: `Added to ${listType} list` })
           .end();
       }
     }
 
     // If list doesn't exist already
     const list = await createNewList({
-      type: listtype,
+      type: listType,
       items: [mediaid],
       userid,
-      mediatype,
+      mediaType,
     });
 
     // add the list in the user
-    user.lists.push({ id: list._id.toString(), listtype });
+    user.lists.push({ id: list._id.toString(), listType });
     await user.save();
 
     return res.status(200).json(list).end();

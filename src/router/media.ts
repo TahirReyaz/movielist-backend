@@ -7,7 +7,7 @@ import {
 } from "../controllers/media";
 
 export default (router: express.Router) => {
-  router.get("/:mediatype/bulk/:bulktype", getBulkMedia);
-  router.get("/:mediatype/detail/:mediaid", getMediaDetail);
+  router.get("/:mediaType/bulk/:bulktype", getBulkMedia);
+  router.get("/:mediaType/detail/:mediaid", getMediaDetail);
   router.get("/search/:query", searchMulti);
 };

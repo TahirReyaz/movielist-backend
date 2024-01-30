@@ -4,7 +4,7 @@ const ListSchema = new mongoose.Schema({
   type: { type: String, required: true },
   items: { type: [String], required: true },
   userid: { type: String, required: true },
-  mediatype: { type: String, required: true },
+  mediaType: { type: String, required: true },
 });
 
 export const ListModel = mongoose.model("List", ListSchema);
