@@ -23,10 +23,10 @@ const port = process.env.PORT || 3000;
 mongoose.Promise = Promise;
 mongoose.connect(process.env.MONGO_URL);
 // Change the mongo password to a more secure one
-mongoose.connection.on("error", (error: Error) => console.log(error));
+mongoose.connection.on("error", (error: Error) => console.error(error));
 
 app.use("/", router());
 
 app.listen(port, () => {
-  console.log("Server running on http://localhost:", port);
+  console.log("Server running on: ", port);
 });

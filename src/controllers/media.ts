@@ -14,7 +14,7 @@ export const getBulkMedia = async (
     );
     res.status(200).json(response.data.results);
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.sendStatus(400);
   }
 };
@@ -31,11 +31,11 @@ export const getMediaDetail = async (
     try {
       res.status(200).json(response.data);
     } catch (error) {
-      console.log(error);
+      console.error(error);
       res.send({ message: "SOMETHING WENT WRONG" });
     }
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.status(400).send({ message: error });
   }
 };

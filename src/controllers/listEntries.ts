@@ -170,7 +170,9 @@ export const createListEntry = async (
       // Check if list already exists on the user or not
       let existingList;
       if (user.lists && user.lists.length > 0) {
-        existingList = user.lists.find((list) => list.listType == status);
+        existingList = user.lists.find(
+          (list) => list.listType === status && list.mediaType === mediaType
+        );
       }
       if (!existingList) {
         const newList = await createNewList({
@@ -183,7 +185,11 @@ export const createListEntry = async (
         list = await getListById(newList._id.toString());
 
         // add the list in the user
-        user.lists.push({ id: newList._id.toString(), listType: status });
+        user.lists.push({
+          id: newList._id.toString(),
+          listType: status,
+          mediaType,
+        });
         await user.save();
       } else {
         list = await getListById(existingList.id);

@@ -27,7 +27,10 @@ const UserSchema = new mongoose.Schema({
       numOfEntries: Number,
     },
   ],
-  lists: { type: [{ listType: String, id: String }], required: true },
+  lists: {
+    type: [{ listType: String, id: String, mediaType: String }],
+    required: true,
+  },
   followers: [String],
   following: [String],
 });

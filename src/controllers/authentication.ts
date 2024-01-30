@@ -17,14 +17,13 @@ export const login = async (req: express.Request, res: express.Response) => {
       "+authentication.salt +authentication.password"
     );
     if (!user) {
-      console.log("User not found");
       return res.status(400).send({ message: "User not found" });
     }
 
     const expectedHash = authentication(user.authentication.salt, password);
 
     if (user.authentication.password != expectedHash) {
-      console.log("Wrong password");
+      console.error("Wrong password");
       return res.status(403).send({ message: "Wrong Password" });
     }
 
@@ -52,7 +51,7 @@ export const login = async (req: express.Request, res: express.Response) => {
       })
       .end();
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.status(400).send({ message: "Error loggin in" });
   }
 };
@@ -87,7 +86,7 @@ export const register = async (req: express.Request, res: express.Response) => {
       .json({ ...user, message: "Successfully registered" })
       .end();
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.status(400).send({ message: "Error while registering" });
   }
 };

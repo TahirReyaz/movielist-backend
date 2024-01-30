@@ -29,7 +29,7 @@ export const isAuthenticated = async (
 
     return next();
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.sendStatus(400);
   }
 };
@@ -54,7 +54,7 @@ export const isOwner = async (
 
     next();
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.sendStatus(400);
   }
 };
@@ -84,7 +84,7 @@ export const isOwnList = async (
 
     next();
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.sendStatus(400);
   }
 };
@@ -115,7 +115,7 @@ export const isOwnEntry = async (
 
     next();
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.sendStatus(400);
   }
 };
@@ -138,7 +138,7 @@ export const isEntryCreater = async (
 
     next();
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.sendStatus(400);
   }
 };
