@@ -32,6 +32,7 @@ const UserSchema = new mongoose.Schema({
       id: String,
       mediaType: String,
       status: String,
+      mediaid: String,
     },
   ],
   followers: [String],

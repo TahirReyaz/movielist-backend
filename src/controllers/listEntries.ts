@@ -180,7 +180,7 @@ export const createListEntry = async (
     });
 
     // Add entry to the list
-    user.entries.push({ id: entry._id.toString(), status, mediaType });
+    user.entries.push({ id: entry._id.toString(), status, mediaType, mediaid });
     await user.save();
 
     return res.status(200).json(entry).end();
