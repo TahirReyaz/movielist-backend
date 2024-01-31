@@ -6,7 +6,7 @@ import {
   getUserByUsername,
   getUsers,
 } from "../db/users";
-import { deleteListById } from "../db/lists";
+import { deleteEntryById } from "../db/listEntries";
 
 interface idsString {
   ids: string;
@@ -67,10 +67,10 @@ export const deleteUser = async (
   try {
     const { id } = req.params;
 
-    // First delete the associated lists
-    const { lists } = await getUserById(id);
-    lists.forEach(async (list) => {
-      await deleteListById(list.id);
+    // First delete the associated entries
+    const { entries } = await getUserById(id);
+    entries.forEach(async (entry) => {
+      await deleteEntryById(entry.id);
     });
     // Then delete the user
     const deletedUser = await deleteUserById(id);

@@ -5,7 +5,7 @@ import lodash from "lodash";
 import { getUserBySessionToken } from "../db/users";
 import { AUTH_COOKIE_NAME } from "../controllers/authentication";
 import { getEntryById } from "../db/listEntries";
-import { getListById } from "../db/lists";
+// import { getListById } from "../db/lists";
 
 export const isAuthenticated = async (
   req: express.Request,
@@ -49,36 +49,6 @@ export const isOwner = async (
     if (currentUserId.toString() != id) {
       return res.status(400).send({
         message: "You are not the owner",
-      });
-    }
-
-    next();
-  } catch (error) {
-    console.error(error);
-    return res.sendStatus(400);
-  }
-};
-
-export const isOwnList = async (
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction
-) => {
-  try {
-    const { listid } = req.params;
-    if (!listid) {
-      return res.status(400).send({
-        message: "Missing field: listid",
-      });
-    }
-
-    const list = await getListById(listid);
-    const { userid } = list;
-    const currentUserId = lodash.get(req, "identity._id") as string;
-
-    if (currentUserId.toString() != userid) {
-      return res.status(400).send({
-        message: "Not own list",
       });
     }
 
@@ -142,3 +112,35 @@ export const isEntryCreater = async (
     return res.sendStatus(400);
   }
 };
+
+// Deprecated
+
+// export const isOwnList = async (
+//   req: express.Request,
+//   res: express.Response,
+//   next: express.NextFunction
+// ) => {
+//   try {
+//     const { listid } = req.params;
+//     if (!listid) {
+//       return res.status(400).send({
+//         message: "Missing field: listid",
+//       });
+//     }
+
+//     const list = await getListById(listid);
+//     const { userid } = list;
+//     const currentUserId = lodash.get(req, "identity._id") as string;
+
+//     if (currentUserId.toString() != userid) {
+//       return res.status(400).send({
+//         message: "Not own list",
+//       });
+//     }
+
+//     next();
+//   } catch (error) {
+//     console.error(error);
+//     return res.sendStatus(400);
+//   }
+// };

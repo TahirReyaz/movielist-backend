@@ -27,10 +27,13 @@ const UserSchema = new mongoose.Schema({
       numOfEntries: Number,
     },
   ],
-  lists: {
-    type: [{ listType: String, id: String, mediaType: String }],
-    required: true,
-  },
+  entries: [
+    {
+      id: String,
+      mediaType: String,
+      status: String,
+    },
+  ],
   followers: [String],
   following: [String],
 });
@@ -54,13 +57,13 @@ export const deleteUserById = (id: string) =>
   UserModel.findOneAndDelete({ _id: id });
 export const updateUserById = (id: string, values: Record<string, any>) =>
   UserModel.findByIdAndUpdate(id, values);
-export const removeListItem = (listid: string, userid: string) =>
+export const removeEntryItem = (entryid: string, userid: string) =>
   UserModel.findByIdAndUpdate(
     { _id: userid },
     {
       $pull: {
-        lists: {
-          id: listid,
+        entries: {
+          id: entryid,
         },
       },
     }

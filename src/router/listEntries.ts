@@ -4,7 +4,6 @@ import {
   isAuthenticated,
   isEntryCreater,
   isOwnEntry,
-  isOwnList,
   isOwner,
 } from "../middlewares";
 import {

@@ -8,8 +8,7 @@ import {
   getEntriesByUserId,
   getEntryById,
 } from "../db/listEntries";
-import { createNewList, getListById } from "../db/lists";
-import { getUserById } from "../db/users";
+import { getUserById, removeEntryItem } from "../db/users";
 
 export const getAllListEntries = async (
   req: express.Request,
@@ -50,12 +49,12 @@ export const deleteEntry = async (
     }
 
     // Remove the entry from the list too
-    const list = await getListById(entry.listid);
-    if (!list) {
-      return res.status(400).send({ message: "Corresponding list not found" });
+    const user = await getUserById(entry.userid);
+    if (!user) {
+      return res.status(400).send({ message: "Corresponding user not found" });
     }
-    list.items = list.items.filter((itemid) => entryid != itemid);
-    await list.save();
+
+    await removeEntryItem(entryid, user._id.toString());
 
     const deletedEntry = await deleteEntryById(entryid);
 
@@ -104,7 +103,6 @@ export const createListEntry = async (
     const {
       mediaid,
       userid,
-      listid,
       mediaType,
       status,
       startDate,
@@ -131,16 +129,8 @@ export const createListEntry = async (
       console.log({
         mediaid,
         userid,
-        listid,
         mediaType,
         status,
-        startDate,
-        endDate,
-        fav,
-        progress,
-        rewatches,
-        score,
-        notes,
         title,
         poster,
         backdrop,
@@ -148,15 +138,23 @@ export const createListEntry = async (
       return res.status(400).send({ message: "Missing Fields" });
     }
 
-    // Check if this media already exists
+    // Check if this entry already exists
     const userEntries = await getEntriesByUserId(userid);
     const existingEntry = userEntries.find(
       (entry: ListEntry) => entry.mediaid === mediaid
     );
     if (existingEntry) {
-      return res
-        .status(400)
-        .send({ message: "Entry with the same media id already exists" });
+      if (existingEntry.status === status) {
+        return res.status(400).send({
+          message: "Entry with the same media id and status already exists",
+        });
+      }
+
+      const updatedEntry = await getEntryById(existingEntry.id);
+      updatedEntry.status = status;
+      await updatedEntry.save();
+
+      return res.status(200).json(updatedEntry).end();
     }
 
     const user = await getUserById(userid);
@@ -164,45 +162,10 @@ export const createListEntry = async (
       return res.status(400).send({ message: "User Not Found" });
     }
 
-    let list;
-    // Create list if not provided
-    if (!listid) {
-      // Check if list already exists on the user or not
-      let existingList;
-      if (user.lists && user.lists.length > 0) {
-        existingList = user.lists.find(
-          (list) => list.listType === status && list.mediaType === mediaType
-        );
-      }
-      if (!existingList) {
-        const newList = await createNewList({
-          type: status,
-          userid,
-          items: [],
-          mediaType,
-        });
-
-        list = await getListById(newList._id.toString());
-
-        // add the list in the user
-        user.lists.push({
-          id: newList._id.toString(),
-          listType: status,
-          mediaType,
-        });
-        await user.save();
-      } else {
-        list = await getListById(existingList.id);
-      }
-    } else {
-      list = await getListById(listid);
-    }
-
     const entry = await createNewEntry({
       mediaType,
       mediaid,
       userid,
-      listid: listid ? listid : list._id,
       status,
       startDate,
       endDate,
@@ -217,8 +180,8 @@ export const createListEntry = async (
     });
 
     // Add entry to the list
-    list.items.push(entry._id.toString());
-    await list.save();
+    user.entries.push({ id: entry._id.toString(), status, mediaType });
+    await user.save();
 
     return res.status(200).json(entry).end();
   } catch (error) {

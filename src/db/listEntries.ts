@@ -3,7 +3,6 @@ import mongoose from "mongoose";
 const ListEntrySchema = new mongoose.Schema({
   mediaid: { type: String, required: true },
   userid: { type: String, required: true },
-  listid: { type: String, required: true },
   status: { type: String, required: true },
   mediaType: { type: String, required: true },
   startDate: String,
