@@ -1,6 +1,9 @@
 import express from "express";
 import axios from "axios";
 
+import { Season } from "utils/constants/types";
+import { getSeason } from "utils/fn";
+
 const TMDB_ENDPOINT = "https://api.themoviedb.org/3";
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
 
@@ -76,13 +79,14 @@ export const searchMedia = async (
       language?: string;
       page?: string;
       year?: string;
+      season?: Season;
     }
   >,
   res: express.Response
 ) => {
   try {
     const { mediaType } = req.params;
-    const { query, include_adult, language, page, year } = req.query;
+    const { query, include_adult, language, page, year, season } = req.query;
 
     if (mediaType !== "movie" && mediaType !== "tv") {
       return res.status(400).json({ message: "Invalid media type" });
@@ -99,7 +103,17 @@ export const searchMedia = async (
       },
     });
 
-    res.status(200).json(response.data);
+    let filteredResults = response.data.results;
+
+    // Check if the season parameter is provided
+    if (season) {
+      // Filter the results based on the season
+      filteredResults = filteredResults.filter((result: any) => {
+        return result.release_date && getSeason(result.release_date) === season;
+      });
+    }
+
+    res.status(200).json({ results: filteredResults });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "SOMETHING WENT WRONG" });
