@@ -1,8 +1,8 @@
 import express from "express";
 import axios from "axios";
 
-import { Season } from "utils/constants/types";
-import { getSeason } from "utils/fn";
+import { Season } from "../constants/types";
+import { getSeason } from "../helpers/time";
 
 const TMDB_ENDPOINT = "https://api.themoviedb.org/3";
 const TMDB_API_KEY = process.env.TMDB_API_KEY;

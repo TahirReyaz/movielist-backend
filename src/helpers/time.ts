@@ -1,4 +1,4 @@
-import { Season } from "./constants/types";
+import { Season } from "../constants/types";
 
 export const getSeason = (dateString: string): Season => {
   const month = new Date(dateString).getUTCMonth() + 1; // Months are zero-based
