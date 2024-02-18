@@ -75,7 +75,7 @@ export const searchMulti = async (
 
     const categorizedResults = {
       movies,
-      tvShows: tv,
+      tv,
       people,
       users,
     };
