@@ -3,6 +3,7 @@ import axios from "axios";
 
 import { Season } from "../constants/types";
 import { getSeason } from "../helpers/time";
+import { searchUsers } from "../db/users";
 
 const TMDB_ENDPOINT = "https://api.themoviedb.org/3";
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
@@ -56,12 +57,30 @@ export const searchMulti = async (
         api_key: TMDB_API_KEY,
       },
     });
-    try {
-      res.status(200).json(response.data);
-    } catch (error) {
-      console.error(error);
-      res.send({ message: "SOMETHING WENT WRONG" });
-    }
+    const users = await searchUsers(query);
+
+    const movies: any[] = [];
+    const tv: any[] = [];
+    const people: any[] = [];
+
+    response.data.results.forEach((item: any) => {
+      if (item.media_type === "movie") {
+        movies.push(item);
+      } else if (item.media_type === "tv") {
+        tv.push(item);
+      } else if (item.media_type === "person") {
+        people.push(item);
+      }
+    });
+
+    const categorizedResults = {
+      movies,
+      tvShows: tv,
+      people,
+      users,
+    };
+
+    res.status(200).json(categorizedResults);
   } catch (error) {
     console.error(error);
     return res.status(400).send({ message: error });

@@ -52,6 +52,8 @@ export const getUserBySessionToken = (sessionToken: string) =>
 export const getUserById = (id: string) => UserModel.findById(id);
 export const getUserByUsername = (username: string) =>
   UserModel.findOne({ username });
+export const searchUsers = (query: string) =>
+  UserModel.find({ username: { $regex: query, $options: "i" } });
 export const createUser = (values: Record<string, any>) =>
   new UserModel(values).save().then((user) => user.toObject());
 export const deleteUserById = (id: string) =>
