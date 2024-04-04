@@ -79,6 +79,8 @@ export const register = async (req: express.Request, res: express.Response) => {
       },
       following: [],
       followers: [],
+      avatar:
+        "https://firebasestorage.googleapis.com/v0/b/movie-list-3532f.appspot.com/o/user-avatar%2FuserAvatar.png?alt=media&token=1b04c6e1-2df3-4100-97f1-722d3005ee74",
     });
 
     return res
