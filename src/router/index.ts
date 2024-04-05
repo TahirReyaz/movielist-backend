@@ -3,8 +3,8 @@ import express from "express";
 import authentication from "./authentication";
 import users from "./users";
 import media from "./media";
-// import lists from "./lists";
 import entries from "./listEntries";
+import staff from "./staff";
 
 const router = express.Router();
 
@@ -15,7 +15,7 @@ export default (): express.Router => {
   authentication(router);
   users(router);
   media(router);
-  // lists(router);
+  staff(router);
   entries(router);
   return router;
 };
