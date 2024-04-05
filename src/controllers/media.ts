@@ -4,6 +4,7 @@ import axios from "axios";
 import { Season } from "../constants/types";
 import { getSeason } from "../helpers/time";
 import { searchUsers } from "../db/users";
+// import { detailTranslation } from "constants/misc";
 
 const TMDB_ENDPOINT = "https://api.themoviedb.org/3";
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
@@ -44,6 +45,88 @@ export const getMediaDetail = async (
     return res.status(400).send({ message: error });
   }
 };
+
+export const getMediaTags = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const { mediaType, mediaid } = req.params;
+    const response = await axios.get(
+      `${TMDB_ENDPOINT}/${mediaType}/${mediaid}/keywords?api_key=${TMDB_API_KEY}`
+    );
+
+    res
+      .status(200)
+      .json({ id: response.data.id, tags: response.data.keywords });
+  } catch (error) {
+    console.error(error);
+    return res.status(400).send({ message: error });
+  }
+};
+
+export const getMediaCharacters = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const { mediaType, mediaid } = req.params;
+    const response = await axios.get(
+      `${TMDB_ENDPOINT}/${mediaType}/${mediaid}/credits?api_key=${TMDB_API_KEY}`
+    );
+
+    res
+      .status(200)
+      .json({ id: response.data.id, characters: response.data.cast });
+  } catch (error) {
+    console.error(error);
+    return res.status(400).send({ message: error });
+  }
+};
+
+export const getMediaRecommendations = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const { mediaType, mediaid } = req.params;
+    const response = await axios.get(
+      `${TMDB_ENDPOINT}/${mediaType}/${mediaid}/similar?api_key=${TMDB_API_KEY}`
+    );
+
+    res
+      .status(200)
+      .json({
+        id: response.data.mediaid,
+        recommendations: response.data.results,
+      });
+  } catch (error) {
+    console.error(error);
+    return res.status(400).send({ message: error });
+  }
+};
+
+// export const getMediaMoreDetails = async (
+//   req: express.Request,
+//   res: express.Response
+// ) => {
+//   try {
+//     const { mediaType, mediaid } = req.params;
+//     const { detailType } = req.body;
+//     const transDetailType = detailTranslation[detailType];
+//     const response = await axios.get(
+//       `${TMDB_ENDPOINT}/${mediaType}/${mediaid}/credits?api_key=${TMDB_API_KEY}`
+//     );
+
+//     res.status(200).json({
+//       id: response.data.id,
+//       [detailType]: response.data[transDetailType],
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(400).send({ message: error });
+//   }
+// };
 
 export const searchMulti = async (
   req: express.Request,
