@@ -2,7 +2,7 @@ import express from "express";
 
 import { createUser, getUserByEmail } from "../db/users";
 import { authentication, random } from "../helpers";
-import { FRONTEND_DOMAIN } from "constants/misc";
+import { FRONTEND_DOMAIN } from "../constants/misc";
 
 export const AUTH_COOKIE_NAME = "MOVIELIST-AUTH";
 
