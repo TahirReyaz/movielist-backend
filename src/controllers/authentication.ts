@@ -39,7 +39,7 @@ export const login = async (req: express.Request, res: express.Response) => {
 
     // set the cookie
     res.cookie(AUTH_COOKIE_NAME, user.authentication.sessionToken, {
-      domain: FRONTEND_DOMAIN,
+      // domain: FRONTEND_DOMAIN,
       path: "/",
       sameSite: "none",
       secure: true,
