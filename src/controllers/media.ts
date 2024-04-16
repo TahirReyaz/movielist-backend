@@ -55,10 +55,10 @@ export const getMediaTags = async (
     const response = await axios.get(
       `${TMDB_ENDPOINT}/${mediaType}/${mediaid}/keywords?api_key=${TMDB_API_KEY}`
     );
-
-    res
-      .status(200)
-      .json({ id: response.data.id, tags: response.data.keywords });
+    res.status(200).json({
+      id: response.data.id,
+      tags: mediaType == "tv" ? response.data.results : response.data.keywords,
+    });
   } catch (error) {
     console.error(error);
     return res.status(400).send({ message: error });
@@ -94,12 +94,10 @@ export const getMediaRecommendations = async (
       `${TMDB_ENDPOINT}/${mediaType}/${mediaid}/similar?api_key=${TMDB_API_KEY}`
     );
 
-    res
-      .status(200)
-      .json({
-        id: response.data.mediaid,
-        recommendations: response.data.results,
-      });
+    res.status(200).json({
+      id: response.data.mediaid,
+      recommendations: response.data.results,
+    });
   } catch (error) {
     console.error(error);
     return res.status(400).send({ message: error });
