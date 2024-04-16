@@ -127,6 +127,9 @@ export const followUser = async (
       return res.status(400).send({ message: "User not found" });
     }
 
+    if (user.following.includes(targetId)) {
+      return res.status(400).send({ message: "Already following" });
+    }
     user.following.push(targetId);
     await user.save();
     target.followers.push(userid);
