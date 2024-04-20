@@ -8,7 +8,7 @@ import {
   getEntriesByUserId,
   getEntryById,
 } from "../db/listEntries";
-import { getUserById, removeEntryItem } from "../db/users";
+import { getUserById, removeEntryItem, updateEntryItem } from "../db/users";
 
 export const getAllListEntries = async (
   req: express.Request,
@@ -70,6 +70,19 @@ export const updateListEntry = async (
   res: express.Response
 ) => {
   try {
+    const { userid, status } = req.body;
+    if (!userid || !status) {
+      console.error({
+        mediaid: req.body.mediaid,
+        userid: req.body.userid,
+        mediaType: req.body.mediaType,
+        status: req.body.status,
+        title: req.body.title,
+        poster: req.body.poster,
+      });
+      return res.status(400).send({ message: "Missing Fields" });
+    }
+
     const { entryid } = req.params;
 
     const entry = await getEntryById(entryid);
@@ -80,7 +93,6 @@ export const updateListEntry = async (
     }
 
     // Check if the list is changing or not
-
     for (const key in req.body) {
       if (req.body[key]) {
         entry.set(key, req.body[key]);
@@ -88,10 +100,13 @@ export const updateListEntry = async (
     }
     await entry.save();
 
+    // Add entry to the user
+    await updateEntryItem(entryid, userid, req.body.status);
+
     return res.status(200).json(entry).end();
   } catch (error) {
     console.error(error);
-    return res.status(400).send({ message: "Database error" });
+    return res.status(500).send({ message: "Database error" });
   }
 };
 
@@ -117,23 +132,14 @@ export const createListEntry = async (
       backdrop,
     } = req.body;
 
-    if (
-      !userid ||
-      !mediaid ||
-      !status ||
-      !mediaType ||
-      !title ||
-      !poster ||
-      !backdrop
-    ) {
-      console.log({
+    if (!userid || !mediaid || !status || !mediaType || !title || !poster) {
+      console.error({
         mediaid,
         userid,
         mediaType,
         status,
         title,
         poster,
-        backdrop,
       });
       return res.status(400).send({ message: "Missing Fields" });
     }
@@ -179,7 +185,7 @@ export const createListEntry = async (
       backdrop,
     });
 
-    // Add entry to the list
+    // Add entry to the user
     user.entries.push({ id: entry._id.toString(), status, mediaType, mediaid });
     await user.save();
 

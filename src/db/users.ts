@@ -40,6 +40,7 @@ const UserSchema = new mongoose.Schema({
 });
 
 export type User = mongoose.InferSchemaType<typeof UserSchema>;
+export type UserEntries = User["entries"][number];
 
 export const UserModel = mongoose.model("User", UserSchema);
 
@@ -70,4 +71,14 @@ export const removeEntryItem = (entryid: string, userid: string) =>
         },
       },
     }
+  );
+export const updateEntryItem = (
+  entryid: string,
+  userid: string,
+  status: string
+) =>
+  UserModel.findOneAndUpdate(
+    { _id: userid, "entries.id": entryid }, // Find the user document by userid and the specific entry by entryid
+    { $set: { "entries.$.status": status } }, // Update the status property of the specific entry
+    { new: true } // Return the updated document
   );
