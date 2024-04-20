@@ -4,23 +4,32 @@ import axios from "axios";
 import { Season } from "../constants/types";
 import { getSeason } from "../helpers/time";
 import { searchUsers } from "../db/users";
+import { translateBulkType } from "../helpers/tmdb";
 // import { detailTranslation } from "constants/misc";
 
 const TMDB_ENDPOINT = "https://api.themoviedb.org/3";
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
 
 export const getBulkMedia = async (
-  req: express.Request,
+  req: express.Request<
+    { mediaType: string; bulktype: keyof typeof translateBulkType },
+    any,
+    any,
+    any
+  >,
   res: express.Response
 ) => {
   try {
     const { mediaType, bulktype } = req.params;
+    const translatedBulkType = translateBulkType[bulktype];
+
     const response = await axios.get(
-      `${TMDB_ENDPOINT}/${mediaType}/${bulktype}?api_key=${TMDB_API_KEY}`
+      `${TMDB_ENDPOINT}/${mediaType}/${translatedBulkType}?api_key=${TMDB_API_KEY}`
     );
     res.status(200).json(response.data.results);
   } catch (error) {
     console.error(error);
+    console.error({ bulkType: req.params.bulktype });
     return res.sendStatus(400);
   }
 };
