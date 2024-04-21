@@ -15,10 +15,13 @@ const UserSchema = new mongoose.Schema({
   totalShows: Number,
   episodesWatched: Number,
   meanShowScore: Number,
-  favMovies: [String],
-  favShows: [String],
-  favCharacters: [String],
-  favStaff: [String],
+  fav: {
+    movie: [String],
+    tv: [String],
+    characters: [String],
+    staff: [String],
+    prod_companies: [String],
+  },
   avatar: String,
   bannerImg: String,
   genreOverview: [

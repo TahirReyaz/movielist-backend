@@ -141,3 +141,37 @@ export const followUser = async (
     return res.status(400).send({ message: "Some error occurred" });
   }
 };
+
+export const toggleFav = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const { id } = req.params;
+    const { entityId, entityType, fav } = req.body;
+
+    const user = await getUserById(id);
+
+    // If the user with this id doesn't exist
+    if (!user) {
+      return res.status(400).send({ message: "User not found" });
+    }
+
+    const favs = user.fav;
+    if (fav) {
+      favs[entityType as keyof typeof favs].push(entityId);
+    } else {
+      favs[entityType as keyof typeof favs] = favs[
+        entityType as keyof typeof favs
+      ].filter((id) => id !== entityId);
+    }
+
+    user.set("fav", favs);
+    await user.save();
+
+    return res.status(200).json(user).end();
+  } catch (error) {
+    console.error(error);
+    return res.status(400).send({ message: "Some error occurred" });
+  }
+};
