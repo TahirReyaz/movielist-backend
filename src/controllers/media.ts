@@ -207,7 +207,7 @@ export const searchMedia = async (
         include_adult,
         language,
         page,
-        year,
+        primary_release_year: year,
         api_key: TMDB_API_KEY,
       },
     });
