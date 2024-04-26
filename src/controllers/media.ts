@@ -21,10 +21,17 @@ export const getBulkMedia = async (
 ) => {
   try {
     const { mediaType, bulktype } = req.params;
+    const { page } = req.query;
     const translatedBulkType = translateBulkType[bulktype];
 
     const response = await axios.get(
-      `${TMDB_ENDPOINT}/${mediaType}/${translatedBulkType}?api_key=${TMDB_API_KEY}`
+      `${TMDB_ENDPOINT}/${mediaType}/${translatedBulkType}`,
+      {
+        params: {
+          api_key: TMDB_API_KEY,
+          page,
+        },
+      }
     );
     res.status(200).json(response.data.results);
   } catch (error) {
