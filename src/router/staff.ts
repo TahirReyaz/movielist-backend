@@ -1,7 +1,8 @@
 import express from "express";
 
-import { getStaffDetail } from "../controllers/staff";
+import { getStaffCredits, getStaffDetail } from "../controllers/staff";
 
 export default (router: express.Router) => {
+  router.get("/staff/:staffid/credits", getStaffCredits);
   router.get("/staff/:staffid", getStaffDetail);
 };

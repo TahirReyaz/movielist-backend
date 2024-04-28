@@ -89,3 +89,40 @@ export const transformEntries = (entries: any[] = []) => {
     };
   }
 };
+
+export const divideMediaByMediaType = (media: any[] = []) => {
+  const movie: any[] = [];
+  const tv: any[] = [];
+  media.forEach((item: any) => {
+    if (item.title) {
+      movie.push(item);
+    } else {
+      tv.push(item);
+    }
+  });
+  return { movie, tv };
+};
+
+export const divideMediaByYear = (mediaList: any[] = []) => {
+  const transMediaMap: { [year: string]: any[] } = {};
+
+  mediaList.forEach((media) => {
+    const date = media.release_date || media.first_air_date;
+    if (date) {
+      const year = new Date(date).getFullYear().toString();
+      if (!transMediaMap[year]) {
+        transMediaMap[year] = [];
+      }
+      transMediaMap[year].push(media);
+    }
+  });
+
+  const transMediaArray: any[] = [];
+  for (const year in transMediaMap) {
+    if (transMediaMap.hasOwnProperty(year)) {
+      transMediaArray.push({ year, items: transMediaMap[year] });
+    }
+  }
+
+  return transMediaArray;
+};
