@@ -40,7 +40,7 @@ export const getStaffCredits = async (
     const credits = response.data;
     const dividedMedia = divideMediaByYear(credits.cast);
 
-    res.status(200).json(dividedMedia);
+    res.status(200).json({ credits: dividedMedia });
   } catch (error) {
     console.error(error);
     return res.status(400).send({ message: error });

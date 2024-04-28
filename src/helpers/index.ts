@@ -124,5 +124,5 @@ export const divideMediaByYear = (mediaList: any[] = []) => {
     }
   }
 
-  return transMediaArray;
+  return transMediaArray.reverse();
 };
