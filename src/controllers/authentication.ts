@@ -1,7 +1,7 @@
 import express from "express";
 
 import { createUser, getUserByEmail } from "../db/users";
-import { authentication, random } from "../helpers";
+import { authentication, random, transformEntries } from "../helpers";
 import { FRONTEND_DOMAIN } from "../constants/misc";
 
 export const AUTH_COOKIE_NAME = "MOVIELIST-AUTH";
@@ -49,6 +49,7 @@ export const login = async (req: express.Request, res: express.Response) => {
       .status(200)
       .json({
         ...user,
+        transEntries: transformEntries(user.entries),
         message: "Successfully logged in",
         token: user.authentication.sessionToken,
       })

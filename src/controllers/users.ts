@@ -7,6 +7,7 @@ import {
   getUsers,
 } from "../db/users";
 import { deleteEntryById } from "../db/listEntries";
+import { transformEntries } from "../helpers";
 
 interface idsString {
   ids: string;
@@ -51,9 +52,11 @@ export const getProfile = async (
 ) => {
   try {
     const { username } = req.params;
-    const users = await getUserByUsername(username);
+    const user = await getUserByUsername(username);
 
-    return res.status(200).json(users);
+    return res
+      .status(200)
+      .json({ ...user, transEntries: transformEntries(user.entries) });
   } catch (error) {
     console.error(error);
     return res.status(400).send({ message: "Some error occurred" });
