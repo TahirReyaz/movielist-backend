@@ -2,6 +2,7 @@ import express from "express";
 
 import {
   getBulkMedia,
+  getGenreList,
   getMediaCharacters,
   getMediaDetail,
   getMediaRecommendations,
@@ -16,6 +17,7 @@ export default (router: express.Router) => {
   router.get("/:mediaType/tags/:mediaid", getMediaTags);
   router.get("/:mediaType/characters/:mediaid", getMediaCharacters);
   router.get("/:mediaType/recommendations/:mediaid", getMediaRecommendations);
+  router.get("/:mediaType/genre", getGenreList);
   router.get("/search/multi/:query", searchMulti);
   router.get("/search/:mediaType", searchMedia);
 };

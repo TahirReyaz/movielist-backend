@@ -1,10 +1,12 @@
 import express from "express";
-import axios from "axios";
+import axios, { AxiosResponse, AxiosResponseHeaders } from "axios";
 
 import { Season } from "../constants/types";
 import { getSeason } from "../helpers/time";
 import { searchUsers } from "../db/users";
 import { translateBulkType } from "../helpers/tmdb";
+import { fuzzySearch } from "../helpers";
+import { filter } from "lodash";
 // import { detailTranslation } from "constants/misc";
 
 const TMDB_ENDPOINT = "https://api.themoviedb.org/3";
@@ -75,6 +77,27 @@ export const getMediaTags = async (
       id: response.data.id,
       tags: mediaType == "tv" ? response.data.results : response.data.keywords,
     });
+  } catch (error) {
+    console.error(error);
+    return res.status(400).send({ message: error });
+  }
+};
+
+export const getGenreList = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const { mediaType } = req.params;
+    const response = await axios.get(
+      `${TMDB_ENDPOINT}/genre/${mediaType}/list`,
+      {
+        params: {
+          api_key: TMDB_API_KEY,
+        },
+      }
+    );
+    res.status(200).json(response.data);
   } catch (error) {
     console.error(error);
     return res.status(400).send({ message: error });
@@ -191,35 +214,77 @@ export const searchMedia = async (
     any,
     {
       query?: string;
-      include_adult?: string;
+      include_adult?: boolean;
       language?: string;
       page?: string;
       year?: string;
       season?: Season;
+      genres?: string;
     }
   >,
   res: express.Response
 ) => {
   try {
     const { mediaType } = req.params;
-    const { query, include_adult, language, page, year, season } = req.query;
+    const { query, include_adult, language, page, year, season, genres } =
+      req.query;
 
     if (mediaType !== "movie" && mediaType !== "tv") {
       return res.status(400).json({ message: "Invalid media type" });
     }
 
-    const response = await axios.get(`${TMDB_ENDPOINT}/search/${mediaType}`, {
-      params: {
-        query,
-        include_adult,
-        language,
-        page,
-        primary_release_year: year,
-        api_key: TMDB_API_KEY,
-      },
-    });
+    const discoverParams = {
+      api_key: TMDB_API_KEY,
+      include_adult: !!include_adult,
+      page: page && page != "" ? page : "1",
+      ...(language && { language }),
+      ...(year && { primary_release_year: year }),
+      ...(genres && { with_genres: genres }),
+    };
+    const searchParams = {
+      api_key: TMDB_API_KEY,
+      query,
+      page: page && page != "" ? page : "1",
+    };
 
-    let filteredResults = response.data.results;
+    const searchResponses: AxiosResponse[] = await Promise.all(
+      Array.from({ length: 100 }, (_, page) => {
+        const nextPage = page + 1;
+        searchParams.page = nextPage.toString();
+        const pageUrl = `${TMDB_ENDPOINT}/search/${mediaType}`;
+        return axios.get(pageUrl, { params: searchParams });
+      })
+    );
+    const discoverResponses: AxiosResponse[] = await Promise.all(
+      Array.from({ length: 100 }, (_, page) => {
+        const nextPage = page + 1;
+        discoverParams.page = nextPage.toString();
+        const pageUrl = `${TMDB_ENDPOINT}/discover/${mediaType}`;
+        return axios.get(pageUrl, { params: discoverParams });
+      })
+    );
+    const searchResults = searchResponses.flatMap(
+      (response) => response.data.results
+    );
+    const discoverResults = discoverResponses.flatMap(
+      (response) => response.data.results
+    );
+
+    let filteredResults;
+    if (searchResults.length === 0 || !query || query === "") {
+      filteredResults = discoverResults;
+    } else if (
+      discoverResults.length === 0 ||
+      ((!genres || genres === "") && (!year || year === ""))
+    ) {
+      filteredResults = searchResults;
+    } else {
+      filteredResults = searchResults.filter((searchResult: any) =>
+        discoverResults.some(
+          (discoverResult: any) => discoverResult.id === searchResult.id
+        )
+      );
+    }
 
     // Check if the season parameter is provided
     if (season) {

@@ -126,3 +126,14 @@ export const divideMediaByYear = (mediaList: any[] = []) => {
 
   return transMediaArray.reverse();
 };
+
+export const fuzzySearch = (query: string, title: string) => {
+  // Convert both query and title to lowercase for case-insensitive comparison
+  const queryWords = query.toLowerCase().split(" ");
+  const titleWords = title.toLowerCase().split(" ");
+
+  // Check if all query words are present in the title
+  return queryWords.every((queryWord) =>
+    titleWords.some((titleWord) => titleWord.includes(queryWord))
+  );
+};
