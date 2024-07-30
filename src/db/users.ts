@@ -1,13 +1,57 @@
 import mongoose from "mongoose";
 
-const UserSchema = new mongoose.Schema({
+const ScoreSchema = new mongoose.Schema({
+  num: Number,
+  count: Number,
+  hoursWatched: Number,
+  meanScore: Number,
+});
+
+const DistributionSchema = new mongoose.Schema({
+  format: String,
+  count: Number,
+  hoursWatched: Number,
+  meanScore: Number,
+});
+
+const OverviewSchema = new mongoose.Schema({
+  totalMovies: Number,
+  totalShows: Number,
+  episodesWatched: Number,
+  daysWatched: Number,
+  daysPlanned: Number,
+  meanScore: Number,
+  score: [ScoreSchema],
+  epsCount: [ScoreSchema],
+  formatDist: [DistributionSchema],
+  statusDist: [DistributionSchema],
+  countryDist: [DistributionSchema],
+  releaseYear: [DistributionSchema],
+  watchYear: [DistributionSchema],
+});
+
+const AuthSchema = new mongoose.Schema({
+  password: { type: String, required: true, select: false },
+  salt: { type: String, select: false },
+  sessionToken: { type: String, select: false },
+});
+
+const GenreOverviewSchema = new mongoose.Schema({
+  name: String,
+  numOfEntries: Number,
+});
+
+const EntrySchema = new mongoose.Schema({
+  id: String,
+  mediaType: String,
+  status: String,
+  mediaid: String,
+});
+
+export const UserSchema = new mongoose.Schema({
   username: { type: String, required: true },
   email: { type: String, required: true },
-  authentication: {
-    password: { type: String, required: true, select: false }, //Select fetches the whole auth object containing all users, we don't want that
-    salt: { type: String, select: false },
-    sessionToken: { type: String, select: false },
-  },
+  authentication: AuthSchema,
   about: String,
   totalMovies: Number,
   daysWatched: Number,
@@ -24,22 +68,18 @@ const UserSchema = new mongoose.Schema({
   },
   avatar: String,
   bannerImg: String,
-  genreOverview: [
-    {
-      name: String,
-      numOfEntries: Number,
-    },
-  ],
-  entries: [
-    {
-      id: String,
-      mediaType: String,
-      status: String,
-      mediaid: String,
-    },
-  ],
+  genreOverview: [GenreOverviewSchema],
+  entries: [EntrySchema],
   followers: [String],
   following: [String],
+  stats: {
+    overview: OverviewSchema,
+    genres: mongoose.Schema.Types.Mixed,
+    tags: mongoose.Schema.Types.Mixed,
+    actors: mongoose.Schema.Types.Mixed,
+    studios: mongoose.Schema.Types.Mixed,
+    staff: mongoose.Schema.Types.Mixed,
+  },
 });
 
 export type User = mongoose.InferSchemaType<typeof UserSchema>;
