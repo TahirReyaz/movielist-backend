@@ -53,6 +53,11 @@ export const getProfile = async (
   try {
     const { username } = req.params;
     const user = await getUserByUsername(username);
+    if (!user) {
+      return res
+        .status(400)
+        .send({ message: "User with this username not found" });
+    }
 
     return res
       .status(200)
