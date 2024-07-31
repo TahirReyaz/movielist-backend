@@ -10,7 +10,12 @@ import {
   getEntryById,
 } from "../db/listEntries";
 import { getUserById, removeEntryItem, updateEntryItem } from "../db/users";
-import { TMDB_API_KEY, TMDB_ENDPOINT } from "../constants/misc";
+import {
+  MediaStatus,
+  MediaType,
+  TMDB_API_KEY,
+  TMDB_ENDPOINT,
+} from "../constants/misc";
 
 export const getAllListEntries = async (
   req: express.Request,
@@ -144,6 +149,7 @@ export const createListEntry = async (
       backdrop,
     } = req.body;
 
+    // Check missing data
     if (!userid || !mediaid || !status || !mediaType || !title || !poster) {
       console.error({
         mediaid,
@@ -192,6 +198,15 @@ export const createListEntry = async (
       return res.status(400).send({ message: "User Not Found" });
     }
 
+    let calculatedProgress = 0;
+    if (status == MediaStatus.completed) {
+      if (mediaType == MediaType.tv) {
+        calculatedProgress = mediaData.number_of_episodes;
+      } else {
+        calculatedProgress = 1;
+      }
+    }
+
     const entry = await createNewEntry({
       mediaType,
       mediaid,
@@ -200,7 +215,7 @@ export const createListEntry = async (
       startDate,
       endDate,
       fav: fav ? fav : false,
-      progress: progress ? progress : 0,
+      progress: calculatedProgress,
       rewatches: rewatches ? rewatches : 0,
       score,
       notes,
