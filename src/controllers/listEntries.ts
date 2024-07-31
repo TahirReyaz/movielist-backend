@@ -1,4 +1,5 @@
 import express from "express";
+import axios from "axios";
 
 import {
   ListEntry,
@@ -9,6 +10,7 @@ import {
   getEntryById,
 } from "../db/listEntries";
 import { getUserById, removeEntryItem, updateEntryItem } from "../db/users";
+import { TMDB_API_KEY, TMDB_ENDPOINT } from "../constants/misc";
 
 export const getAllListEntries = async (
   req: express.Request,
@@ -98,6 +100,16 @@ export const updateListEntry = async (
         entry.set(key, req.body[key]);
       }
     }
+
+    const { data: mediaData } = await axios.get(
+      `${TMDB_ENDPOINT}/${req.body.mediaType}/${req.body.mediaid}`,
+      {
+        params: {
+          api_key: TMDB_API_KEY,
+        },
+      }
+    );
+    entry.data = mediaData;
     await entry.save();
 
     // Add entry to the user
@@ -149,6 +161,17 @@ export const createListEntry = async (
     const existingEntry = userEntries.find(
       (entry: ListEntry) => entry.mediaid === mediaid
     );
+
+    // Media data to be used when everything goes correct
+    const { data: mediaData } = await axios.get(
+      `${TMDB_ENDPOINT}/${mediaType}/${mediaid}`,
+      {
+        params: {
+          api_key: TMDB_API_KEY,
+        },
+      }
+    );
+
     if (existingEntry) {
       if (existingEntry.status === status) {
         return res.status(400).send({
@@ -158,6 +181,7 @@ export const createListEntry = async (
 
       const updatedEntry = await getEntryById(existingEntry.id);
       updatedEntry.status = status;
+      updatedEntry.data = mediaData;
       await updatedEntry.save();
 
       return res.status(200).json(updatedEntry).end();
@@ -183,6 +207,7 @@ export const createListEntry = async (
       title,
       poster,
       backdrop,
+      data: mediaData,
     });
 
     // Add entry to the user

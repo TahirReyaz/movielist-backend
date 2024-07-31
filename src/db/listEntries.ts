@@ -15,6 +15,7 @@ export const ListEntrySchema = new mongoose.Schema({
   title: String,
   poster: String,
   backdrop: String,
+  data: mongoose.Schema.Types.Mixed,
 });
 
 export const ListEntryModel = mongoose.model("ListEntry", ListEntrySchema);
