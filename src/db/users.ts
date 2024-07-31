@@ -48,6 +48,31 @@ const EntrySchema = new mongoose.Schema({
   mediaid: String,
 });
 
+const StatEntrySchema = new mongoose.Schema({
+  title: String,
+  posterPath: String,
+  id: Number,
+});
+
+const StatRankingItemSchema = new mongoose.Schema({
+  title: String,
+  statTypeId: Number,
+  count: Number,
+  meanScore: Number,
+  timeWatched: Number,
+  list: [StatEntrySchema],
+});
+
+const ActorItemSchema = new mongoose.Schema({
+  title: String,
+  actorId: Number,
+  profilePath: String,
+  count: Number,
+  meanScore: Number,
+  timeWatched: Number,
+  list: [StatEntrySchema],
+});
+
 export const UserSchema = new mongoose.Schema({
   username: { type: String, required: true },
   email: { type: String, required: true },
@@ -74,10 +99,10 @@ export const UserSchema = new mongoose.Schema({
   following: [String],
   stats: {
     overview: OverviewSchema,
-    genres: mongoose.Schema.Types.Mixed,
-    tags: mongoose.Schema.Types.Mixed,
-    actors: mongoose.Schema.Types.Mixed,
-    studios: mongoose.Schema.Types.Mixed,
+    genres: [StatRankingItemSchema],
+    tags: [StatRankingItemSchema],
+    actors: [ActorItemSchema],
+    studios: [StatRankingItemSchema],
     staff: mongoose.Schema.Types.Mixed,
   },
 });
