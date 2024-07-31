@@ -3,6 +3,7 @@ import express from "express";
 
 import { UserSchema } from "../db/users";
 import { ListEntrySchema } from "../db/listEntries";
+import { MediaStatus, MediaType } from "../constants/misc";
 
 const User = mongoose.model("User", UserSchema);
 const ListEntry = mongoose.model("ListEntry", ListEntrySchema);
@@ -48,14 +49,24 @@ export const generateUserStats = async (userId: string) => {
     let totalHoursWatched = 0;
 
     entries.forEach((entry) => {
-      const { mediaType, status, score, progress } = entry;
+      const { mediaType, status, score, progress, data } = entry;
 
       if (mediaType === "movie") stats.totalMovies += 1;
       if (mediaType === "tv") stats.totalShows += 1;
       if (status === "completed") stats.episodesWatched += progress;
 
-      if (status === "watching" || status === "completed") {
-        const hoursWatched = progress * 1; // Assume each episode is 30 minutes
+      let episodeDuration = 60;
+      if (mediaType === MediaType.movie) {
+        episodeDuration = data?.runtime ? data.runtime : 60;
+      } else {
+        episodeDuration =
+          data?.episode_run_time && data?.episode_run_time[0]
+            ? data.episode_run_time[0]
+            : 40;
+      }
+      episodeDuration /= 60;
+      if (status === MediaStatus.watching || status === MediaStatus.completed) {
+        const hoursWatched = progress * episodeDuration;
         totalHoursWatched += hoursWatched;
         stats.daysWatched += hoursWatched / 24;
         if (score) {
@@ -63,8 +74,12 @@ export const generateUserStats = async (userId: string) => {
           stats.score[score - 1].hoursWatched += hoursWatched;
           scores.push(score);
         }
-      } else if (status === "planning") {
-        const hoursPlanned = progress * 1;
+      } else if (status === MediaStatus.planning) {
+        let epsPlanned = 1;
+        if (mediaType == MediaType.tv && data?.number_of_episodes) {
+          epsPlanned = data.number_of_episodes;
+        }
+        const hoursPlanned = epsPlanned * episodeDuration;
         stats.daysPlanned += hoursPlanned / 24;
       }
 
