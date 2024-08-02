@@ -2,7 +2,12 @@ import axios from "axios";
 import express from "express";
 import { Document } from "mongoose";
 
-import { TMDB_API_KEY, TMDB_ENDPOINT } from "../constants/misc";
+import {
+  MediaStatus,
+  MediaType,
+  TMDB_API_KEY,
+  TMDB_ENDPOINT,
+} from "../constants/misc";
 import {
   ListEntry,
   ListEntryModel,
@@ -51,10 +56,19 @@ export const transformEntries = async (
 
           entry.data = mediaData;
 
+          // Update the progress
+          if (entry.status === MediaStatus.completed) {
+            if (entry.mediaType === MediaType.movie) {
+              entry.progress = 1;
+            } else {
+              entry.progress = mediaData.number_of_episodes;
+            }
+          }
+
           // Save the updated entry to MongoDB
           await ListEntryModel.updateOne(
             { _id: entry._id },
-            { $set: { data: entry.data } }
+            { $set: { data: entry.data, progress: entry.progress } }
           );
         } catch (error) {
           console.error(
