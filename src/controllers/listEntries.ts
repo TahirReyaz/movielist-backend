@@ -114,6 +114,17 @@ export const updateListEntry = async (
         },
       }
     );
+    const { data: tagResult } = await axios.get(
+      `${TMDB_ENDPOINT}/${req.body.mediaType}/${req.body.mediaid}/keywords`,
+      {
+        params: {
+          api_key: TMDB_API_KEY,
+        },
+      }
+    );
+    const tagData =
+      req.body.mediaType == "tv" ? tagResult?.results : tagResult?.keywords;
+    mediaData.tags = tagData;
     entry.data = mediaData;
     await entry.save();
 
@@ -177,6 +188,17 @@ export const createListEntry = async (
         },
       }
     );
+    const { data: tagResult } = await axios.get(
+      `${TMDB_ENDPOINT}/${mediaType}/${mediaid}/keywords`,
+      {
+        params: {
+          api_key: TMDB_API_KEY,
+        },
+      }
+    );
+    const tagData =
+      mediaType == "tv" ? tagResult?.results : tagResult?.keywords;
+    mediaData.tags = tagData;
 
     if (existingEntry) {
       if (existingEntry.status === status) {
