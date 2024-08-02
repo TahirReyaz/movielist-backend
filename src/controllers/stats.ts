@@ -129,6 +129,7 @@ export const generateUserStats = async (userId: string) => {
             title: entry.title,
             posterPath: entry.poster,
             id: Number(entry.mediaid),
+            mediaType,
           });
           if (score) {
             const genreScores: any = genreStats[genre.id].list.map(
@@ -143,6 +144,9 @@ export const generateUserStats = async (userId: string) => {
     overviewStats.meanScore = calculateMeanScore(scores);
 
     user.stats.overview = overviewStats;
+
+    // Save stats
+    await User.updateOne({ _id: userId }, { $set: { "stats.genres": [] } });
     const genreArray = Object.values(genreStats);
     genreArray.forEach((genreStat) => {
       user.stats.genres.push(genreStat);

@@ -52,6 +52,7 @@ const StatEntrySchema = new mongoose.Schema({
   title: String,
   posterPath: String,
   id: Number,
+  mediaType: String,
 });
 
 const StatRankingItemSchema = new mongoose.Schema({
