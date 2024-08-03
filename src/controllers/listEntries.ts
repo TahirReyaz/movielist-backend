@@ -176,7 +176,7 @@ export const createListEntry = async (
     // Check if this entry already exists
     const userEntries = await getEntriesByUserId(userid);
     const existingEntry = userEntries.find(
-      (entry: ListEntry) => entry.mediaid === mediaid
+      (entry: ListEntry) => entry.mediaid == mediaid
     );
 
     // Media data to be used when everything goes correct
