@@ -14,7 +14,7 @@ import {
   getEntriesByUserId,
 } from "../db/listEntries";
 
-interface EntryDocument extends ListEntry, Document {}
+export interface EntryDocument extends ListEntry, Document {}
 
 export const transformEntries = async (
   req: express.Request,

@@ -1,5 +1,6 @@
 import express from "express";
 import axios from "axios";
+import { Document } from "mongoose";
 
 import {
   ListEntry,
@@ -16,6 +17,7 @@ import {
   TMDB_API_KEY,
   TMDB_ENDPOINT,
 } from "../constants/misc";
+import { EntryDocument } from "../helpers/stats";
 
 export const getAllListEntries = async (
   req: express.Request,
@@ -92,7 +94,7 @@ export const updateListEntry = async (
 
     const { entryid } = req.params;
 
-    const entry = await getEntryById(entryid);
+    const entry: EntryDocument = await getEntryById(entryid);
 
     // If the entry with this id doesn't exist
     if (!entry) {
@@ -107,7 +109,7 @@ export const updateListEntry = async (
     }
 
     const { data: mediaData } = await axios.get(
-      `${TMDB_ENDPOINT}/${req.body.mediaType}/${req.body.mediaid}`,
+      `${TMDB_ENDPOINT}/${entry.mediaType}/${entry.mediaid}`,
       {
         params: {
           api_key: TMDB_API_KEY,
@@ -115,7 +117,7 @@ export const updateListEntry = async (
       }
     );
     const { data: tagResult } = await axios.get(
-      `${TMDB_ENDPOINT}/${req.body.mediaType}/${req.body.mediaid}/keywords`,
+      `${TMDB_ENDPOINT}/${entry.mediaType}/${entry.mediaid}/keywords`,
       {
         params: {
           api_key: TMDB_API_KEY,
@@ -123,13 +125,13 @@ export const updateListEntry = async (
       }
     );
     const tagData =
-      req.body.mediaType == "tv" ? tagResult?.results : tagResult?.keywords;
+      entry.mediaType == "tv" ? tagResult?.results : tagResult?.keywords;
     mediaData.tags = tagData;
     entry.data = mediaData;
     await entry.save();
 
     // Add entry to the user
-    await updateEntryItem(entryid, userid, req.body.status);
+    await updateEntryItem(entryid, userid, status);
 
     return res.status(200).json(entry).end();
   } catch (error) {
@@ -201,18 +203,7 @@ export const createListEntry = async (
     mediaData.tags = tagData;
 
     if (existingEntry) {
-      if (existingEntry.status === status) {
-        return res.status(400).send({
-          message: "Entry with the same media id and status already exists",
-        });
-      }
-
-      const updatedEntry = await getEntryById(existingEntry.id);
-      updatedEntry.status = status;
-      updatedEntry.data = mediaData;
-      await updatedEntry.save();
-
-      return res.status(200).json(updatedEntry).end();
+      return res.status(400).send({ message: "Entry already exists" });
     }
 
     const user = await getUserById(userid);
