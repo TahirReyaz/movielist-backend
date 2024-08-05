@@ -11,6 +11,7 @@ import {
   deleteEntry,
   getAllListEntries,
   getEntry,
+  increaseProgress,
   updateListEntry,
 } from "../controllers/listEntries";
 
@@ -20,6 +21,10 @@ export default (router: express.Router) => {
   router.post("/entry", isAuthenticated, isEntryCreater, createListEntry);
   router.delete("/entry/:entryid", isAuthenticated, isOwnEntry, deleteEntry);
   router.patch("/entry/:entryid", isAuthenticated, isOwnEntry, updateListEntry);
-  // router.patch("/list/update/:listid", isAuthenticated, isOwnList, updateList);
-  // router.patch("/list/additem", isAuthenticated, isOwner, addListItem);
+  router.patch(
+    "/entry/:entryid/increaseprogress",
+    isAuthenticated,
+    isOwnEntry,
+    increaseProgress
+  );
 };

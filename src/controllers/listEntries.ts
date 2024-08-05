@@ -248,3 +248,37 @@ export const createListEntry = async (
     return res.status(400).send({ message: "Some Error Occurred" });
   }
 };
+
+export const increaseProgress = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const { entryid } = req.params;
+
+    const entry: EntryDocument = await getEntryById(entryid);
+    if (!entry) {
+      return res.status(400).send({ message: "Entry not found" });
+    }
+
+    if (entry.mediaType == MediaType.movie) {
+      entry.progress = 1;
+    } else {
+      if (entry.progress < entry.data.number_of_episodes) {
+        entry.progress = entry.progress + 1;
+      }
+    }
+
+    const updatedEntry = await entry.save();
+
+    return res
+      .status(200)
+      .json({
+        ...updatedEntry,
+        message: "Progress increased to" + updatedEntry.progress,
+      });
+  } catch (error) {
+    console.error(error);
+    return res.status(400).send({ message: "Database error" });
+  }
+};
