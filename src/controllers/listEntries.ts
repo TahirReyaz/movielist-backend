@@ -1,6 +1,6 @@
 import express from "express";
 import axios from "axios";
-import { Document } from "mongoose";
+import lodash from "lodash";
 
 import {
   ListEntry,
@@ -261,22 +261,32 @@ export const increaseProgress = async (
       return res.status(400).send({ message: "Entry not found" });
     }
 
+    let updateStatus = false;
     if (entry.mediaType == MediaType.movie) {
       entry.progress = 1;
+      updateStatus = true;
     } else {
       if (entry.progress < entry.data.number_of_episodes) {
         entry.progress = entry.progress + 1;
+        if (entry.progress == entry.data.number_of_episodes) {
+          updateStatus = true;
+        }
       }
+    }
+
+    if (updateStatus) {
+      entry.status = MediaStatus.completed;
+      const userid = lodash.get(req, "identity._id") as string;
+
+      await updateEntryItem(entryid, userid, MediaStatus.completed);
     }
 
     const updatedEntry = await entry.save();
 
-    return res
-      .status(200)
-      .json({
-        ...updatedEntry,
-        message: "Progress increased to" + updatedEntry.progress,
-      });
+    return res.status(200).json({
+      ...updatedEntry,
+      message: "Progress increased to" + updatedEntry.progress,
+    });
   } catch (error) {
     console.error(error);
     return res.status(400).send({ message: "Database error" });
