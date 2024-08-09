@@ -218,6 +218,9 @@ export const searchMedia = async (
         params: searchParams,
       });
       return res.status(200).json(response.data);
+    } else if (mediaType == "user") {
+      const users = await searchUsers(query);
+      return res.status(200).json(users);
     }
 
     if (mediaType !== "movie" && mediaType !== "tv") {
