@@ -143,28 +143,6 @@ export const getMediaRecommendations = async (
   }
 };
 
-// export const getMediaMoreDetails = async (
-//   req: express.Request,
-//   res: express.Response
-// ) => {
-//   try {
-//     const { mediaType, mediaid } = req.params;
-//     const { detailType } = req.body;
-//     const transDetailType = detailTranslation[detailType];
-//     const response = await axios.get(
-//       `${TMDB_ENDPOINT}/${mediaType}/${mediaid}/credits?api_key=${TMDB_API_KEY}`
-//     );
-
-//     res.status(200).json({
-//       id: response.data.id,
-//       [detailType]: response.data[transDetailType],
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     return res.status(400).send({ message: error });
-//   }
-// };
-
 export const searchMulti = async (
   req: express.Request,
   res: express.Response
@@ -229,6 +207,19 @@ export const searchMedia = async (
     const { query, include_adult, language, page, year, season, genres } =
       req.query;
 
+    const searchParams = {
+      api_key: TMDB_API_KEY,
+      query,
+      page: page && page != "" ? page : "1",
+    };
+
+    if (mediaType == "staff") {
+      const response = await axios.get(`${TMDB_ENDPOINT}/search/person`, {
+        params: searchParams,
+      });
+      return res.status(200).json(response.data);
+    }
+
     if (mediaType !== "movie" && mediaType !== "tv") {
       return res.status(400).json({ message: "Invalid media type" });
     }
@@ -240,11 +231,6 @@ export const searchMedia = async (
       ...(language && { language }),
       ...(year && { primary_release_year: year }),
       ...(genres && { with_genres: genres }),
-    };
-    const searchParams = {
-      api_key: TMDB_API_KEY,
-      query,
-      page: page && page != "" ? page : "1",
     };
 
     const searchResponses: AxiosResponse[] = await Promise.all(
