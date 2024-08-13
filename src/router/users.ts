@@ -16,7 +16,7 @@ import { transformEntries } from "../helpers/stats";
 export default (router: express.Router) => {
   router.get("/users", isAuthenticated, getAllUsers);
   router.get("/users/bulk", getBulkUsers);
-  router.patch("/users/updatestats", isAuthenticated, generateAllUserStats);
+  router.patch("/users/updatestats", generateAllUserStats);
   router.get("/user/:username", getProfile);
   router.delete("/user/:id", isAuthenticated, isOwner, deleteUser);
   router.patch("/user/:id", isAuthenticated, isOwner, updateUser);
