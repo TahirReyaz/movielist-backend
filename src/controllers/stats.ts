@@ -18,6 +18,9 @@ interface Stat {
 const calculateMeanScore = (scores: number[]): number => {
   if (scores.length === 0) return 0;
   const sum = scores.reduce((acc, score) => acc + score, 0);
+  if (isNaN(sum)) {
+    return 0;
+  }
   return sum / scores.length;
 };
 
@@ -35,6 +38,10 @@ export const generateUserStats = async (userId: string) => {
       episodesWatched: 0,
       daysWatched: 0,
       daysPlanned: 0,
+      daysWatchedMovie: 0,
+      daysPlannedMovie: 0,
+      daysWatchedTv: 0,
+      daysPlannedTv: 0,
       meanScore: 0,
       score: Array(10).fill({ count: 0, hoursWatched: 0, meanScore: 0 }),
       epsCount: [],
@@ -57,6 +64,7 @@ export const generateUserStats = async (userId: string) => {
       if (mediaType === "tv") overviewStats.totalShows += 1;
       if (status === "completed") overviewStats.episodesWatched += progress;
 
+      // Set episode duration
       let episodeDuration = 60;
       if (mediaType === MediaType.movie) {
         episodeDuration = data?.runtime ? data.runtime : 60;
@@ -67,10 +75,16 @@ export const generateUserStats = async (userId: string) => {
             : 40;
       }
       episodeDuration /= 60;
+      // Calculate days watched
       if (status === MediaStatus.watching || status === MediaStatus.completed) {
         const hoursWatched = progress * episodeDuration;
         totalHoursWatched += hoursWatched;
         overviewStats.daysWatched += hoursWatched / 24;
+        if (mediaType === MediaType.movie) {
+          overviewStats.daysWatchedMovie += hoursWatched / 24;
+        } else {
+          overviewStats.daysWatchedTv += hoursWatched / 24;
+        }
         if (score) {
           overviewStats.score[score - 1].count += 1;
           overviewStats.score[score - 1].hoursWatched += hoursWatched;
@@ -83,6 +97,11 @@ export const generateUserStats = async (userId: string) => {
         }
         const hoursPlanned = epsPlanned * episodeDuration;
         overviewStats.daysPlanned += hoursPlanned / 24;
+        if (mediaType === MediaType.movie) {
+          overviewStats.daysPlannedMovie += hoursPlanned / 24;
+        } else {
+          overviewStats.daysPlannedTv += hoursPlanned / 24;
+        }
       }
 
       // Update distributions (formatDist, statusDist, etc.)
@@ -143,14 +162,16 @@ export const generateUserStats = async (userId: string) => {
     });
     overviewStats.meanScore = calculateMeanScore(scores);
 
-    user.stats.overview = overviewStats;
-
     // Save stats
-    await User.updateOne({ _id: userId }, { $set: { "stats.genres": [] } });
+    await User.updateOne(
+      { _id: userId },
+      { $set: { "stats.genres": [], "stats.overview": overviewStats } }
+    );
     const genreArray = Object.values(genreStats);
     genreArray.forEach((genreStat) => {
       user.stats.genres.push(genreStat);
     });
+    user.stats.overview = overviewStats;
 
     await user.save();
   } catch (error) {
