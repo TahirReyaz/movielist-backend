@@ -18,6 +18,7 @@ import {
   TMDB_ENDPOINT,
 } from "../constants/misc";
 import { EntryDocument } from "../helpers/stats";
+import { createActivityFromEntry } from "../helpers/activity";
 
 export const getAllListEntries = async (
   req: express.Request,
@@ -144,6 +145,9 @@ export const updateListEntry = async (
     }
 
     await entry.save();
+
+    // Create activity
+    await createActivityFromEntry(entry);
 
     // Add entry to the user
     await updateEntryItem(entryid, userid, status);

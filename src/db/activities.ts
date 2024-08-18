@@ -2,12 +2,13 @@ import mongoose from "mongoose";
 
 export const ActivitySchema = new mongoose.Schema(
   {
-    image: String,
+    image: { type: String, required: true },
     likes: [String],
-    content: String,
-    owner: String,
-    mediaid: Number,
-    mediaType: String,
+    action: { type: String, required: true },
+    owner: { type: String, required: true },
+    mediaid: { type: Number, required: true },
+    mediaType: { type: String, required: true },
+    title: { type: String, required: true },
   },
   {
     timestamps: true,
