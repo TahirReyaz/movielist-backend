@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 export const ActivitySchema = new mongoose.Schema(
   {
     image: { type: String, required: true },
-    likes: [String],
+    likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     action: { type: String, required: true },
     owner: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     mediaid: { type: Number, required: true },

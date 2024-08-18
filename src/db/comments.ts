@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 export const CommentSchema = new mongoose.Schema(
   {
-    likes: [String],
+    likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     content: String,
     owner: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     activityId: { type: mongoose.Schema.Types.ObjectId, ref: "Activity" },
