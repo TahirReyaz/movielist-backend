@@ -18,6 +18,10 @@ export const authentication = (salt: string, password: string) => {
     .digest("hex");
 };
 
+export const checkWhitespace = (str: string) => {
+  return /\s/.test(str);
+};
+
 export const transformEntries = (entries: any[] = []) => {
   if (entries.length > 0) {
     const movie: entryGrp = {

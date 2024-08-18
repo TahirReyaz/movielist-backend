@@ -1,7 +1,12 @@
 import express from "express";
 
 import { createUser, getUserByEmail } from "../db/users";
-import { authentication, random, transformEntries } from "../helpers";
+import {
+  authentication,
+  checkWhitespace,
+  random,
+  transformEntries,
+} from "../helpers";
 import { FRONTEND_DOMAIN } from "../constants/misc";
 
 export const AUTH_COOKIE_NAME = "MOVIELIST-AUTH";
@@ -66,6 +71,12 @@ export const register = async (req: express.Request, res: express.Response) => {
 
     if (!email || !password || !username) {
       return res.sendStatus(400);
+    }
+
+    if (checkWhitespace(username)) {
+      return res
+        .status(400)
+        .send({ message: "Username must not contain whitespace" });
     }
 
     const existingUser = await getUserByEmail(email);
