@@ -8,12 +8,6 @@ import { MediaStatus, MediaType } from "../constants/misc";
 const User = mongoose.model("User", UserSchema);
 const ListEntry = mongoose.model("ListEntry", ListEntrySchema);
 
-interface Stat {
-  count: number;
-  hoursWatched: number;
-  meanScore: number;
-}
-
 // Helper function to calculate mean score
 const calculateMeanScore = (scores: number[]): number => {
   if (scores.length === 0) return 0;

@@ -3,22 +3,36 @@ import { MediaStatus } from "../constants/misc";
 import { createActivity } from "../db/activities";
 import { EntryDocument } from "./stats";
 
-export const createActivityFromEntry = async (entry: EntryDocument) => {
-  const image = `${tmdbImgBaseUrl}/${posterSizes.sm}${entry.poster}`;
+export const createActivityFromEntry = async ({
+  userid,
+  poster,
+  status,
+  mediaid,
+  mediaType,
+  title,
+}: {
+  userid: string;
+  poster: string;
+  status: string;
+  mediaid: number;
+  mediaType: string;
+  title: string;
+}) => {
+  const image = `${tmdbImgBaseUrl}/${posterSizes.sm}${poster}`;
   let action = "Plan to watch";
-  if (entry.status == MediaStatus.completed) {
+  if (status == MediaStatus.completed) {
     action = "Completed";
-  } else if (entry.status == MediaStatus.dropped) {
+  } else if (status == MediaStatus.dropped) {
     action = "Dropped";
-  } else if (entry.status == MediaStatus.paused) {
+  } else if (status == MediaStatus.paused) {
     action = "Paused watching";
   }
   await createActivity({
     image,
     action,
-    owner: entry.userid,
-    mediaid: entry.mediaid,
-    mediaType: entry.mediaType,
-    title: entry.title,
+    owner: userid,
+    mediaid: mediaid,
+    mediaType: mediaType,
+    title: title,
   });
 };

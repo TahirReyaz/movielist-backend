@@ -147,7 +147,14 @@ export const updateListEntry = async (
     await entry.save();
 
     // Create activity
-    await createActivityFromEntry(entry);
+    await createActivityFromEntry({
+      userid,
+      status,
+      title: entry.title,
+      poster: entry.poster,
+      mediaid: parseInt(entry.mediaid),
+      mediaType: entry.mediaType,
+    });
 
     // Add entry to the user
     await updateEntryItem(entryid, userid, status);
@@ -272,6 +279,16 @@ export const createListEntry = async (
     // Add entry to the user
     user.entries.push({ id: entry._id.toString(), status, mediaType, mediaid });
     await user.save();
+
+    // Create entry
+    await createActivityFromEntry({
+      userid,
+      status,
+      title: entry.title,
+      poster: entry.poster,
+      mediaid: parseInt(entry.mediaid),
+      mediaType: entry.mediaType,
+    });
 
     return res.status(200).json(entry).end();
   } catch (error) {
