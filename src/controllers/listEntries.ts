@@ -128,6 +128,21 @@ export const updateListEntry = async (
       entry.mediaType == "tv" ? tagResult?.results : tagResult?.keywords;
     mediaData.tags = tagData;
     entry.data = mediaData;
+
+    // Add start and end date if not present and required
+    if (status == MediaStatus.completed) {
+      if (!entry.startDate) {
+        entry.startDate = new Date().toISOString();
+      }
+      if (!entry.endDate) {
+        entry.endDate = new Date().toISOString();
+      }
+    } else if (status == MediaStatus.watching) {
+      if (!entry.startDate) {
+        entry.startDate = new Date().toISOString();
+      }
+    }
+
     await entry.save();
 
     // Add entry to the user
@@ -291,6 +306,13 @@ export const increaseProgress = async (
       const userid = lodash.get(req, "identity._id") as string;
 
       await updateEntryItem(entryid, userid, MediaStatus.completed);
+    }
+
+    if (!entry.startDate) {
+      entry.startDate = new Date().toISOString();
+    }
+    if (!entry.endDate) {
+      entry.endDate = new Date().toISOString();
     }
 
     const updatedEntry = await entry.save();
