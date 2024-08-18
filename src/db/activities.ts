@@ -20,7 +20,9 @@ export type Activity = mongoose.InferSchemaType<typeof ActivitySchema>;
 export const ActivityModel = mongoose.model("Activity", ActivitySchema);
 
 export const getActivities = () =>
-  ActivityModel.find().populate("owner", "username avatar");
+  ActivityModel.find()
+    .populate("owner", "username avatar")
+    .sort({ createdAt: -1 });
 export const getActivityById = (id: string) => ActivityModel.findById(id);
 export const createActivity = (values: Record<string, any>) =>
   new ActivityModel(values).save().then((activity) => activity.toObject());
