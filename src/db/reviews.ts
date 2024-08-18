@@ -9,7 +9,7 @@ export const ReviewSchema = new mongoose.Schema(
     dislikes: [String],
     content: String,
     summary: String,
-    ownerid: String,
+    owner: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     score: Number,
   },
   {

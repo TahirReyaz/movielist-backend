@@ -4,8 +4,8 @@ export const CommentSchema = new mongoose.Schema(
   {
     likes: [String],
     content: String,
-    owner: String,
-    activityId: String,
+    owner: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    activityId: { type: mongoose.Schema.Types.ObjectId, ref: "Activity" },
   },
   {
     timestamps: true,

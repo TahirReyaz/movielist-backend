@@ -6,7 +6,7 @@ export const NotificationSchema = new mongoose.Schema(
     read: Boolean,
     content: String,
     image: String,
-    owner: String,
+    owner: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   },
   {
     timestamps: true,
