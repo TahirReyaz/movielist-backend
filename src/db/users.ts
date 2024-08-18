@@ -15,15 +15,10 @@ const DistributionSchema = new mongoose.Schema({
 });
 
 const OverviewSchema = new mongoose.Schema({
-  totalMovies: Number,
-  totalShows: Number,
+  count: Number,
   episodesWatched: Number,
   daysWatched: Number,
   daysPlanned: Number,
-  daysWatchedMovie: Number,
-  daysPlannedMovie: Number,
-  daysWatchedTv: Number,
-  daysPlannedTv: Number,
   meanScore: Number,
   score: [ScoreSchema],
   epsCount: [ScoreSchema],
@@ -78,6 +73,15 @@ const ActorItemSchema = new mongoose.Schema({
   list: [StatEntrySchema],
 });
 
+const StatSchema = new mongoose.Schema({
+  overview: OverviewSchema,
+  genres: [StatRankingItemSchema],
+  tags: [StatRankingItemSchema],
+  actors: [ActorItemSchema],
+  studios: [StatRankingItemSchema],
+  staff: mongoose.Schema.Types.Mixed,
+});
+
 export const UserSchema = new mongoose.Schema(
   {
     username: { type: String, required: true },
@@ -104,12 +108,8 @@ export const UserSchema = new mongoose.Schema(
     followers: [String],
     following: [String],
     stats: {
-      overview: OverviewSchema,
-      genres: [StatRankingItemSchema],
-      tags: [StatRankingItemSchema],
-      actors: [ActorItemSchema],
-      studios: [StatRankingItemSchema],
-      staff: mongoose.Schema.Types.Mixed,
+      movie: StatSchema,
+      tv: StatSchema,
     },
   },
   {
