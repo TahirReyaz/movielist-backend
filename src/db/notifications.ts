@@ -1,13 +1,17 @@
 import mongoose from "mongoose";
 
-export const NotificationSchema = new mongoose.Schema({
-  type: String,
-  time: String,
-  read: Boolean,
-  content: String,
-  image: String,
-  owner: String,
-});
+export const NotificationSchema = new mongoose.Schema(
+  {
+    type: String,
+    read: Boolean,
+    content: String,
+    image: String,
+    owner: String,
+  },
+  {
+    timestamps: true,
+  }
+);
 
 export type Notification = mongoose.InferSchemaType<typeof NotificationSchema>;
 

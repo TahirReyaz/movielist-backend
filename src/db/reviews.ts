@@ -1,16 +1,21 @@
 import mongoose from "mongoose";
 
-export const ReviewSchema = new mongoose.Schema({
-  time: String,
-  mediaid: Number,
-  title: String,
-  likes: [String],
-  dislikes: [String],
-  content: String,
-  summary: String,
-  ownerid: String,
-  score: Number,
-});
+export const ReviewSchema = new mongoose.Schema(
+  {
+    mediaid: Number,
+    mediaType: String,
+    title: String,
+    likes: [String],
+    dislikes: [String],
+    content: String,
+    summary: String,
+    ownerid: String,
+    score: Number,
+  },
+  {
+    timestamps: true,
+  }
+);
 
 export type Review = mongoose.InferSchemaType<typeof ReviewSchema>;
 

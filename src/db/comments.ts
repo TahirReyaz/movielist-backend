@@ -1,12 +1,16 @@
 import mongoose from "mongoose";
 
-export const CommentSchema = new mongoose.Schema({
-  time: String,
-  likes: [String],
-  content: String,
-  owner: String,
-  activityId: String,
-});
+export const CommentSchema = new mongoose.Schema(
+  {
+    likes: [String],
+    content: String,
+    owner: String,
+    activityId: String,
+  },
+  {
+    timestamps: true,
+  }
+);
 
 export type Comment = mongoose.InferSchemaType<typeof CommentSchema>;
 

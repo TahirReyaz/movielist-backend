@@ -78,39 +78,44 @@ const ActorItemSchema = new mongoose.Schema({
   list: [StatEntrySchema],
 });
 
-export const UserSchema = new mongoose.Schema({
-  username: { type: String, required: true },
-  email: { type: String, required: true },
-  authentication: AuthSchema,
-  about: String,
-  totalMovies: Number,
-  daysWatched: Number,
-  meanMovieScore: Number,
-  totalShows: Number,
-  episodesWatched: Number,
-  meanShowScore: Number,
-  fav: {
-    movie: [String],
-    tv: [String],
-    characters: [String],
-    staff: [String],
-    prod_companies: [String],
+export const UserSchema = new mongoose.Schema(
+  {
+    username: { type: String, required: true },
+    email: { type: String, required: true },
+    authentication: AuthSchema,
+    about: String,
+    totalMovies: Number,
+    daysWatched: Number,
+    meanMovieScore: Number,
+    totalShows: Number,
+    episodesWatched: Number,
+    meanShowScore: Number,
+    fav: {
+      movie: [String],
+      tv: [String],
+      characters: [String],
+      staff: [String],
+      prod_companies: [String],
+    },
+    avatar: String,
+    bannerImg: String,
+    genreOverview: [GenreOverviewSchema],
+    entries: [EntrySchema],
+    followers: [String],
+    following: [String],
+    stats: {
+      overview: OverviewSchema,
+      genres: [StatRankingItemSchema],
+      tags: [StatRankingItemSchema],
+      actors: [ActorItemSchema],
+      studios: [StatRankingItemSchema],
+      staff: mongoose.Schema.Types.Mixed,
+    },
   },
-  avatar: String,
-  bannerImg: String,
-  genreOverview: [GenreOverviewSchema],
-  entries: [EntrySchema],
-  followers: [String],
-  following: [String],
-  stats: {
-    overview: OverviewSchema,
-    genres: [StatRankingItemSchema],
-    tags: [StatRankingItemSchema],
-    actors: [ActorItemSchema],
-    studios: [StatRankingItemSchema],
-    staff: mongoose.Schema.Types.Mixed,
-  },
-});
+  {
+    timestamps: true,
+  }
+);
 
 export type User = mongoose.InferSchemaType<typeof UserSchema>;
 export type UserEntries = User["entries"][number];

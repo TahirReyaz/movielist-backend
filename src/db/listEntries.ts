@@ -1,22 +1,27 @@
 import mongoose from "mongoose";
 
-export const ListEntrySchema = new mongoose.Schema({
-  mediaid: { type: String, required: true },
-  userid: { type: String, required: true },
-  status: { type: String, required: true },
-  mediaType: { type: String, required: true },
-  startDate: String,
-  endDate: String,
-  fav: Boolean,
-  progress: Number,
-  rewatches: Number,
-  score: Number,
-  notes: String,
-  title: String,
-  poster: String,
-  backdrop: String,
-  data: mongoose.Schema.Types.Mixed,
-});
+export const ListEntrySchema = new mongoose.Schema(
+  {
+    mediaid: { type: String, required: true },
+    userid: { type: String, required: true },
+    status: { type: String, required: true },
+    mediaType: { type: String, required: true },
+    startDate: String,
+    endDate: String,
+    fav: Boolean,
+    progress: Number,
+    rewatches: Number,
+    score: Number,
+    notes: String,
+    title: String,
+    poster: String,
+    backdrop: String,
+    data: mongoose.Schema.Types.Mixed,
+  },
+  {
+    timestamps: true,
+  }
+);
 
 export const ListEntryModel = mongoose.model("ListEntry", ListEntrySchema);
 

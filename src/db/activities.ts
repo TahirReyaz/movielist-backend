@@ -1,12 +1,18 @@
 import mongoose from "mongoose";
 
-export const ActivitySchema = new mongoose.Schema({
-  image: String,
-  time: String,
-  likes: [String],
-  content: String,
-  owner: String,
-});
+export const ActivitySchema = new mongoose.Schema(
+  {
+    image: String,
+    likes: [String],
+    content: String,
+    owner: String,
+    mediaid: Number,
+    mediaType: String,
+  },
+  {
+    timestamps: true,
+  }
+);
 
 export type Activity = mongoose.InferSchemaType<typeof ActivitySchema>;
 
