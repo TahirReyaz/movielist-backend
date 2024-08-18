@@ -180,6 +180,14 @@ export const createListEntry = async (
     const existingEntry = userEntries.find(
       (entry: ListEntry) => entry.mediaid == mediaid
     );
+    if (existingEntry) {
+      return res.status(400).send({ message: "Entry already exists" });
+    }
+
+    const user = await getUserById(userid);
+    if (!user) {
+      return res.status(400).send({ message: "User Not Found" });
+    }
 
     // Media data to be used when everything goes correct
     const { data: mediaData } = await axios.get(
@@ -202,15 +210,6 @@ export const createListEntry = async (
       mediaType == "tv" ? tagResult?.results : tagResult?.keywords;
     mediaData.tags = tagData;
 
-    if (existingEntry) {
-      return res.status(400).send({ message: "Entry already exists" });
-    }
-
-    const user = await getUserById(userid);
-    if (!user) {
-      return res.status(400).send({ message: "User Not Found" });
-    }
-
     let calculatedProgress = 0;
     if (status == MediaStatus.completed) {
       if (mediaType == MediaType.tv) {
@@ -220,13 +219,26 @@ export const createListEntry = async (
       }
     }
 
+    let calculatedStartDate = startDate;
+    if (
+      !startDate &&
+      (status == MediaStatus.completed || status == MediaStatus.watching)
+    ) {
+      calculatedStartDate = new Date().toISOString();
+    }
+
+    let calculatedEndDate = endDate;
+    if (!startDate && status == MediaStatus.completed) {
+      calculatedEndDate = new Date().toISOString();
+    }
+
     const entry = await createNewEntry({
       mediaType,
       mediaid,
       userid,
       status,
-      startDate,
-      endDate,
+      startDate: calculatedStartDate,
+      endDate: calculatedEndDate,
       fav: fav ? fav : false,
       progress: calculatedProgress,
       rewatches: rewatches ? rewatches : 0,
