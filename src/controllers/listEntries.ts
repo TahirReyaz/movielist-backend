@@ -18,7 +18,7 @@ import {
   TMDB_ENDPOINT,
 } from "../constants/misc";
 import { EntryDocument } from "../helpers/stats";
-import { createActivityFromEntry } from "../helpers/activity";
+import { createNewActivity } from "../helpers/activity";
 
 export const getAllListEntries = async (
   req: express.Request,
@@ -147,7 +147,7 @@ export const updateListEntry = async (
     await entry.save();
 
     // Create activity
-    await createActivityFromEntry({
+    await createNewActivity({
       userid,
       status,
       title: entry.title,
@@ -281,7 +281,7 @@ export const createListEntry = async (
     await user.save();
 
     // Create entry
-    await createActivityFromEntry({
+    await createNewActivity({
       userid,
       status,
       title: entry.title,
@@ -337,6 +337,28 @@ export const increaseProgress = async (
     }
 
     const updatedEntry = await entry.save();
+
+    // Create activity
+    if (updateStatus) {
+      await createNewActivity({
+        userid: entry.userid,
+        poster: entry.poster,
+        status: "completed",
+        mediaid: parseInt(entry.mediaid),
+        mediaType: entry.mediaType,
+        title: entry.title,
+      });
+    } else {
+      await createNewActivity({
+        userid: entry.userid,
+        poster: entry.poster,
+        status: "completed",
+        mediaid: parseInt(entry.mediaid),
+        mediaType: entry.mediaType,
+        title: entry.title,
+        progress: updatedEntry.progress,
+      });
+    }
 
     return res.status(200).json({
       ...updatedEntry,

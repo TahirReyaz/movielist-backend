@@ -1,15 +1,15 @@
 import { posterSizes, tmdbImgBaseUrl } from "../constants/tmdb";
 import { MediaStatus } from "../constants/misc";
 import { createActivity } from "../db/activities";
-import { EntryDocument } from "./stats";
 
-export const createActivityFromEntry = async ({
+export const createNewActivity = async ({
   userid,
   poster,
   status,
   mediaid,
   mediaType,
   title,
+  progress,
 }: {
   userid: string;
   poster: string;
@@ -17,6 +17,7 @@ export const createActivityFromEntry = async ({
   mediaid: number;
   mediaType: string;
   title: string;
+  progress?: number;
 }) => {
   const image = `${tmdbImgBaseUrl}/${posterSizes.sm}${poster}`;
   let action = "Plan to watch";
@@ -26,6 +27,9 @@ export const createActivityFromEntry = async ({
     action = "Dropped";
   } else if (status == MediaStatus.paused) {
     action = "Paused watching";
+  }
+  if (progress) {
+    action = `Watched ep ${progress} of`;
   }
   await createActivity({
     image,
