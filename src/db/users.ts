@@ -105,8 +105,18 @@ export const UserSchema = new mongoose.Schema(
     bannerImg: String,
     genreOverview: [GenreOverviewSchema],
     entries: [EntrySchema],
-    followers: [String],
-    following: [String],
+    followers: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    following: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
     stats: {
       movie: StatSchema,
       tv: StatSchema,
@@ -130,7 +140,9 @@ export const getUserBySessionToken = (sessionToken: string) =>
   });
 export const getUserById = (id: string) => UserModel.findById(id);
 export const getUserByUsername = (username: string) =>
-  UserModel.findOne({ username });
+  UserModel.findOne({ username })
+    .populate("followers", "username avatar")
+    .populate("following", "username avatar");
 export const searchUsers = (query: string) =>
   UserModel.find({ username: { $regex: query, $options: "i" } });
 export const createUser = (values: Record<string, any>) =>

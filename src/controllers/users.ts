@@ -1,4 +1,6 @@
 import express from "express";
+import lodash from "lodash";
+import mongoose from "mongoose";
 
 import {
   deleteUserById,
@@ -124,16 +126,18 @@ export const followUser = async (
   res: express.Response
 ) => {
   try {
-    const { userid } = req.body;
-    const { targetId } = req.params;
+    const userid = lodash.get(req, "identity._id") as mongoose.Types.ObjectId;
+    const { username: targetUsername } = req.params;
 
-    const user = await getUserById(userid);
-    const target = await getUserById(targetId);
+    const user = await getUserById(userid.toString());
+    const target = await getUserByUsername(targetUsername);
 
     // If the user with this id doesn't exist
     if (!user || !target) {
       return res.status(400).send({ message: "User not found" });
     }
+
+    const targetId = target._id;
 
     if (user.following.includes(targetId)) {
       return res.status(400).send({ message: "Already following" });
