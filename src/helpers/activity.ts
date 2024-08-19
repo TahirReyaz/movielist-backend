@@ -1,6 +1,6 @@
 import { posterSizes, tmdbImgBaseUrl } from "../constants/tmdb";
 import { MediaStatus } from "../constants/misc";
-import { createActivity } from "../db/activities";
+import { ActivityModel, createActivity } from "../db/activities";
 
 export const createNewActivity = async ({
   userid,
@@ -39,4 +39,8 @@ export const createNewActivity = async ({
     mediaType: mediaType,
     title: title,
   });
+};
+
+export const getActivitiesCount = async () => {
+  return ActivityModel.countDocuments().exec();
 };
