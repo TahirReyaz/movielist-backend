@@ -116,7 +116,11 @@ export const getMediaCharacters = async (
 
     res
       .status(200)
-      .json({ id: response.data.id, characters: response.data.cast });
+      .json({
+        id: response.data.id,
+        characters: response.data.cast,
+        crew: response.data.crew,
+      });
   } catch (error) {
     console.error(error);
     return res.status(400).send({ message: error });

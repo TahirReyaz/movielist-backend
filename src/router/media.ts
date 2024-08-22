@@ -15,7 +15,7 @@ export default (router: express.Router) => {
   router.get("/:mediaType/bulk/:bulktype", getBulkMedia);
   router.get("/:mediaType/detail/:mediaid", getMediaDetail);
   router.get("/:mediaType/tags/:mediaid", getMediaTags);
-  router.get("/:mediaType/characters/:mediaid", getMediaCharacters);
+  router.get("/:mediaType/credits/:mediaid", getMediaCharacters);
   router.get("/:mediaType/recommendations/:mediaid", getMediaRecommendations);
   router.get("/:mediaType/genre", getGenreList);
   router.get("/search/multi/:query", searchMulti);
