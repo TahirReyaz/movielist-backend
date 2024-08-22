@@ -37,6 +37,21 @@ export const getActivities = ({
     .limit(limit || 10)
     .populate("owner", "username avatar")
     .sort({ createdAt: -1 });
+
+export const getUserActivities = ({
+  userid,
+  skip,
+  limit,
+}: {
+  userid: string;
+  skip: number;
+  limit: number;
+}) =>
+  ActivityModel.find({ owner: userid })
+    .skip(skip || 0)
+    .limit(limit || 10)
+    .populate("owner", "username avatar")
+    .sort({ createdAt: -1 });
 export const getActivityById = (id: string) => ActivityModel.findById(id);
 export const createActivity = (values: Record<string, any>) =>
   new ActivityModel(values).save().then((activity) => activity.toObject());

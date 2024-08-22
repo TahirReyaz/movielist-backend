@@ -47,3 +47,7 @@ export const createNewActivity = async ({
 export const getActivitiesCount = async () => {
   return ActivityModel.countDocuments().exec();
 };
+
+export const getUserActivitiesCount = async (userid: string) => {
+  return ActivityModel.countDocuments({ owner: userid }).exec();
+};
