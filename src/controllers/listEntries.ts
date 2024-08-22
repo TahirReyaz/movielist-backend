@@ -154,6 +154,7 @@ export const updateListEntry = async (
       poster: entry.poster,
       mediaid: parseInt(entry.mediaid),
       mediaType: entry.mediaType,
+      type: "media",
     });
 
     // Add entry to the user
@@ -288,6 +289,7 @@ export const createListEntry = async (
       poster: entry.poster,
       mediaid: parseInt(entry.mediaid),
       mediaType: entry.mediaType,
+      type: "media",
     });
 
     return res.status(200).json(entry).end();
@@ -347,6 +349,7 @@ export const increaseProgress = async (
         mediaid: parseInt(entry.mediaid),
         mediaType: entry.mediaType,
         title: entry.title,
+        type: "media",
       });
     } else {
       await createNewActivity({
@@ -357,6 +360,7 @@ export const increaseProgress = async (
         mediaType: entry.mediaType,
         title: entry.title,
         progress: updatedEntry.progress,
+        type: "media",
       });
     }
 

@@ -10,6 +10,7 @@ export const createNewActivity = async ({
   mediaType,
   title,
   progress,
+  type = "media",
 }: {
   userid: string;
   poster: string;
@@ -18,6 +19,7 @@ export const createNewActivity = async ({
   mediaType: string;
   title: string;
   progress?: number;
+  type: "media" | "status";
 }) => {
   const image = `${tmdbImgBaseUrl}/${posterSizes.sm}${poster}`;
   let action = "Plan to watch";
@@ -38,6 +40,7 @@ export const createNewActivity = async ({
     mediaid: mediaid,
     mediaType: mediaType,
     title: title,
+    type,
   });
 };
 
