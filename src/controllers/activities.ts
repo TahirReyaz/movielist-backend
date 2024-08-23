@@ -2,7 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 import lodash from "lodash";
 
-import { getActivities } from "../db/activities";
+import { getActivities, getActivityById } from "../db/activities";
 import { getUserById, getUserByUsername } from "../db/users";
 import { getActivitiesCount } from "../helpers/activity";
 
@@ -112,5 +112,67 @@ export const getFollowingActivities = async (
   } catch (error) {
     console.error(error);
     return res.status(400).send({ message: error.message });
+  }
+};
+
+export const likeActivity = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const { activityId } = req.params;
+    const activity = await getActivityById(activityId);
+    if (!activity) {
+      return res.status(404).send({ message: "Activity not found" });
+    }
+
+    const userid = lodash.get(req, "identity._id") as mongoose.Types.ObjectId;
+    const foundUser: boolean = activity.likes?.some(
+      (likedUserid: mongoose.Types.ObjectId) => likedUserid.equals(userid)
+    );
+
+    if (foundUser) {
+      return res.status(400).send({ message: "Already liked" });
+    } else {
+      activity.likes.push(userid);
+    }
+    await activity.save();
+
+    return res.status(200).send({ message: "You like that, huh" });
+  } catch (error) {
+    console.error(error);
+    return res.status(400).send({ message: "Database error" });
+  }
+};
+
+export const unlikeActivity = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const { activityId } = req.params;
+    const activity = await getActivityById(activityId);
+    if (!activity) {
+      return res.status(404).send({ message: "Activity not found" });
+    }
+
+    const userid = lodash.get(req, "identity._id") as mongoose.Types.ObjectId;
+    const foundUser = activity.likes?.some(
+      (likedUserid: mongoose.Types.ObjectId) => !likedUserid.equals(userid)
+    );
+
+    if (!foundUser) {
+      return res.status(400).send({ message: "Already not liked" });
+    } else {
+      activity.likes = activity.likes.filter(
+        (likedUserid: mongoose.Types.ObjectId) => !likedUserid.equals(userid)
+      );
+    }
+    await activity.save();
+
+    return res.status(200).send({ message: "You like that, huh" });
+  } catch (error) {
+    console.error(error);
+    return res.status(400).send({ message: "Database error" });
   }
 };
