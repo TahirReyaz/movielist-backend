@@ -37,8 +37,9 @@ export const getActivities = ({
   ActivityModel.find(query ?? {})
     .skip(skip || 0)
     .limit(limit || 10)
+    .sort({ createdAt: -1 })
     .populate("owner", "username avatar")
-    .sort({ createdAt: -1 });
+    .populate("likes", "username avatar");
 
 export const getActivityById = (id: string) => ActivityModel.findById(id);
 export const createActivity = (values: Record<string, any>) =>

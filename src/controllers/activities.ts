@@ -158,7 +158,7 @@ export const unlikeActivity = async (
 
     const userid = lodash.get(req, "identity._id") as mongoose.Types.ObjectId;
     const foundUser = activity.likes?.some(
-      (likedUserid: mongoose.Types.ObjectId) => !likedUserid.equals(userid)
+      (likedUserid: mongoose.Types.ObjectId) => likedUserid.equals(userid)
     );
 
     if (!foundUser) {
