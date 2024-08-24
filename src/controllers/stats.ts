@@ -132,6 +132,15 @@ export const generateUserStats = async (userId: string) => {
           statusDist[foundStatusIndex].count += 1;
           statusDist[foundStatusIndex].hoursWatched += hoursWatched;
           statusDist[foundStatusIndex].meanScore = 0;
+
+          if (status === MediaStatus.planning) {
+            let epsPlanned = 1;
+            if (mediaType == MediaType.tv && data?.number_of_episodes) {
+              epsPlanned = data.number_of_episodes;
+            }
+            const hoursPlanned = epsPlanned * episodeDuration;
+            statusDist[foundStatusIndex].hoursWatched += hoursPlanned;
+          }
         } else {
           statusDist.push({
             count: 1,
@@ -139,6 +148,15 @@ export const generateUserStats = async (userId: string) => {
             format: status,
             meanScore: 0,
           });
+
+          if (status === MediaStatus.planning) {
+            let epsPlanned = 1;
+            if (mediaType == MediaType.tv && data?.number_of_episodes) {
+              epsPlanned = data.number_of_episodes;
+            }
+            const hoursPlanned = epsPlanned * episodeDuration;
+            statusDist[0].hoursWatched = hoursPlanned;
+          }
         }
 
         if (mediaType == MediaType.movie) {
