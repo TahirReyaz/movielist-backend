@@ -3,7 +3,11 @@ import mongoose from "mongoose";
 export const ListEntrySchema = new mongoose.Schema(
   {
     mediaid: { type: String, required: true },
-    userid: { type: String, required: true },
+    owner: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
     status: { type: String, required: true },
     mediaType: { type: String, required: true },
     startDate: String,
@@ -13,7 +17,7 @@ export const ListEntrySchema = new mongoose.Schema(
     rewatches: Number,
     score: Number,
     notes: String,
-    title: String,
+    title: { type: String, required: true },
     poster: String,
     backdrop: String,
     data: mongoose.Schema.Types.Mixed,
@@ -27,14 +31,15 @@ export const ListEntryModel = mongoose.model("ListEntry", ListEntrySchema);
 
 export type ListEntry = mongoose.InferSchemaType<typeof ListEntrySchema>;
 
-export const getEntries = () => ListEntryModel.find();
-export const getEntryBySessionToken = (sessionToken: string) =>
-  ListEntryModel.findOne({
-    "authentication.sessionToken": sessionToken,
-  });
 export const getEntryById = (id: string) => ListEntryModel.findById(id);
 export const getEntriesByUserId = (userid: string) =>
   ListEntryModel.find({ userid: userid });
+
+export const getEntries = (query?: any) =>
+  ListEntryModel.find(query ?? {})
+    .sort({ createdAt: -1 })
+    .populate("owner", "username avatar");
+
 export const createNewEntry = (values: Record<string, any>) =>
   new ListEntryModel(values).save().then((list) => list.toObject());
 export const deleteEntryById = (id: string) =>

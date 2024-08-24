@@ -1,4 +1,5 @@
 import express from "express";
+import mongoose from "mongoose";
 import axios from "axios";
 import lodash from "lodash";
 
@@ -7,7 +8,6 @@ import {
   createNewEntry,
   deleteEntryById,
   getEntries,
-  getEntriesByUserId,
   getEntryById,
 } from "../db/listEntries";
 import { getUserById, removeEntryItem, updateEntryItem } from "../db/users";
@@ -59,10 +59,7 @@ export const deleteEntry = async (
     }
 
     // Remove the entry from the list too
-    const user = await getUserById(entry.userid);
-    if (!user) {
-      return res.status(400).send({ message: "Corresponding user not found" });
-    }
+    const user = await getUserById(entry.owner.toString());
 
     await removeEntryItem(entryid, user._id.toString());
 
@@ -80,8 +77,9 @@ export const updateListEntry = async (
   res: express.Response
 ) => {
   try {
-    const { userid, status } = req.body;
-    if (!userid || !status) {
+    const userid = lodash.get(req, "identity._id") as mongoose.Types.ObjectId;
+    const { status } = req.body;
+    if (!status) {
       console.error({
         mediaid: req.body.mediaid,
         userid: req.body.userid,
@@ -148,7 +146,7 @@ export const updateListEntry = async (
 
     // Create activity
     await createNewActivity({
-      userid,
+      userid: userid.toString(),
       status,
       title: entry.title,
       poster: entry.poster,
@@ -158,7 +156,7 @@ export const updateListEntry = async (
     });
 
     // Add entry to the user
-    await updateEntryItem(entryid, userid, status);
+    await updateEntryItem(entryid, userid.toString(), status);
 
     return res.status(200).json(entry).end();
   } catch (error) {
@@ -172,9 +170,9 @@ export const createListEntry = async (
   res: express.Response
 ) => {
   try {
+    const userid = lodash.get(req, "identity._id") as mongoose.Types.ObjectId;
     const {
       mediaid,
-      userid,
       mediaType,
       status,
       startDate,
@@ -190,7 +188,7 @@ export const createListEntry = async (
     } = req.body;
 
     // Check missing data
-    if (!userid || !mediaid || !status || !mediaType || !title || !poster) {
+    if (!mediaid || !status || !mediaType || !title || !poster) {
       console.error({
         mediaid,
         userid,
@@ -203,7 +201,7 @@ export const createListEntry = async (
     }
 
     // Check if this entry already exists
-    const userEntries = await getEntriesByUserId(userid);
+    const userEntries = await getEntries({ userid });
     const existingEntry = userEntries.find(
       (entry: ListEntry) => entry.mediaid == mediaid
     );
@@ -211,10 +209,7 @@ export const createListEntry = async (
       return res.status(400).send({ message: "Entry already exists" });
     }
 
-    const user = await getUserById(userid);
-    if (!user) {
-      return res.status(400).send({ message: "User Not Found" });
-    }
+    const user = await getUserById(userid.toString());
 
     // Media data to be used when everything goes correct
     const { data: mediaData } = await axios.get(
@@ -283,7 +278,7 @@ export const createListEntry = async (
 
     // Create entry
     await createNewActivity({
-      userid,
+      userid: userid.toString(),
       status,
       title: entry.title,
       poster: entry.poster,
@@ -343,7 +338,7 @@ export const increaseProgress = async (
     // Create activity
     if (updateStatus) {
       await createNewActivity({
-        userid: entry.userid,
+        userid: entry.owner.toString(),
         poster: entry.poster,
         status: "completed",
         mediaid: parseInt(entry.mediaid),
@@ -353,7 +348,7 @@ export const increaseProgress = async (
       });
     } else {
       await createNewActivity({
-        userid: entry.userid,
+        userid: entry.owner.toString(),
         poster: entry.poster,
         status: "completed",
         mediaid: parseInt(entry.mediaid),
