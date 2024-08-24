@@ -1,4 +1,4 @@
-import express from "express";
+import { Request, Response } from "express";
 import mongoose from "mongoose";
 import axios from "axios";
 import lodash from "lodash";
@@ -11,7 +11,6 @@ import {
   getEntry,
   getEntryById,
 } from "../db/listEntries";
-import { getUserById } from "../db/users";
 import {
   MediaStatus,
   MediaType,
@@ -20,11 +19,9 @@ import {
 } from "../constants/misc";
 import { EntryDocument } from "../helpers/stats";
 import { createNewActivity } from "../helpers/activity";
+import { getUserByUsername } from "../db/users";
 
-export const getAllListEntries = async (
-  req: express.Request,
-  res: express.Response
-) => {
+export const getAllListEntries = async (req: Request, res: Response) => {
   try {
     const entries = await getEntries();
 
@@ -35,10 +32,24 @@ export const getAllListEntries = async (
   }
 };
 
-export const getEntryController = async (
-  req: express.Request,
-  res: express.Response
+export const getUserEntriesByMediaType = async (
+  req: Request,
+  res: Response
 ) => {
+  try {
+    const { username, mediaType } = req.params;
+    const user = await getUserByUsername(username);
+
+    const entries = await getEntries({ owner: user._id, mediaType });
+
+    return res.status(200).json(entries);
+  } catch (error) {
+    console.error(error);
+    return res.status(400).send({ message: "Database error" });
+  }
+};
+
+export const getEntryController = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const entry = await getEntry({ owner: id });
@@ -50,10 +61,7 @@ export const getEntryController = async (
   }
 };
 
-export const deleteEntry = async (
-  req: express.Request,
-  res: express.Response
-) => {
+export const deleteEntry = async (req: Request, res: Response) => {
   try {
     const { entryid } = req.params;
 
@@ -71,10 +79,7 @@ export const deleteEntry = async (
   }
 };
 
-export const updateListEntry = async (
-  req: express.Request,
-  res: express.Response
-) => {
+export const updateListEntry = async (req: Request, res: Response) => {
   try {
     const userid = lodash.get(req, "identity._id") as mongoose.Types.ObjectId;
     const { status } = req.body;
@@ -160,10 +165,7 @@ export const updateListEntry = async (
   }
 };
 
-export const createListEntry = async (
-  req: express.Request,
-  res: express.Response
-) => {
+export const createListEntry = async (req: Request, res: Response) => {
   try {
     const userid = lodash.get(req, "identity._id") as mongoose.Types.ObjectId;
     const {
@@ -283,10 +285,7 @@ export const createListEntry = async (
   }
 };
 
-export const increaseProgress = async (
-  req: express.Request,
-  res: express.Response
-) => {
+export const increaseProgress = async (req: Request, res: Response) => {
   try {
     const { entryid } = req.params;
 

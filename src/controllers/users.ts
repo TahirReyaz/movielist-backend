@@ -8,12 +8,7 @@ import {
   getUserByUsername,
   getUsers,
 } from "../db/users";
-import {
-  deleteEntriesByUserid,
-  deleteEntryById,
-  getEntriesByUserId,
-} from "../db/listEntries";
-import { transformEntries } from "../helpers";
+import { deleteEntriesByUserid } from "../db/listEntries";
 
 interface idsString {
   ids: string;
@@ -223,27 +218,6 @@ export const toggleFav = async (
     await user.save();
 
     return res.status(200).json(user).end();
-  } catch (error) {
-    console.error(error);
-    return res.status(400).send({ message: "Some error occurred" });
-  }
-};
-
-export const getUserEntries = async (
-  req: express.Request,
-  res: express.Response
-) => {
-  try {
-    const { username } = req.params;
-    const user = await getUserByUsername(username);
-    if (!user) {
-      return res
-        .status(400)
-        .send({ message: "User with this username not found" });
-    }
-    const entries = await getEntriesByUserId(user._id.toString());
-
-    return res.status(200).json(entries);
   } catch (error) {
     console.error(error);
     return res.status(400).send({ message: "Some error occurred" });

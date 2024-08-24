@@ -32,8 +32,6 @@ export const ListEntryModel = mongoose.model("ListEntry", ListEntrySchema);
 export type ListEntry = mongoose.InferSchemaType<typeof ListEntrySchema>;
 
 export const getEntryById = (id: string) => ListEntryModel.findById(id);
-export const getEntriesByUserId = (userid: string) =>
-  ListEntryModel.find({ userid: userid });
 
 export const getEntries = (query?: any) =>
   ListEntryModel.find(query ?? {})

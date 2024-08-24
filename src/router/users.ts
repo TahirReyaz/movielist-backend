@@ -8,7 +8,6 @@ import {
   followUser,
   getBulkUsers,
   toggleFav,
-  getUserEntries,
   unfollowUser,
 } from "../controllers/users";
 import { isAuthenticated, isOwner } from "../middlewares";
@@ -20,7 +19,6 @@ export default (router: express.Router) => {
   router.get("/users/bulk", getBulkUsers);
   router.patch("/users/updatestats", generateAllUserStats);
   router.get("/user/:username", getProfile);
-  router.get("/user/:username/entries", getUserEntries);
   router.delete("/user", isAuthenticated, deleteUser);
   router.patch("/user/:id", isAuthenticated, isOwner, updateUser);
   router.patch("/user/follow/:username", isAuthenticated, followUser);

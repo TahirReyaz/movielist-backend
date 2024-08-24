@@ -8,11 +8,7 @@ import {
   TMDB_API_KEY,
   TMDB_ENDPOINT,
 } from "../constants/misc";
-import {
-  ListEntry,
-  ListEntryModel,
-  getEntriesByUserId,
-} from "../db/listEntries";
+import { ListEntry, ListEntryModel, getEntries } from "../db/listEntries";
 
 export interface EntryDocument extends ListEntry, Document {}
 
@@ -22,7 +18,7 @@ export const transformEntries = async (
 ) => {
   const { id } = req.params;
   try {
-    const entries: EntryDocument[] = await getEntriesByUserId(id);
+    const entries: EntryDocument[] = await getEntries({ owner: id });
     if (!entries) {
       res.status(404).send({ message: "User with this id not found" });
     }
