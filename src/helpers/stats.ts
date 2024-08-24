@@ -1,16 +1,21 @@
-import axios from "axios";
 import express from "express";
 import { Document } from "mongoose";
 
-import {
-  MediaStatus,
-  MediaType,
-  TMDB_API_KEY,
-  TMDB_ENDPOINT,
-} from "../constants/misc";
+import { MediaStatus, MediaType } from "../constants/misc";
 import { ListEntry, ListEntryModel, getEntries } from "../db/listEntries";
 
 export interface EntryDocument extends ListEntry, Document {}
+
+export const calculateWeightedScore = (
+  voteAverage: number,
+  voteCount: number,
+  globalAverage = 7,
+  m = 500
+): number => {
+  const weightedScore =
+    (voteAverage * voteCount + globalAverage * m) / (voteCount + m);
+  return parseFloat(weightedScore.toFixed(2)); // Rounding to 2 decimal places for better readability
+};
 
 export const transformEntries = async (
   req: express.Request,
@@ -29,35 +34,12 @@ export const transformEntries = async (
     await Promise.all(
       entries.map(async (entry) => {
         try {
-          // Get the media data
-          const { data: mediaData } = await axios.get(
-            `${TMDB_ENDPOINT}/${entry.mediaType}/${entry.mediaid}`,
-            {
-              params: {
-                api_key: TMDB_API_KEY,
-              },
-            }
-          );
-          const { data: tagResult } = await axios.get(
-            `${TMDB_ENDPOINT}/${entry.mediaType}/${entry.mediaid}/keywords`,
-            {
-              params: {
-                api_key: TMDB_API_KEY,
-              },
-            }
-          );
-          const tagData =
-            entry.mediaType === "tv" ? tagResult?.results : tagResult?.keywords;
-          mediaData.tags = tagData;
-
-          entry.data = mediaData;
-
           // Update the progress
           if (entry.status === MediaStatus.completed) {
             if (entry.mediaType === MediaType.movie) {
               entry.progress = 1;
             } else {
-              entry.progress = mediaData.number_of_episodes;
+              entry.progress = entry.data.number_of_episodes;
             }
           }
 

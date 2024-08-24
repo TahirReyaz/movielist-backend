@@ -14,6 +14,8 @@ const DistributionSchema = new mongoose.Schema({
   meanScore: Number,
 });
 
+export type Distribution = mongoose.InferSchemaType<typeof DistributionSchema>;
+
 const OverviewSchema = new mongoose.Schema({
   count: Number,
   episodesWatched: Number,
