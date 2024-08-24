@@ -1,12 +1,9 @@
 import mongoose from "mongoose";
 import express from "express";
 
-import { UserSchema } from "../db/users";
-import { ListEntrySchema } from "../db/listEntries";
+import { UserModel, getUserById } from "../db/users";
+import { getEntries } from "../db/listEntries";
 import { MediaStatus, MediaType } from "../constants/misc";
-
-const User = mongoose.model("User", UserSchema);
-const ListEntry = mongoose.model("ListEntry", ListEntrySchema);
 
 // Helper function to calculate mean score
 const calculateMeanScore = (scores: number[]): number => {
@@ -20,10 +17,10 @@ const calculateMeanScore = (scores: number[]): number => {
 
 export const generateUserStats = async (userId: string) => {
   try {
-    const user = await User.findById(userId).exec();
+    const user = await getUserById(userId);
     if (!user) throw new Error("User not found");
 
-    const entries = await ListEntry.find({ userid: userId }).exec();
+    const entries = await getEntries({ owner: userId });
 
     // Initialize stats
     const overviewStatsMovie: any = {
@@ -244,7 +241,7 @@ export const generateAllUserStats = async (
   res: express.Response
 ) => {
   try {
-    const users = await User.find({}).exec();
+    const users = await UserModel.find({}).exec();
     const statsPromises = users.map((user) =>
       generateUserStats(user._id.toString())
     );

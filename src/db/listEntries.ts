@@ -47,5 +47,9 @@ export const createNewEntry = (values: Record<string, any>) =>
   new ListEntryModel(values).save().then((list) => list.toObject());
 export const deleteEntryById = (id: string) =>
   ListEntryModel.findOneAndDelete({ _id: id });
+
+export const deleteEntriesByUserid = (id: mongoose.Types.ObjectId) =>
+  ListEntryModel.deleteMany({ owner: id });
+
 export const updateEntryById = (id: string, values: Record<string, any>) =>
   ListEntryModel.findByIdAndUpdate(id, values);

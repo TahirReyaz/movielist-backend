@@ -21,7 +21,7 @@ export default (router: express.Router) => {
   router.patch("/users/updatestats", generateAllUserStats);
   router.get("/user/:username", getProfile);
   router.get("/user/:username/entries", getUserEntries);
-  router.delete("/user/:id", isAuthenticated, isOwner, deleteUser);
+  router.delete("/user", isAuthenticated, deleteUser);
   router.patch("/user/:id", isAuthenticated, isOwner, updateUser);
   router.patch("/user/follow/:username", isAuthenticated, followUser);
   router.delete("/user/unfollow/:username", isAuthenticated, unfollowUser);

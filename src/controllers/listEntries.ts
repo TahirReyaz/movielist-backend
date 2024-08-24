@@ -11,7 +11,7 @@ import {
   getEntry,
   getEntryById,
 } from "../db/listEntries";
-import { getUserById, removeEntryItem, updateEntryItem } from "../db/users";
+import { getUserById } from "../db/users";
 import {
   MediaStatus,
   MediaType,
@@ -62,11 +62,6 @@ export const deleteEntry = async (
       return res.status(400).send({ message: "Entry not found" });
     }
 
-    // Remove the entry from the list too
-    const user = await getUserById(entry.owner.toString());
-
-    await removeEntryItem(entryid, user._id.toString());
-
     const deletedEntry = await deleteEntryById(entryid);
 
     return res.json(deletedEntry);
@@ -86,7 +81,6 @@ export const updateListEntry = async (
     if (!status) {
       console.error({
         mediaid: req.body.mediaid,
-        userid: req.body.userid,
         mediaType: req.body.mediaType,
         status: req.body.status,
         title: req.body.title,
@@ -159,9 +153,6 @@ export const updateListEntry = async (
       type: "media",
     });
 
-    // Add entry to the user
-    await updateEntryItem(entryid, userid.toString(), status);
-
     return res.status(200).json(entry).end();
   } catch (error) {
     console.error(error);
@@ -212,8 +203,6 @@ export const createListEntry = async (
     if (existingEntry) {
       return res.status(400).send({ message: "Entry already exists" });
     }
-
-    const user = await getUserById(userid.toString());
 
     // Media data to be used when everything goes correct
     const { data: mediaData } = await axios.get(
@@ -276,10 +265,6 @@ export const createListEntry = async (
       data: mediaData,
     });
 
-    // Add entry to the user
-    user.entries.push({ id: entry._id.toString(), status, mediaType, mediaid });
-    await user.save();
-
     // Create entry
     await createNewActivity({
       userid: userid.toString(),
@@ -325,9 +310,6 @@ export const increaseProgress = async (
 
     if (updateStatus) {
       entry.status = MediaStatus.completed;
-      const userid = lodash.get(req, "identity._id") as string;
-
-      await updateEntryItem(entryid, userid, MediaStatus.completed);
     }
 
     if (!entry.startDate) {

@@ -8,7 +8,11 @@ import {
   getUserByUsername,
   getUsers,
 } from "../db/users";
-import { deleteEntryById, getEntriesByUserId } from "../db/listEntries";
+import {
+  deleteEntriesByUserid,
+  deleteEntryById,
+  getEntriesByUserId,
+} from "../db/listEntries";
 import { transformEntries } from "../helpers";
 
 interface idsString {
@@ -61,9 +65,7 @@ export const getProfile = async (
         .send({ message: "User with this username not found" });
     }
 
-    return res
-      .status(200)
-      .json({ ...user, transEntries: transformEntries(user.entries) });
+    return res.status(200).json(user);
   } catch (error) {
     console.error(error);
     return res.status(400).send({ message: "Some error occurred" });
@@ -75,15 +77,13 @@ export const deleteUser = async (
   res: express.Response
 ) => {
   try {
-    const { id } = req.params;
+    const userid = lodash.get(req, "identity._id") as mongoose.Types.ObjectId;
 
     // First delete the associated entries
-    const { entries } = await getUserById(id);
-    entries.forEach(async (entry) => {
-      await deleteEntryById(entry.id);
-    });
+    await deleteEntriesByUserid(userid);
+
     // Then delete the user
-    const deletedUser = await deleteUserById(id);
+    const deletedUser = await deleteUserById(userid);
 
     return res.json(deletedUser);
   } catch (error) {

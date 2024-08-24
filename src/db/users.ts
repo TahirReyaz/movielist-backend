@@ -40,13 +40,6 @@ const GenreOverviewSchema = new mongoose.Schema({
   numOfEntries: Number,
 });
 
-const EntrySchema = new mongoose.Schema({
-  id: String,
-  mediaType: String,
-  status: String,
-  mediaid: String,
-});
-
 const StatEntrySchema = new mongoose.Schema({
   title: String,
   posterPath: String,
@@ -88,12 +81,6 @@ export const UserSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true },
     authentication: AuthSchema,
     about: String,
-    totalMovies: Number,
-    daysWatched: Number,
-    meanMovieScore: Number,
-    totalShows: Number,
-    episodesWatched: Number,
-    meanShowScore: Number,
     fav: {
       movie: [String],
       tv: [String],
@@ -104,7 +91,6 @@ export const UserSchema = new mongoose.Schema(
     avatar: String,
     bannerImg: String,
     genreOverview: [GenreOverviewSchema],
-    entries: [EntrySchema],
     followers: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -128,7 +114,6 @@ export const UserSchema = new mongoose.Schema(
 );
 
 export type User = mongoose.InferSchemaType<typeof UserSchema>;
-export type UserEntries = User["entries"][number];
 
 export const UserModel = mongoose.model("User", UserSchema);
 
@@ -147,28 +132,7 @@ export const searchUsers = (query: string) =>
   UserModel.find({ username: { $regex: query, $options: "i" } });
 export const createUser = (values: Record<string, any>) =>
   new UserModel(values).save().then((user) => user.toObject());
-export const deleteUserById = (id: string) =>
+export const deleteUserById = (id: mongoose.Types.ObjectId) =>
   UserModel.findOneAndDelete({ _id: id });
 export const updateUserById = (id: string, values: Record<string, any>) =>
   UserModel.findByIdAndUpdate(id, values);
-export const removeEntryItem = (entryid: string, userid: string) =>
-  UserModel.findByIdAndUpdate(
-    { _id: userid },
-    {
-      $pull: {
-        entries: {
-          id: entryid,
-        },
-      },
-    }
-  );
-export const updateEntryItem = (
-  entryid: string,
-  userid: string,
-  status: string
-) =>
-  UserModel.findOneAndUpdate(
-    { _id: userid, "entries.id": entryid }, // Find the user document by userid and the specific entry by entryid
-    { $set: { "entries.$.status": status } }, // Update the status property of the specific entry
-    { new: true } // Return the updated document
-  );

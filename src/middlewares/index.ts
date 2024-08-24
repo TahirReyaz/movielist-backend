@@ -1,5 +1,5 @@
 import express from "express";
-
+import mongoose from "mongoose";
 import lodash from "lodash";
 
 import { getUserBySessionToken } from "../db/users";
@@ -67,7 +67,10 @@ export const isOwnEntry = async (
   try {
     const { entryid } = req.params;
 
-    const currentUserId = lodash.get(req, "identity._id") as string;
+    const currentUserId = lodash.get(
+      req,
+      "identity._id"
+    ) as mongoose.Types.ObjectId;
 
     const currentEntry = await getEntryById(entryid);
 
@@ -75,9 +78,9 @@ export const isOwnEntry = async (
       return res.status(400).send({ message: "Entry not found" });
     }
 
-    const { userid } = currentEntry;
+    const { owner } = currentEntry;
 
-    if (currentUserId.toString() != userid) {
+    if (currentUserId.equals(owner)) {
       return res.status(400).send({
         message: "Not own entry",
       });
