@@ -12,7 +12,6 @@ export const ListEntrySchema = new mongoose.Schema(
     mediaType: { type: String, required: true },
     startDate: String,
     endDate: String,
-    fav: Boolean,
     progress: Number,
     rewatches: Number,
     score: Number,
