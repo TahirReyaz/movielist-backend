@@ -52,7 +52,7 @@ export const getUserEntriesByMediaType = async (
 export const getEntryController = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const entry = await getEntry({ owner: id });
+    const entry = await getEntry({ _id: id });
 
     return res.status(200).json(entry);
   } catch (error) {
