@@ -8,6 +8,7 @@ import {
   createNewEntry,
   deleteEntryById,
   getEntries,
+  getEntry,
   getEntryById,
 } from "../db/listEntries";
 import { getUserById, removeEntryItem, updateEntryItem } from "../db/users";
@@ -34,10 +35,13 @@ export const getAllListEntries = async (
   }
 };
 
-export const getEntry = async (req: express.Request, res: express.Response) => {
+export const getEntryController = async (
+  req: express.Request,
+  res: express.Response
+) => {
   try {
     const { id } = req.params;
-    const entry = await getEntryById(id);
+    const entry = await getEntry({ owner: id });
 
     return res.status(200).json(entry);
   } catch (error) {

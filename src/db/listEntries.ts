@@ -40,6 +40,9 @@ export const getEntries = (query?: any) =>
     .sort({ createdAt: -1 })
     .populate("owner", "username avatar");
 
+export const getEntry = (query?: any) =>
+  ListEntryModel.findOne(query ?? {}).populate("owner", "username avatar");
+
 export const createNewEntry = (values: Record<string, any>) =>
   new ListEntryModel(values).save().then((list) => list.toObject());
 export const deleteEntryById = (id: string) =>
