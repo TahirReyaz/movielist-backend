@@ -75,13 +75,11 @@ export const isOwnEntry = async (
     const currentEntry = await getEntryById(entryid);
 
     if (!currentEntry) {
-      return res.status(400).send({ message: "Entry not found" });
+      return res.status(404).send({ message: "Entry not found" });
     }
 
-    const { owner } = currentEntry;
-
-    if (currentUserId.equals(owner)) {
-      return res.status(400).send({
+    if (!currentUserId.equals(currentEntry.owner)) {
+      return res.status(401).send({
         message: "Not own entry",
       });
     }
