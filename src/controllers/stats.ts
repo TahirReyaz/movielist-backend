@@ -11,16 +11,6 @@ import {
   calculateWeightedScore,
 } from "../helpers/stats";
 
-// Helper function to calculate mean score
-const calculateMeanScore = (scores: number[]): number => {
-  if (scores.length === 0) return 0;
-  const sum = scores.reduce((acc, score) => acc + score, 0);
-  if (isNaN(sum)) {
-    return 0;
-  }
-  return sum / scores.length;
-};
-
 export const generateUserStats = async (userId: string) => {
   try {
     const user = await getUserById(userId);

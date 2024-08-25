@@ -18,6 +18,15 @@ export const calculateWeightedScore = (
   return parseFloat(weightedScore.toFixed(2)); // Rounding to 2 decimal places for better readability
 };
 
+export const calculateMeanScore = (scores: number[]): number => {
+  if (scores.length === 0) return 0;
+  const sum = scores.reduce((acc, score) => acc + score, 0);
+  if (isNaN(sum)) {
+    return 0;
+  }
+  return sum / scores.length;
+};
+
 export const calculateStatusDist = ({
   statusDist,
   status,
