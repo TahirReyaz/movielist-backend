@@ -5,6 +5,7 @@ import { Distribution, UserModel, getUserById } from "../db/users";
 import { getEntries } from "../db/listEntries";
 import { MediaStatus, MediaType } from "../constants/misc";
 import {
+  calculateCountryDist,
   calculateGenreStats,
   calculateStatusDist,
   calculateWeightedScore,
@@ -59,6 +60,8 @@ export const generateUserStats = async (userId: string) => {
 
     let statusDistMovie: Distribution[] = [],
       statusDistTv: Distribution[] = [],
+      countryDistMovie: Distribution[] = [],
+      countryDistTv: Distribution[] = [],
       genreStatsMovie: Record<string, any> = {},
       genreStatsTv: Record<string, any> = {};
 
@@ -73,10 +76,12 @@ export const generateUserStats = async (userId: string) => {
         // Pick the stats to update
         let overviewStats = overviewStatsMovie,
           statusDist: Distribution[] = statusDistMovie,
+          countryDist: Distribution[] = countryDistMovie,
           genreStats: Record<string, any> = genreStatsMovie;
         if (mediaType == MediaType.tv) {
           overviewStats = overviewStatsTv;
           statusDist = statusDistTv;
+          countryDist = countryDistTv;
           genreStats = genreStatsTv;
         }
 
@@ -132,6 +137,13 @@ export const generateUserStats = async (userId: string) => {
           status,
         });
 
+        // Country Distribution
+        countryDist = calculateCountryDist({
+          countryDist,
+          hoursWatched,
+          countries: data.production_countries,
+        });
+
         // Genre stats
         if (status === MediaStatus.completed && data && data.genres) {
           genreStats = calculateGenreStats({
@@ -148,10 +160,12 @@ export const generateUserStats = async (userId: string) => {
         // Assign the calculated stats accoding to the media type
         if (mediaType == MediaType.movie) {
           statusDistMovie = statusDist;
+          countryDistMovie = countryDist;
           overviewStatsMovie = overviewStats;
           genreStatsMovie = genreStats;
         } else {
           statusDistTv = statusDist;
+          countryDistTv = countryDist;
           overviewStatsTv = overviewStats;
           genreStatsTv = genreStats;
         }
@@ -176,8 +190,13 @@ export const generateUserStats = async (userId: string) => {
           "stats.movie.overview": {
             ...overviewStatsMovie,
             statusDist: statusDistMovie,
+            countryDist: countryDistMovie,
           },
-          "stats.tv.overview": { ...overviewStatsTv, statusDist: statusDistTv },
+          "stats.tv.overview": {
+            ...overviewStatsTv,
+            statusDist: statusDistTv,
+            countryDist: countryDistTv,
+          },
         },
       }
     );

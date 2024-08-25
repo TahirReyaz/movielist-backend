@@ -29,29 +29,25 @@ export const calculateStatusDist = ({
   hoursPlanned: number;
   status: string;
 }) => {
-  const foundStatusIndex = statusDist.findIndex(
+  let foundStatusIndex = statusDist.findIndex(
     (item: Distribution) => item.format === status
   );
   if (foundStatusIndex > -1) {
-    statusDist[foundStatusIndex].count += 1;
-    statusDist[foundStatusIndex].hoursWatched += hoursWatched;
-    statusDist[foundStatusIndex].meanScore = 0;
-
-    if (status === MediaStatus.planning) {
-      statusDist[foundStatusIndex].hoursWatched += hoursPlanned;
-    }
-  } else {
     statusDist.push({
-      count: 1,
-      hoursWatched,
+      count: 0,
+      hoursWatched: 0,
       format: status,
       meanScore: 0,
     });
-
-    if (status === MediaStatus.planning) {
-      statusDist[0].hoursWatched = hoursPlanned;
-    }
+    foundStatusIndex = 0;
   }
+  statusDist[foundStatusIndex].count += 1;
+  statusDist[foundStatusIndex].hoursWatched += hoursWatched;
+
+  if (status === MediaStatus.planning) {
+    statusDist[foundStatusIndex].hoursWatched += hoursPlanned;
+  }
+
   return statusDist;
 };
 
@@ -95,6 +91,35 @@ export const calculateGenreStats = ({
   });
 
   return genreStats;
+};
+
+export const calculateCountryDist = ({
+  countryDist,
+  countries,
+  hoursWatched,
+}: {
+  countryDist: Distribution[];
+  countries: any[];
+  hoursWatched: number;
+}) => {
+  countries.forEach((country) => {
+    let foundStatusIndex = countryDist.findIndex(
+      (item: Distribution) => item.format === country.iso_3166_1
+    );
+    if (foundStatusIndex > -1) {
+      countryDist.push({
+        count: 0,
+        hoursWatched: 0,
+        format: country.iso_3166_1,
+        meanScore: 0,
+      });
+      foundStatusIndex = 0;
+    }
+    countryDist[foundStatusIndex].count += 1;
+    countryDist[foundStatusIndex].hoursWatched += hoursWatched;
+  });
+
+  return countryDist;
 };
 
 export const transformEntries = async (
