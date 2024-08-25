@@ -3,6 +3,7 @@ import { Document } from "mongoose";
 
 import { MediaStatus, MediaType } from "../constants/misc";
 import { ListEntry, ListEntryModel, getEntries } from "../db/listEntries";
+import { Distribution } from "../db/users";
 
 export interface EntryDocument extends ListEntry, Document {}
 
@@ -15,6 +16,85 @@ export const calculateWeightedScore = (
   const weightedScore =
     (voteAverage * voteCount + globalAverage * m) / (voteCount + m);
   return parseFloat(weightedScore.toFixed(2)); // Rounding to 2 decimal places for better readability
+};
+
+export const calculateStatusDist = ({
+  statusDist,
+  status,
+  hoursWatched,
+  hoursPlanned,
+}: {
+  statusDist: Distribution[];
+  hoursWatched: number;
+  hoursPlanned: number;
+  status: string;
+}) => {
+  const foundStatusIndex = statusDist.findIndex(
+    (item: Distribution) => item.format === status
+  );
+  if (foundStatusIndex > -1) {
+    statusDist[foundStatusIndex].count += 1;
+    statusDist[foundStatusIndex].hoursWatched += hoursWatched;
+    statusDist[foundStatusIndex].meanScore = 0;
+
+    if (status === MediaStatus.planning) {
+      statusDist[foundStatusIndex].hoursWatched += hoursPlanned;
+    }
+  } else {
+    statusDist.push({
+      count: 1,
+      hoursWatched,
+      format: status,
+      meanScore: 0,
+    });
+
+    if (status === MediaStatus.planning) {
+      statusDist[0].hoursWatched = hoursPlanned;
+    }
+  }
+  return statusDist;
+};
+
+export const calculateGenreStats = ({
+  genres,
+  genreStats,
+  hoursWatched,
+  title,
+  poster,
+  mediaid,
+  mediaType,
+}: {
+  genres: { id: number; name: string }[];
+  genreStats: Record<string, any>;
+  hoursWatched: number;
+  title: string;
+  poster: string;
+  mediaid: number;
+  mediaType: string;
+}) => {
+  genres.forEach((genre: { id: number; name: string }) => {
+    if (!genreStats[genre.id]) {
+      genreStats[genre.id] = {
+        title: genre.name,
+        statTypeId: genre.id,
+        count: 0,
+        meanScore: 0,
+        timeWatched: 0,
+        list: [],
+      };
+    }
+    genreStats[genre.id].count += 1;
+    genreStats[genre.id].timeWatched += hoursWatched;
+    genreStats[genre.id].meanScore = 0;
+    genreStats[genre.id].list.push({
+      title: title,
+      posterPath: poster,
+      id: mediaid,
+      mediaType,
+    });
+  });
+
+  return genreStats;
 };
 
 export const transformEntries = async (

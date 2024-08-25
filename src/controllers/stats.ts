@@ -4,7 +4,11 @@ import express from "express";
 import { Distribution, UserModel, getUserById } from "../db/users";
 import { getEntries } from "../db/listEntries";
 import { MediaStatus, MediaType } from "../constants/misc";
-import { calculateWeightedScore } from "../helpers/stats";
+import {
+  calculateGenreStats,
+  calculateStatusDist,
+  calculateWeightedScore,
+} from "../helpers/stats";
 
 // Helper function to calculate mean score
 const calculateMeanScore = (scores: number[]): number => {
@@ -24,7 +28,7 @@ export const generateUserStats = async (userId: string) => {
     const entries = await getEntries({ owner: userId });
 
     // Initialize stats
-    const overviewStatsMovie: any = {
+    let overviewStatsMovie: any = {
       count: 0,
       episodesWatched: 0,
       daysWatched: 0,
@@ -38,7 +42,7 @@ export const generateUserStats = async (userId: string) => {
       releaseYear: {},
       watchYear: {},
     };
-    const overviewStatsTv: any = {
+    let overviewStatsTv: any = {
       count: 0,
       episodesWatched: 0,
       daysWatched: 0,
@@ -54,30 +58,39 @@ export const generateUserStats = async (userId: string) => {
     };
 
     let statusDistMovie: Distribution[] = [],
-      statusDistTv: Distribution[] = [];
-
-    const genreStatsMovie: Record<string, any> = {};
-    const genreStatsTv: Record<string, any> = {};
+      statusDistTv: Distribution[] = [],
+      genreStatsMovie: Record<string, any> = {},
+      genreStatsTv: Record<string, any> = {};
 
     let totalHoursWatched = 0;
 
     // Go over each entry and generate stats
     entries.forEach((entry) => {
       try {
-        const { mediaType, status, progress, data } = entry;
-        let score = 0;
+        const { mediaType, status, progress, data, title, poster, mediaid } =
+          entry;
+
+        // Pick the stats to update
+        let overviewStats = overviewStatsMovie,
+          statusDist: Distribution[] = statusDistMovie,
+          genreStats: Record<string, any> = genreStatsMovie;
+        if (mediaType == MediaType.tv) {
+          overviewStats = overviewStatsTv;
+          statusDist = statusDistTv;
+          genreStats = genreStatsTv;
+        }
+
+        let entryScore = 0;
         if (data?.vote_average && data?.vote_count) {
-          score = calculateWeightedScore(
+          entryScore = calculateWeightedScore(
             parseInt(data.vote_average),
             parseInt(data.vote_count)
           );
         }
 
-        if (mediaType === MediaType.movie && status === "completed")
-          overviewStatsMovie.count += 1;
-        if (mediaType === MediaType.tv && status === "completed") {
-          overviewStatsTv.count += 1;
-          overviewStatsTv.episodesWatched += progress;
+        if (status === "completed") overviewStats.count += 1;
+        if (mediaType === MediaType.tv) {
+          overviewStats.episodesWatched += progress;
         }
 
         // Set episode duration
@@ -92,141 +105,55 @@ export const generateUserStats = async (userId: string) => {
         }
         episodeDuration /= 60;
 
-        // Calculate days watched
+        // Calculate days watched and planned
         const hoursWatched = progress * episodeDuration;
+
+        let epsPlanned = 1;
+        if (mediaType == MediaType.tv && data.number_of_episodes) {
+          epsPlanned = data.number_of_episodes;
+        }
+        const hoursPlanned = epsPlanned * episodeDuration;
+
         if (
           status === MediaStatus.watching ||
           status === MediaStatus.completed
         ) {
           totalHoursWatched += hoursWatched;
-          if (mediaType === MediaType.movie) {
-            overviewStatsMovie.daysWatched += hoursWatched / 24;
-          } else {
-            overviewStatsTv.daysWatched += hoursWatched / 24;
-          }
+          overviewStats.daysWatched += hoursWatched / 24;
         } else if (status === MediaStatus.planning) {
-          let epsPlanned = 1;
-          if (mediaType == MediaType.tv && data?.number_of_episodes) {
-            epsPlanned = data.number_of_episodes;
-          }
-          const hoursPlanned = epsPlanned * episodeDuration;
-          if (mediaType === MediaType.movie) {
-            overviewStatsMovie.daysPlanned += hoursPlanned / 24;
-          } else {
-            overviewStatsTv.daysPlanned += hoursPlanned / 24;
-          }
+          overviewStats.daysPlanned += hoursPlanned / 24;
         }
 
         // Status Distribution
-        let statusDist: Distribution[] = [];
-        if (mediaType == MediaType.movie) {
-          statusDist = statusDistMovie;
-        } else {
-          statusDist = statusDistTv;
-        }
-
-        const foundStatusIndex = statusDist.findIndex(
-          (item: Distribution) => item.format === status
-        );
-        if (foundStatusIndex > -1) {
-          statusDist[foundStatusIndex].count += 1;
-          statusDist[foundStatusIndex].hoursWatched += hoursWatched;
-          statusDist[foundStatusIndex].meanScore = 0;
-
-          if (status === MediaStatus.planning) {
-            let epsPlanned = 1;
-            if (mediaType == MediaType.tv && data?.number_of_episodes) {
-              epsPlanned = data.number_of_episodes;
-            }
-            const hoursPlanned = epsPlanned * episodeDuration;
-            statusDist[foundStatusIndex].hoursWatched += hoursPlanned;
-          }
-        } else {
-          statusDist.push({
-            count: 1,
-            hoursWatched,
-            format: status,
-            meanScore: 0,
-          });
-
-          if (status === MediaStatus.planning) {
-            let epsPlanned = 1;
-            if (mediaType == MediaType.tv && data?.number_of_episodes) {
-              epsPlanned = data.number_of_episodes;
-            }
-            const hoursPlanned = epsPlanned * episodeDuration;
-            statusDist[0].hoursWatched = hoursPlanned;
-          }
-        }
-
-        if (mediaType == MediaType.movie) {
-          statusDistMovie = statusDist;
-        } else {
-          statusDistTv = statusDist;
-        }
+        statusDist = calculateStatusDist({
+          statusDist,
+          hoursWatched,
+          hoursPlanned,
+          status,
+        });
 
         // Genre stats
         if (status === MediaStatus.completed && data && data.genres) {
-          const hoursWatched = progress * episodeDuration;
-          if (mediaType == MediaType.movie) {
-            data.genres.forEach((genre: { id: number; name: string }) => {
-              if (!genreStatsMovie[genre.id]) {
-                genreStatsMovie[genre.id] = {
-                  title: genre.name,
-                  statTypeId: genre.id,
-                  count: 0,
-                  meanScore: 0,
-                  timeWatched: 0,
-                  list: [],
-                };
-              }
-              genreStatsMovie[genre.id].count += 1;
-              genreStatsMovie[genre.id].timeWatched += hoursWatched;
-              genreStatsMovie[genre.id].list.push({
-                title: entry.title,
-                posterPath: entry.poster,
-                id: Number(entry.mediaid),
-                mediaType,
-              });
-              if (score) {
-                const genreScores: any = genreStatsMovie[genre.id].list.map(
-                  (item: any) => item.meanScore
-                );
-                genreScores.push(score);
-                genreStatsMovie[genre.id].meanScore =
-                  calculateMeanScore(genreScores);
-              }
-            });
-          } else if (mediaType == MediaType.tv) {
-            data.genres.forEach((genre: { id: number; name: string }) => {
-              if (!genreStatsTv[genre.id]) {
-                genreStatsTv[genre.id] = {
-                  title: genre.name,
-                  statTypeId: genre.id,
-                  count: 0,
-                  meanScore: 0,
-                  timeWatched: 0,
-                  list: [],
-                };
-              }
-              genreStatsTv[genre.id].count += 1;
-              genreStatsTv[genre.id].timeWatched += hoursWatched;
-              genreStatsTv[genre.id].list.push({
-                title: entry.title,
-                posterPath: entry.poster,
-                id: Number(entry.mediaid),
-                mediaType,
-              });
-              if (score) {
-                const genreScores: any = genreStatsTv[genre.id].list.map(
-                  (item: any) => item.meanScore
-                );
-                genreScores.push(score);
-                genreStatsTv[genre.id].meanScore =
-                  calculateMeanScore(genreScores);
-              }
-            });
-          }
+          genreStats = calculateGenreStats({
+            genreStats,
+            mediaType,
+            mediaid: Number(mediaid),
+            title,
+            poster,
+            genres: data.genres,
+            hoursWatched,
+          });
+        }
+
+        // Assign the calculated stats accoding to the media type
+        if (mediaType == MediaType.movie) {
+          statusDistMovie = statusDist;
+          overviewStatsMovie = overviewStats;
+          genreStatsMovie = genreStats;
+        } else {
+          statusDistTv = statusDist;
+          overviewStatsTv = overviewStats;
+          genreStatsTv = genreStats;
         }
       } catch (error) {
         throw new Error(error);
@@ -234,7 +161,6 @@ export const generateUserStats = async (userId: string) => {
     });
 
     // Save stats
-
     const genreArrayMovie = Object.values(genreStatsMovie);
     const genreArrayTv = Object.values(genreStatsTv);
 
