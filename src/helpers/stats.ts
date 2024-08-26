@@ -182,10 +182,10 @@ export const transformEntries = async (
   try {
     const entries: EntryDocument[] = await getEntries({ owner: id });
     if (!entries) {
-      res.status(404).send({ message: "User with this id not found" });
+      return res.status(404).send({ message: "User with this id not found" });
     }
     if (entries.length == 0) {
-      res.status(404).send({ message: "No entries on this user" });
+      return res.status(404).send({ message: "No entries on this user" });
     }
 
     await Promise.all(
