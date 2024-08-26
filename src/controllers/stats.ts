@@ -196,7 +196,7 @@ export const generateUserStats = async (userId: string) => {
     const genreArrayTv = Object.values(genreStatsTv);
     // const castArrayMovie = Object.values(castStatsTv);
     // const castArrayTv = Object.values(castStatsTv);
-    const tagArrayMovie = Object.values(tagStatsTv);
+    const tagArrayMovie = Object.values(tagStatsMovie);
     const tagArrayTv = Object.values(tagStatsTv);
 
     await UserModel.updateOne(

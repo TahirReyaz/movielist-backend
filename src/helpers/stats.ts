@@ -150,6 +150,53 @@ export const generateTagsStats = ({
   return tagStats;
 };
 
+export const generateActorStats = ({
+  actors,
+  actorStats,
+  hoursWatched,
+  title,
+  poster,
+  mediaid,
+  mediaType,
+}: {
+  actors: { id: number; name: string }[];
+  actorStats: Record<string, any>;
+  hoursWatched: number;
+  title: string;
+  poster: string;
+  mediaid: number;
+  mediaType: string;
+}) => {
+  actors.forEach((tag: { id: number; name: string }) => {
+    try {
+      if (!actorStats[tag.id]) {
+        actorStats[tag.id] = {
+          title: tag.name,
+          statTypeId: tag.id,
+          count: 0,
+          meanScore: 0,
+          timeWatched: 0,
+          list: [],
+        };
+      }
+      actorStats[tag.id].count += 1;
+      actorStats[tag.id].timeWatched += hoursWatched;
+      actorStats[tag.id].meanScore = 0;
+      actorStats[tag.id].list.push({
+        title: title,
+        posterPath: poster,
+        id: mediaid,
+        mediaType,
+      });
+    } catch (error) {
+      console.error(error);
+      console.log({ mediaType, mediaid, name, title });
+    }
+  });
+
+  return actorStats;
+};
+
 export const calculateCountryDist = ({
   countryDist,
   countries,
