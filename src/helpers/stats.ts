@@ -4,6 +4,7 @@ import { Document } from "mongoose";
 import { MediaStatus, MediaType } from "../constants/misc";
 import { ListEntry, ListEntryModel, getEntries } from "../db/listEntries";
 import { Distribution } from "../db/users";
+import { fetchMediaData } from "./tmdb";
 
 export interface EntryDocument extends ListEntry, Document {}
 
@@ -184,7 +185,7 @@ export const transformEntries = async (
       res.status(404).send({ message: "User with this id not found" });
     }
     if (entries.length == 0) {
-      res.status(400).send({ message: "No entries on this user" });
+      res.status(404).send({ message: "No entries on this user" });
     }
 
     await Promise.all(
@@ -199,10 +200,15 @@ export const transformEntries = async (
             }
           }
 
+          const mediaData = await fetchMediaData(
+            entry.mediaType,
+            Number(entry.mediaid)
+          );
+
           // Save the updated entry to MongoDB
           await ListEntryModel.updateOne(
             { _id: entry._id },
-            { $set: { data: entry.data, progress: entry.progress } }
+            { $set: { data: mediaData, progress: entry.progress } }
           );
         } catch (error) {
           console.error(
@@ -215,7 +221,9 @@ export const transformEntries = async (
         return entry;
       })
     );
-    res.status(200).send({ message: "Transformed" });
+
+    const updatedEntries: EntryDocument[] = await getEntries({ owner: id });
+    res.status(200).send({ message: "Transformed", data: updatedEntries });
   } catch (error) {
     console.error("Failed to transform entries:", error);
     throw error;

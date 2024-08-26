@@ -13,24 +13,30 @@ export const translateBulkType = {
 };
 
 export const fetchMediaData = async (mediaType: string, mediaid: number) => {
-  const { data: mediaData } = await axios.get(
-    `${TMDB_ENDPOINT}/${mediaType}/${mediaid}`,
-    {
-      params: {
-        api_key: TMDB_API_KEY,
-        append_to_response: "keywords,credits",
-      },
-    }
-  );
+  try {
+    const { data: mediaData } = await axios.get(
+      `${TMDB_ENDPOINT}/${mediaType}/${mediaid}`,
+      {
+        params: {
+          api_key: TMDB_API_KEY,
+          append_to_response: "keywords,credits",
+        },
+      }
+    );
 
-  const tagData =
-    mediaType == "tv"
-      ? mediaData.keywords?.results
-      : mediaData.keywords?.keywords;
-  delete mediaData.keywords;
-  delete mediaData.credits;
-  mediaData.tags = tagData;
-  mediaData.cast = mediaData.credits?.cast;
+    const tagData =
+      mediaType == "tv"
+        ? mediaData.keywords?.results
+        : mediaData.keywords?.keywords;
+    mediaData.tags = tagData;
+    mediaData.cast = mediaData.credits?.cast;
+    delete mediaData.keywords;
+    delete mediaData.credits;
 
-  return mediaData;
+    return mediaData;
+  } catch (error) {
+    console.error(error);
+    console.log({ mediaType, mediaid });
+    return null;
+  }
 };
