@@ -9,6 +9,7 @@ import {
   calculateGenreStats,
   calculateStatusDist,
   calculateWeightedScore,
+  generateReleaseYearStats,
   generateTagsStats,
 } from "../helpers/stats";
 
@@ -28,11 +29,11 @@ export const generateUserStats = async (userId: string) => {
       meanScore: 0,
       score: Array(10).fill({ count: 0, hoursWatched: 0, meanScore: 0 }),
       epsCount: [],
-      formatDist: {},
+      formatDist: [],
       statusDist: [],
-      countryDist: {},
-      releaseYear: {},
-      watchYear: {},
+      countryDist: [],
+      releaseYear: [],
+      watchYear: [],
     };
     let overviewStatsTv: any = {
       count: 0,
@@ -42,17 +43,19 @@ export const generateUserStats = async (userId: string) => {
       meanScore: 0,
       score: Array(10).fill({ count: 0, hoursWatched: 0, meanScore: 0 }),
       epsCount: [],
-      formatDist: {},
-      statusDist: {},
-      countryDist: {},
-      releaseYear: {},
-      watchYear: {},
+      formatDist: [],
+      statusDist: [],
+      countryDist: [],
+      releaseYear: [],
+      watchYear: [],
     };
 
     let statusDistMovie: Distribution[] = [],
       statusDistTv: Distribution[] = [],
       countryDistMovie: Distribution[] = [],
       countryDistTv: Distribution[] = [],
+      releaseYearStatsMovie: Distribution[] = [],
+      releaseYearStatsTv: Distribution[] = [],
       genreStatsMovie: Record<string, any> = {},
       genreStatsTv: Record<string, any> = {},
       tagStatsMovie: Record<string, any> = {},
@@ -70,10 +73,12 @@ export const generateUserStats = async (userId: string) => {
         let overviewStats = overviewStatsMovie,
           statusDist: Distribution[] = statusDistMovie,
           countryDist: Distribution[] = countryDistMovie,
+          releaseYearStats: Distribution[] = releaseYearStatsMovie,
           genreStats: Record<string, any> = genreStatsMovie,
           tagStats: Record<string, any> = tagStatsMovie;
         if (mediaType == MediaType.tv) {
           overviewStats = overviewStatsTv;
+          releaseYearStats = releaseYearStatsTv;
           statusDist = statusDistTv;
           countryDist = countryDistTv;
           genreStats = genreStatsTv;
@@ -141,6 +146,18 @@ export const generateUserStats = async (userId: string) => {
           });
         }
 
+        // Release year stats
+        if (
+          status === MediaStatus.completed &&
+          (data?.release_date || data?.first_air_date)
+        ) {
+          releaseYearStats = generateReleaseYearStats({
+            stats: releaseYearStats,
+            hoursWatched,
+            releaseDate: data.release_date || data.first_air_date,
+          });
+        }
+
         // Genre stats
         if (status === MediaStatus.completed && data?.genres) {
           genreStats = calculateGenreStats({
@@ -171,12 +188,14 @@ export const generateUserStats = async (userId: string) => {
         if (mediaType == MediaType.movie) {
           statusDistMovie = statusDist;
           countryDistMovie = countryDist;
+          releaseYearStatsMovie = releaseYearStats;
           overviewStatsMovie = overviewStats;
           genreStatsMovie = genreStats;
           tagStatsMovie = tagStats;
         } else {
           statusDistTv = statusDist;
           countryDistTv = countryDist;
+          releaseYearStatsTv = releaseYearStats;
           overviewStatsTv = overviewStats;
           genreStatsTv = genreStats;
           tagStatsTv = tagStats;
@@ -214,11 +233,13 @@ export const generateUserStats = async (userId: string) => {
             ...overviewStatsMovie,
             statusDist: statusDistMovie,
             countryDist: countryDistMovie,
+            releaseYear: releaseYearStatsMovie,
           },
           "stats.tv.overview": {
             ...overviewStatsTv,
             statusDist: statusDistTv,
             countryDist: countryDistTv,
+            releaseYear: releaseYearStatsTv,
           },
         },
       }

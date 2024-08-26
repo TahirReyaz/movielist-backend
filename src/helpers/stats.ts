@@ -61,6 +61,34 @@ export const calculateStatusDist = ({
   return statusDist;
 };
 
+export const generateReleaseYearStats = ({
+  stats,
+  releaseDate,
+  hoursWatched,
+}: {
+  stats: Distribution[];
+  releaseDate: string;
+  hoursWatched: number;
+}) => {
+  const releaseYear = new Date(releaseDate).getFullYear();
+  let foundStatusIndex = stats.findIndex(
+    (item: Distribution) => item.format === releaseYear.toString()
+  );
+  if (foundStatusIndex === -1) {
+    stats.push({
+      count: 0,
+      hoursWatched: 0,
+      format: releaseYear.toString(),
+      meanScore: 0,
+    });
+    foundStatusIndex = 0;
+  }
+  stats[foundStatusIndex].count += 1;
+  stats[foundStatusIndex].hoursWatched += hoursWatched;
+
+  return stats;
+};
+
 export const calculateGenreStats = ({
   genres,
   genreStats,
