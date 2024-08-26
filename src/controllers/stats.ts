@@ -109,7 +109,7 @@ export const generateUserStats = async (userId: string) => {
         const hoursWatched = progress * episodeDuration;
 
         let epsPlanned = 1;
-        if (mediaType == MediaType.tv && data.number_of_episodes) {
+        if (mediaType == MediaType.tv && data?.number_of_episodes) {
           epsPlanned = data.number_of_episodes;
         }
         const hoursPlanned = epsPlanned * episodeDuration;
@@ -133,14 +133,16 @@ export const generateUserStats = async (userId: string) => {
         });
 
         // Country Distribution
-        countryDist = calculateCountryDist({
-          countryDist,
-          hoursWatched,
-          countries: data.production_countries,
-        });
+        if (status === MediaStatus.completed && data?.production_countries) {
+          countryDist = calculateCountryDist({
+            countryDist,
+            hoursWatched,
+            countries: data.production_countries,
+          });
+        }
 
         // Genre stats
-        if (status === MediaStatus.completed && data && data.genres) {
+        if (status === MediaStatus.completed && data?.genres) {
           genreStats = calculateGenreStats({
             genreStats,
             mediaType,
@@ -153,7 +155,7 @@ export const generateUserStats = async (userId: string) => {
         }
 
         // Tag stats
-        if (status === MediaStatus.completed && data && data.genres) {
+        if (status === MediaStatus.completed && data?.tags) {
           tagStats = generateTagsStats({
             tagStats,
             mediaType,
@@ -180,13 +182,22 @@ export const generateUserStats = async (userId: string) => {
           tagStatsTv = tagStats;
         }
       } catch (error) {
-        throw new Error(error);
+        console.log(
+          "Error while stats of ",
+          entry.mediaType,
+          entry.mediaid,
+          error
+        );
       }
     });
 
     // Save stats
     const genreArrayMovie = Object.values(genreStatsMovie);
     const genreArrayTv = Object.values(genreStatsTv);
+    // const castArrayMovie = Object.values(castStatsTv);
+    // const castArrayTv = Object.values(castStatsTv);
+    const tagArrayMovie = Object.values(tagStatsTv);
+    const tagArrayTv = Object.values(tagStatsTv);
 
     await UserModel.updateOne(
       { _id: userId },
@@ -195,6 +206,8 @@ export const generateUserStats = async (userId: string) => {
           // Reset the genres arrays to empty
           "stats.movie.genres": [],
           "stats.tv.genres": [],
+          "stats.movie.tags": [],
+          "stats.tv.tags": [],
 
           // Set the overview statistics
           "stats.movie.overview": {
@@ -218,11 +231,13 @@ export const generateUserStats = async (userId: string) => {
         $push: {
           "stats.movie.genres": { $each: genreArrayMovie },
           "stats.tv.genres": { $each: genreArrayTv },
+          "stats.movie.tags": { $each: tagArrayMovie },
+          "stats.tv.tags": { $each: tagArrayTv },
         },
       }
     );
   } catch (error) {
-    console.error("Error generating user stats:", error);
+    console.error("Error generating user stats:", userId, error);
   }
 };
 

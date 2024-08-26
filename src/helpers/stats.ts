@@ -42,7 +42,7 @@ export const calculateStatusDist = ({
   let foundStatusIndex = statusDist.findIndex(
     (item: Distribution) => item.format === status
   );
-  if (foundStatusIndex > -1) {
+  if (foundStatusIndex === -1) {
     statusDist.push({
       count: 0,
       hoursWatched: 0,
@@ -121,25 +121,30 @@ export const generateTagsStats = ({
   mediaType: string;
 }) => {
   tags.forEach((tag: { id: number; name: string }) => {
-    if (!tagStats[tag.id]) {
-      tagStats[tag.id] = {
-        title: tag.name,
-        statTypeId: tag.id,
-        count: 0,
-        meanScore: 0,
-        timeWatched: 0,
-        list: [],
-      };
+    try {
+      if (!tagStats[tag.id]) {
+        tagStats[tag.id] = {
+          title: tag.name,
+          statTypeId: tag.id,
+          count: 0,
+          meanScore: 0,
+          timeWatched: 0,
+          list: [],
+        };
+      }
+      tagStats[tag.id].count += 1;
+      tagStats[tag.id].timeWatched += hoursWatched;
+      tagStats[tag.id].meanScore = 0;
+      tagStats[tag.id].list.push({
+        title: title,
+        posterPath: poster,
+        id: mediaid,
+        mediaType,
+      });
+    } catch (error) {
+      console.error(error);
+      console.log({ mediaType, mediaid, name, title });
     }
-    tagStats[tag.id].count += 1;
-    tagStats[tag.id].timeWatched += hoursWatched;
-    tagStats[tag.id].meanScore = 0;
-    tagStats[tag.id].list.push({
-      title: title,
-      posterPath: poster,
-      id: mediaid,
-      mediaType,
-    });
   });
 
   return tagStats;
@@ -158,7 +163,7 @@ export const calculateCountryDist = ({
     let foundStatusIndex = countryDist.findIndex(
       (item: Distribution) => item.format === country.iso_3166_1
     );
-    if (foundStatusIndex > -1) {
+    if (foundStatusIndex === -1) {
       countryDist.push({
         count: 0,
         hoursWatched: 0,
