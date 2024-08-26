@@ -98,11 +98,6 @@ export const updateListEntry = async (req: Request, res: Response) => {
 
     const entry: EntryDocument = await getEntryById(entryid);
 
-    // If the entry with this id doesn't exist
-    if (!entry) {
-      return res.status(400).send({ message: "List entry not found" });
-    }
-
     // Check if the list is changing or not
     for (const key in req.body) {
       if (req.body[key]) {
