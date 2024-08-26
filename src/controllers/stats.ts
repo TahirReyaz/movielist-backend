@@ -9,6 +9,7 @@ import {
   calculateGenreStats,
   calculateStatusDist,
   calculateWeightedScore,
+  generateTagsStats,
 } from "../helpers/stats";
 
 export const generateUserStats = async (userId: string) => {
@@ -53,7 +54,9 @@ export const generateUserStats = async (userId: string) => {
       countryDistMovie: Distribution[] = [],
       countryDistTv: Distribution[] = [],
       genreStatsMovie: Record<string, any> = {},
-      genreStatsTv: Record<string, any> = {};
+      genreStatsTv: Record<string, any> = {},
+      tagStatsMovie: Record<string, any> = {},
+      tagStatsTv: Record<string, any> = {};
 
     let totalHoursWatched = 0;
 
@@ -67,12 +70,14 @@ export const generateUserStats = async (userId: string) => {
         let overviewStats = overviewStatsMovie,
           statusDist: Distribution[] = statusDistMovie,
           countryDist: Distribution[] = countryDistMovie,
-          genreStats: Record<string, any> = genreStatsMovie;
+          genreStats: Record<string, any> = genreStatsMovie,
+          tagStats: Record<string, any> = tagStatsMovie;
         if (mediaType == MediaType.tv) {
           overviewStats = overviewStatsTv;
           statusDist = statusDistTv;
           countryDist = countryDistTv;
           genreStats = genreStatsTv;
+          tagStats = tagStatsTv;
         }
 
         let entryScore = 0;
@@ -147,17 +152,32 @@ export const generateUserStats = async (userId: string) => {
           });
         }
 
+        // Tag stats
+        if (status === MediaStatus.completed && data && data.genres) {
+          tagStats = generateTagsStats({
+            tagStats,
+            mediaType,
+            mediaid: Number(mediaid),
+            title,
+            poster,
+            tags: data.tags,
+            hoursWatched,
+          });
+        }
+
         // Assign the calculated stats accoding to the media type
         if (mediaType == MediaType.movie) {
           statusDistMovie = statusDist;
           countryDistMovie = countryDist;
           overviewStatsMovie = overviewStats;
           genreStatsMovie = genreStats;
+          tagStatsMovie = tagStats;
         } else {
           statusDistTv = statusDist;
           countryDistTv = countryDist;
           overviewStatsTv = overviewStats;
           genreStatsTv = genreStats;
+          tagStatsTv = tagStats;
         }
       } catch (error) {
         throw new Error(error);

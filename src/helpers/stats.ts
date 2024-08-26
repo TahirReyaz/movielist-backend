@@ -102,6 +102,48 @@ export const calculateGenreStats = ({
   return genreStats;
 };
 
+export const generateTagsStats = ({
+  tags,
+  tagStats,
+  hoursWatched,
+  title,
+  poster,
+  mediaid,
+  mediaType,
+}: {
+  tags: { id: number; name: string }[];
+  tagStats: Record<string, any>;
+  hoursWatched: number;
+  title: string;
+  poster: string;
+  mediaid: number;
+  mediaType: string;
+}) => {
+  tags.forEach((tag: { id: number; name: string }) => {
+    if (!tagStats[tag.id]) {
+      tagStats[tag.id] = {
+        title: tag.name,
+        statTypeId: tag.id,
+        count: 0,
+        meanScore: 0,
+        timeWatched: 0,
+        list: [],
+      };
+    }
+    tagStats[tag.id].count += 1;
+    tagStats[tag.id].timeWatched += hoursWatched;
+    tagStats[tag.id].meanScore = 0;
+    tagStats[tag.id].list.push({
+      title: title,
+      posterPath: poster,
+      id: mediaid,
+      mediaType,
+    });
+  });
+
+  return tagStats;
+};
+
 export const calculateCountryDist = ({
   countryDist,
   countries,
