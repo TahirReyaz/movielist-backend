@@ -89,6 +89,34 @@ export const generateReleaseYearStats = ({
   return stats;
 };
 
+export const generateWatchYearStats = ({
+  stats,
+  watchDate,
+  hoursWatched,
+}: {
+  stats: Distribution[];
+  watchDate: string;
+  hoursWatched: number;
+}) => {
+  const watchYear = new Date(watchDate).getFullYear();
+  let foundStatusIndex = stats.findIndex(
+    (item: Distribution) => item.format === watchYear.toString()
+  );
+  if (foundStatusIndex === -1) {
+    stats.push({
+      count: 0,
+      hoursWatched: 0,
+      format: watchYear.toString(),
+      meanScore: 0,
+    });
+    foundStatusIndex = 0;
+  }
+  stats[foundStatusIndex].count += 1;
+  stats[foundStatusIndex].hoursWatched += hoursWatched;
+
+  return stats;
+};
+
 export const calculateGenreStats = ({
   genres,
   genreStats,

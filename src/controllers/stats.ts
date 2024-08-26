@@ -11,6 +11,7 @@ import {
   calculateWeightedScore,
   generateReleaseYearStats,
   generateTagsStats,
+  generateWatchYearStats,
 } from "../helpers/stats";
 
 export const generateUserStats = async (userId: string) => {
@@ -56,6 +57,8 @@ export const generateUserStats = async (userId: string) => {
       countryDistTv: Distribution[] = [],
       releaseYearStatsMovie: Distribution[] = [],
       releaseYearStatsTv: Distribution[] = [],
+      watchYearStatsMovie: Distribution[] = [],
+      watchYearStatsTv: Distribution[] = [],
       genreStatsMovie: Record<string, any> = {},
       genreStatsTv: Record<string, any> = {},
       tagStatsMovie: Record<string, any> = {},
@@ -74,11 +77,13 @@ export const generateUserStats = async (userId: string) => {
           statusDist: Distribution[] = statusDistMovie,
           countryDist: Distribution[] = countryDistMovie,
           releaseYearStats: Distribution[] = releaseYearStatsMovie,
+          watchYearStats: Distribution[] = watchYearStatsMovie,
           genreStats: Record<string, any> = genreStatsMovie,
           tagStats: Record<string, any> = tagStatsMovie;
         if (mediaType == MediaType.tv) {
           overviewStats = overviewStatsTv;
           releaseYearStats = releaseYearStatsTv;
+          watchYearStats = watchYearStatsTv;
           statusDist = statusDistTv;
           countryDist = countryDistTv;
           genreStats = genreStatsTv;
@@ -158,6 +163,15 @@ export const generateUserStats = async (userId: string) => {
           });
         }
 
+        // Watch year stats
+        if (status === MediaStatus.completed && entry.endDate?.length > 0) {
+          watchYearStats = generateWatchYearStats({
+            stats: watchYearStats,
+            hoursWatched,
+            watchDate: entry.endDate,
+          });
+        }
+
         // Genre stats
         if (status === MediaStatus.completed && data?.genres) {
           genreStats = calculateGenreStats({
@@ -189,6 +203,7 @@ export const generateUserStats = async (userId: string) => {
           statusDistMovie = statusDist;
           countryDistMovie = countryDist;
           releaseYearStatsMovie = releaseYearStats;
+          watchYearStatsMovie = watchYearStats;
           overviewStatsMovie = overviewStats;
           genreStatsMovie = genreStats;
           tagStatsMovie = tagStats;
@@ -196,6 +211,7 @@ export const generateUserStats = async (userId: string) => {
           statusDistTv = statusDist;
           countryDistTv = countryDist;
           releaseYearStatsTv = releaseYearStats;
+          watchYearStatsTv = watchYearStats;
           overviewStatsTv = overviewStats;
           genreStatsTv = genreStats;
           tagStatsTv = tagStats;
@@ -234,12 +250,14 @@ export const generateUserStats = async (userId: string) => {
             statusDist: statusDistMovie,
             countryDist: countryDistMovie,
             releaseYear: releaseYearStatsMovie,
+            watchYear: watchYearStatsMovie,
           },
           "stats.tv.overview": {
             ...overviewStatsTv,
             statusDist: statusDistTv,
             countryDist: countryDistTv,
             releaseYear: releaseYearStatsTv,
+            watchYear: watchYearStatsTv,
           },
         },
       }
