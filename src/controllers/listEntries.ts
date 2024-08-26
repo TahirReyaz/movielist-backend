@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
-import axios from "axios";
 import lodash from "lodash";
 
 import {
@@ -20,6 +19,7 @@ import {
 import { EntryDocument } from "../helpers/stats";
 import { createNewActivity } from "../helpers/activity";
 import { getUserByUsername } from "../db/users";
+import { fetchMediaData } from "../helpers/tmdb";
 
 export const getAllListEntries = async (req: Request, res: Response) => {
   try {
@@ -105,25 +105,10 @@ export const updateListEntry = async (req: Request, res: Response) => {
       }
     }
 
-    const { data: mediaData } = await axios.get(
-      `${TMDB_ENDPOINT}/${entry.mediaType}/${entry.mediaid}`,
-      {
-        params: {
-          api_key: TMDB_API_KEY,
-        },
-      }
+    const mediaData = await fetchMediaData(
+      entry.mediaType,
+      Number(entry.mediaid)
     );
-    const { data: tagResult } = await axios.get(
-      `${TMDB_ENDPOINT}/${entry.mediaType}/${entry.mediaid}/keywords`,
-      {
-        params: {
-          api_key: TMDB_API_KEY,
-        },
-      }
-    );
-    const tagData =
-      entry.mediaType == "tv" ? tagResult?.results : tagResult?.keywords;
-    mediaData.tags = tagData;
     entry.data = mediaData;
 
     // Add start and end date if not present and required
@@ -200,26 +185,7 @@ export const createListEntry = async (req: Request, res: Response) => {
       return res.status(400).send({ message: "Entry already exists" });
     }
 
-    // Media data to be used when everything goes correct
-    const { data: mediaData } = await axios.get(
-      `${TMDB_ENDPOINT}/${mediaType}/${mediaid}`,
-      {
-        params: {
-          api_key: TMDB_API_KEY,
-        },
-      }
-    );
-    const { data: tagResult } = await axios.get(
-      `${TMDB_ENDPOINT}/${mediaType}/${mediaid}/keywords`,
-      {
-        params: {
-          api_key: TMDB_API_KEY,
-        },
-      }
-    );
-    const tagData =
-      mediaType == "tv" ? tagResult?.results : tagResult?.keywords;
-    mediaData.tags = tagData;
+    const mediaData = await fetchMediaData(mediaType, Number(mediaid));
 
     let calculatedProgress = 0;
     if (status == MediaStatus.completed) {
