@@ -219,38 +219,45 @@ export const generateTagsStats = ({
 };
 
 export const generateActorStats = ({
-  actors,
-  actorStats,
+  casts,
+  castStats,
   hoursWatched,
   title,
   poster,
   mediaid,
   mediaType,
+  score,
 }: {
-  actors: { id: number; name: string }[];
-  actorStats: Record<string, any>;
+  casts: { id: number; name: string }[];
+  castStats: Record<string, any>;
   hoursWatched: number;
   title: string;
   poster: string;
   mediaid: number;
   mediaType: string;
+  score: number;
 }) => {
-  actors.forEach((tag: { id: number; name: string }) => {
+  casts.forEach((cast: { id: number; name: string }) => {
     try {
-      if (!actorStats[tag.id]) {
-        actorStats[tag.id] = {
-          title: tag.name,
-          statTypeId: tag.id,
+      if (!castStats[cast.id]) {
+        castStats[cast.id] = {
+          title: cast.name,
+          statTypeId: cast.id,
           count: 0,
           meanScore: 0,
           timeWatched: 0,
           list: [],
         };
       }
-      actorStats[tag.id].count += 1;
-      actorStats[tag.id].timeWatched += hoursWatched;
-      actorStats[tag.id].meanScore = 0;
-      actorStats[tag.id].list.push({
+      castStats[cast.id].count += 1;
+      castStats[cast.id].timeWatched += hoursWatched;
+      const meanScore = calculateMeanScore(
+        castStats[cast.id].meanScore,
+        score,
+        castStats[cast.id].count
+      );
+      castStats[cast.id].meanScore = meanScore;
+      castStats[cast.id].list.push({
         title: title,
         posterPath: poster,
         id: mediaid,
@@ -262,7 +269,7 @@ export const generateActorStats = ({
     }
   });
 
-  return actorStats;
+  return castStats;
 };
 
 export const calculateCountryDist = ({

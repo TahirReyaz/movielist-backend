@@ -72,9 +72,9 @@ const StatSchema = new mongoose.Schema({
   overview: OverviewSchema,
   genres: [StatRankingItemSchema],
   tags: [StatRankingItemSchema],
-  actors: [ActorItemSchema],
+  cast: [ActorItemSchema],
   studios: [StatRankingItemSchema],
-  staff: mongoose.Schema.Types.Mixed,
+  crew: mongoose.Schema.Types.Mixed,
 });
 
 export const UserSchema = new mongoose.Schema(

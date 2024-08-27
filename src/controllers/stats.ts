@@ -8,7 +8,7 @@ import {
   calculateCountryDist,
   calculateGenreStats,
   calculateStatusDist,
-  calculateWeightedScore,
+  generateActorStats,
   generateReleaseYearStats,
   generateTagsStats,
   generateWatchYearStats,
@@ -62,7 +62,9 @@ export const generateUserStats = async (userId: string) => {
       genreStatsMovie: Record<string, any> = {},
       genreStatsTv: Record<string, any> = {},
       tagStatsMovie: Record<string, any> = {},
-      tagStatsTv: Record<string, any> = {};
+      tagStatsTv: Record<string, any> = {},
+      castStatsMovie: Record<string, any> = {},
+      castStatsTv: Record<string, any> = {};
 
     let totalHoursWatched = 0;
 
@@ -79,7 +81,8 @@ export const generateUserStats = async (userId: string) => {
           releaseYearStats: Distribution[] = releaseYearStatsMovie,
           watchYearStats: Distribution[] = watchYearStatsMovie,
           genreStats: Record<string, any> = genreStatsMovie,
-          tagStats: Record<string, any> = tagStatsMovie;
+          tagStats: Record<string, any> = tagStatsMovie,
+          castStats: Record<string, any> = castStatsMovie;
         if (mediaType == MediaType.tv) {
           overviewStats = overviewStatsTv;
           releaseYearStats = releaseYearStatsTv;
@@ -88,6 +91,7 @@ export const generateUserStats = async (userId: string) => {
           countryDist = countryDistTv;
           genreStats = genreStatsTv;
           tagStats = tagStatsTv;
+          castStats = castStatsTv;
         }
 
         if (status === "completed") overviewStats.count += 1;
@@ -191,6 +195,20 @@ export const generateUserStats = async (userId: string) => {
           });
         }
 
+        // Actor stats
+        if (status === MediaStatus.completed && data?.cast) {
+          castStats = generateActorStats({
+            castStats,
+            mediaType,
+            mediaid: Number(mediaid),
+            title,
+            poster,
+            casts: data.cast,
+            hoursWatched,
+            score: data?.vote_average ?? 0,
+          });
+        }
+
         // Assign the calculated stats accoding to the media type
         if (mediaType == MediaType.movie) {
           statusDistMovie = statusDist;
@@ -222,8 +240,8 @@ export const generateUserStats = async (userId: string) => {
     // Save stats
     const genreArrayMovie = Object.values(genreStatsMovie);
     const genreArrayTv = Object.values(genreStatsTv);
-    // const castArrayMovie = Object.values(castStatsTv);
-    // const castArrayTv = Object.values(castStatsTv);
+    const castArrayMovie = Object.values(castStatsMovie);
+    const castArrayTv = Object.values(castStatsTv);
     const tagArrayMovie = Object.values(tagStatsMovie);
     const tagArrayTv = Object.values(tagStatsTv);
 
@@ -236,6 +254,8 @@ export const generateUserStats = async (userId: string) => {
           "stats.tv.genres": [],
           "stats.movie.tags": [],
           "stats.tv.tags": [],
+          "stats.movie.cast": [],
+          "stats.tv.cast": [],
           "stats.movie.overview.statusDist": [],
           "stats.movie.overview.countryDist": [],
           "stats.movie.overview.releaseYear": [],
@@ -272,6 +292,8 @@ export const generateUserStats = async (userId: string) => {
           "stats.tv.genres": { $each: genreArrayTv },
           "stats.movie.tags": { $each: tagArrayMovie },
           "stats.tv.tags": { $each: tagArrayTv },
+          "stats.movie.cast": { $each: castArrayMovie },
+          "stats.tv.cast": { $each: castArrayTv },
         },
       }
     );
