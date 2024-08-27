@@ -90,14 +90,6 @@ export const generateUserStats = async (userId: string) => {
           tagStats = tagStatsTv;
         }
 
-        let entryScore = 0;
-        if (data?.vote_average && data?.vote_count) {
-          entryScore = calculateWeightedScore(
-            parseInt(data.vote_average),
-            parseInt(data.vote_count)
-          );
-        }
-
         if (status === "completed") overviewStats.count += 1;
         if (mediaType === MediaType.tv) {
           overviewStats.episodesWatched += progress;
@@ -140,6 +132,7 @@ export const generateUserStats = async (userId: string) => {
           hoursWatched,
           hoursPlanned,
           status,
+          score: entry.data?.vote_average ?? 0,
         });
 
         // Country Distribution
@@ -243,8 +236,22 @@ export const generateUserStats = async (userId: string) => {
           "stats.tv.genres": [],
           "stats.movie.tags": [],
           "stats.tv.tags": [],
+          "stats.movie.overview.statusDist": [],
+          "stats.movie.overview.countryDist": [],
+          "stats.movie.overview.releaseYear": [],
+          "stats.movie.overview.watchYear": [],
+          "stats.tv.overview.statusDist": [],
+          "stats.tv.overview.countryDist": [],
+          "stats.tv.overview.releaseYear": [],
+          "stats.tv.overview.watchYear": [],
+        },
+      }
+    );
 
-          // Set the overview statistics
+    await UserModel.updateOne(
+      { _id: userId },
+      {
+        $set: {
           "stats.movie.overview": {
             ...overviewStatsMovie,
             statusDist: statusDistMovie,
@@ -260,13 +267,6 @@ export const generateUserStats = async (userId: string) => {
             watchYear: watchYearStatsTv,
           },
         },
-      }
-    );
-
-    // Push the new genre data into the arrays
-    await UserModel.updateOne(
-      { _id: userId }, // Replace with the actual user ID or query
-      {
         $push: {
           "stats.movie.genres": { $each: genreArrayMovie },
           "stats.tv.genres": { $each: genreArrayTv },

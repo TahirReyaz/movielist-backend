@@ -19,13 +19,16 @@ export const calculateWeightedScore = (
   return parseFloat(weightedScore.toFixed(2)); // Rounding to 2 decimal places for better readability
 };
 
-export const calculateMeanScore = (scores: number[]): number => {
-  if (scores.length === 0) return 0;
-  const sum = scores.reduce((acc, score) => acc + score, 0);
-  if (isNaN(sum)) {
+export const calculateMeanScore = (
+  currentMean: number,
+  currentScore: number,
+  count: number
+): number => {
+  const ans = (currentMean + currentScore) / count;
+  if (Number.isNaN(ans)) {
     return 0;
   }
-  return sum / scores.length;
+  return ans;
 };
 
 export const calculateStatusDist = ({
@@ -33,11 +36,13 @@ export const calculateStatusDist = ({
   status,
   hoursWatched,
   hoursPlanned,
+  score,
 }: {
   statusDist: Distribution[];
   hoursWatched: number;
   hoursPlanned: number;
   status: string;
+  score: number;
 }) => {
   let foundStatusIndex = statusDist.findIndex(
     (item: Distribution) => item.format === status
@@ -53,6 +58,13 @@ export const calculateStatusDist = ({
   }
   statusDist[foundStatusIndex].count += 1;
   statusDist[foundStatusIndex].hoursWatched += hoursWatched;
+
+  const meanScore = calculateMeanScore(
+    statusDist[foundStatusIndex].meanScore,
+    score,
+    statusDist[foundStatusIndex].count
+  );
+  statusDist[foundStatusIndex].meanScore = meanScore;
 
   if (status === MediaStatus.planning) {
     statusDist[foundStatusIndex].hoursWatched += hoursPlanned;
