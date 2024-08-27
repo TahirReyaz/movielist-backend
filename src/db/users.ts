@@ -14,8 +14,6 @@ const DistributionSchema = new mongoose.Schema({
   meanScore: Number,
 });
 
-export type Distribution = mongoose.InferSchemaType<typeof DistributionSchema>;
-
 const OverviewSchema = new mongoose.Schema({
   count: Number,
   episodesWatched: Number,
@@ -58,9 +56,9 @@ const StatRankingItemSchema = new mongoose.Schema({
   list: [StatEntrySchema],
 });
 
-const ActorItemSchema = new mongoose.Schema({
+const StaffStatSchema = new mongoose.Schema({
   title: String,
-  actorId: Number,
+  staffId: Number,
   profilePath: String,
   count: Number,
   meanScore: Number,
@@ -72,9 +70,9 @@ const StatSchema = new mongoose.Schema({
   overview: OverviewSchema,
   genres: [StatRankingItemSchema],
   tags: [StatRankingItemSchema],
-  cast: [ActorItemSchema],
+  cast: [StaffStatSchema],
   studios: [StatRankingItemSchema],
-  crew: mongoose.Schema.Types.Mixed,
+  crew: [StaffStatSchema],
 });
 
 export const UserSchema = new mongoose.Schema(
@@ -115,7 +113,9 @@ export const UserSchema = new mongoose.Schema(
   }
 );
 
+export type Distribution = mongoose.InferSchemaType<typeof DistributionSchema>;
 export type User = mongoose.InferSchemaType<typeof UserSchema>;
+export type StaffStat = mongoose.InferSchemaType<typeof StaffStatSchema>;
 
 export const UserModel = mongoose.model("User", UserSchema);
 

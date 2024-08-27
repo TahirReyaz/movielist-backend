@@ -1,14 +1,14 @@
 import mongoose from "mongoose";
 import express from "express";
 
-import { Distribution, UserModel, getUserById } from "../db/users";
+import { Distribution, StaffStat, UserModel, getUserById } from "../db/users";
 import { getEntries } from "../db/listEntries";
 import { MediaStatus, MediaType } from "../constants/misc";
 import {
   calculateCountryDist,
   calculateGenreStats,
   calculateStatusDist,
-  generateActorStats,
+  generateStaffStats,
   generateReleaseYearStats,
   generateTagsStats,
   generateWatchYearStats,
@@ -28,7 +28,7 @@ export const generateUserStats = async (userId: string) => {
       daysWatched: 0,
       daysPlanned: 0,
       meanScore: 0,
-      score: Array(10).fill({ count: 0, hoursWatched: 0, meanScore: 0 }),
+      score: [],
       epsCount: [],
       formatDist: [],
       statusDist: [],
@@ -42,7 +42,7 @@ export const generateUserStats = async (userId: string) => {
       daysWatched: 0,
       daysPlanned: 0,
       meanScore: 0,
-      score: Array(10).fill({ count: 0, hoursWatched: 0, meanScore: 0 }),
+      score: [],
       epsCount: [],
       formatDist: [],
       statusDist: [],
@@ -64,7 +64,9 @@ export const generateUserStats = async (userId: string) => {
       tagStatsMovie: Record<string, any> = {},
       tagStatsTv: Record<string, any> = {},
       castStatsMovie: Record<string, any> = {},
-      castStatsTv: Record<string, any> = {};
+      castStatsTv: Record<string, any> = {},
+      crewStatsMovie: Record<string, any> = {},
+      crewStatsTv: Record<string, any> = {};
 
     let totalHoursWatched = 0;
 
@@ -82,7 +84,8 @@ export const generateUserStats = async (userId: string) => {
           watchYearStats: Distribution[] = watchYearStatsMovie,
           genreStats: Record<string, any> = genreStatsMovie,
           tagStats: Record<string, any> = tagStatsMovie,
-          castStats: Record<string, any> = castStatsMovie;
+          castStats: Record<string, any> = castStatsMovie,
+          crewStats: Record<string, any> = crewStatsMovie;
         if (mediaType == MediaType.tv) {
           overviewStats = overviewStatsTv;
           releaseYearStats = releaseYearStatsTv;
@@ -92,6 +95,7 @@ export const generateUserStats = async (userId: string) => {
           genreStats = genreStatsTv;
           tagStats = tagStatsTv;
           castStats = castStatsTv;
+          crewStats = crewStatsTv;
         }
 
         if (status === "completed") overviewStats.count += 1;
@@ -195,15 +199,29 @@ export const generateUserStats = async (userId: string) => {
           });
         }
 
-        // Actor stats
+        // Cast stats
         if (status === MediaStatus.completed && data?.cast) {
-          castStats = generateActorStats({
-            castStats,
+          castStats = generateStaffStats({
+            stats: castStats,
             mediaType,
             mediaid: Number(mediaid),
             title,
             poster,
-            casts: data.cast,
+            staff: data.cast,
+            hoursWatched,
+            score: data?.vote_average ?? 0,
+          });
+        }
+
+        // Crew stats
+        if (status === MediaStatus.completed && data?.crew) {
+          crewStats = generateStaffStats({
+            stats: crewStats,
+            mediaType,
+            mediaid: Number(mediaid),
+            title,
+            poster,
+            staff: data.crew,
             hoursWatched,
             score: data?.vote_average ?? 0,
           });
@@ -242,6 +260,8 @@ export const generateUserStats = async (userId: string) => {
     const genreArrayTv = Object.values(genreStatsTv);
     const castArrayMovie = Object.values(castStatsMovie);
     const castArrayTv = Object.values(castStatsTv);
+    const crewArrayMovie: StaffStat[] = Object.values(crewStatsMovie);
+    const crewArrayTv: StaffStat[] = Object.values(crewStatsTv);
     const tagArrayMovie = Object.values(tagStatsMovie);
     const tagArrayTv = Object.values(tagStatsTv);
 
@@ -256,6 +276,8 @@ export const generateUserStats = async (userId: string) => {
           "stats.tv.tags": [],
           "stats.movie.cast": [],
           "stats.tv.cast": [],
+          "stats.movie.crew": [],
+          "stats.tv.crew": [],
           "stats.movie.overview.statusDist": [],
           "stats.movie.overview.countryDist": [],
           "stats.movie.overview.releaseYear": [],
@@ -294,6 +316,8 @@ export const generateUserStats = async (userId: string) => {
           "stats.tv.tags": { $each: tagArrayTv },
           "stats.movie.cast": { $each: castArrayMovie },
           "stats.tv.cast": { $each: castArrayTv },
+          "stats.movie.crew": { $each: crewArrayMovie },
+          "stats.tv.crew": { $each: crewArrayTv },
         },
       }
     );

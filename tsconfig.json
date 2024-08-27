@@ -12,9 +12,10 @@
     "noImplicitAny": true,
     "baseUrl": "./src",
     "rootDir": "./",
-    "paths": {
-      "*": ["*", "src/*"]
-    }
+    "skipLibCheck": true
+    // "paths": {
+    //   "*": ["*"]
+    // }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

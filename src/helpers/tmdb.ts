@@ -30,6 +30,7 @@ export const fetchMediaData = async (mediaType: string, mediaid: number) => {
         : mediaData.keywords?.keywords;
     mediaData.tags = tagData;
     mediaData.cast = mediaData.credits?.cast;
+    mediaData.crew = mediaData.credits?.crew;
     delete mediaData.keywords;
     delete mediaData.credits;
 
