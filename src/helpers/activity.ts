@@ -29,6 +29,8 @@ export const createNewActivity = async ({
     action = "Dropped";
   } else if (status == MediaStatus.paused) {
     action = "Paused watching";
+  } else if (status == MediaStatus.watching) {
+    action = "Started watching";
   }
   if (progress) {
     action = `Watched ep ${progress} of`;
