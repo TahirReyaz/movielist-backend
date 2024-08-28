@@ -6,6 +6,7 @@ import {
   deleteEntry,
   getAllListEntries,
   getEntryController,
+  getUserEntriesByMediaId,
   getUserEntriesByMediaType,
   increaseProgress,
   updateListEntry,
@@ -18,6 +19,11 @@ export default (router: express.Router) => {
   router.post("/entry", isAuthenticated, isEntryCreater, createListEntry);
   router.delete("/entry/:entryid", isAuthenticated, isOwnEntry, deleteEntry);
   router.patch("/entry/:entryid", isAuthenticated, isOwnEntry, updateListEntry);
+  router.get(
+    "/entry/user/media/:mediaid",
+    isAuthenticated,
+    getUserEntriesByMediaId
+  );
   router.patch(
     "/entry/:entryid/increaseprogress",
     isAuthenticated,

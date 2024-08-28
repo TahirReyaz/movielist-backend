@@ -49,6 +49,24 @@ export const getUserEntriesByMediaType = async (
   }
 };
 
+export const getUserEntriesByMediaId = async (req: Request, res: Response) => {
+  try {
+    const userid = lodash.get(req, "identity._id") as mongoose.Types.ObjectId;
+
+    const { mediaid } = req.params;
+
+    const entries = await getEntries({ owner: userid, mediaid });
+    if (!entries || entries.length === 0) {
+      return res.status(404).send({ message: "Media not found" });
+    }
+
+    return res.status(200).json(entries[0]);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ message: "Database error" });
+  }
+};
+
 export const getEntryController = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
