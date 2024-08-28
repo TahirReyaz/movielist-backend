@@ -23,6 +23,6 @@ export default (router: express.Router) => {
   router.patch("/user/:id", isAuthenticated, isOwner, updateUser);
   router.patch("/user/follow/:username", isAuthenticated, followUser);
   router.delete("/user/unfollow/:username", isAuthenticated, unfollowUser);
-  router.patch("/user/:id/fav", isAuthenticated, toggleFav);
+  router.patch("/user/fav/toggle", isAuthenticated, toggleFav);
   router.patch("/user/:id/transformentries", isAuthenticated, transformEntries);
 };

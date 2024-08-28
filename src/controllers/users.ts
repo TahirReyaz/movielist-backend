@@ -195,14 +195,15 @@ export const toggleFav = async (
   res: express.Response
 ) => {
   try {
-    const { id } = req.params;
+    const userid = lodash.get(req, "identity._id") as mongoose.Types.ObjectId;
+
     const { entityId, entityType, fav } = req.body;
 
-    const user = await getUserById(id);
+    const user = await getUserById(userid.toString());
 
     // If the user with this id doesn't exist
     if (!user) {
-      return res.status(400).send({ message: "User not found" });
+      return res.status(404).send({ message: "User not found" });
     }
 
     const favs = user.fav;
