@@ -256,14 +256,17 @@ export const generateUserStats = async (userId: string) => {
     });
 
     // Save stats
-    const genreArrayMovie = Object.values(genreStatsMovie);
-    const genreArrayTv = Object.values(genreStatsTv);
-    const castArrayMovie = Object.values(castStatsMovie);
-    const castArrayTv = Object.values(castStatsTv);
-    const crewArrayMovie: StaffStat[] = Object.values(crewStatsMovie);
-    const crewArrayTv: StaffStat[] = Object.values(crewStatsTv);
-    const tagArrayMovie = Object.values(tagStatsMovie);
-    const tagArrayTv = Object.values(tagStatsTv);
+    const genreArrayMovie = Object.values(genreStatsMovie).slice(0, 100);
+    const genreArrayTv = Object.values(genreStatsTv).slice(0, 100);
+    const castArrayMovie = Object.values(castStatsMovie).slice(0, 100);
+    const castArrayTv = Object.values(castStatsTv).slice(0, 100);
+    const crewArrayMovie: StaffStat[] = Object.values(crewStatsMovie).slice(
+      0,
+      100
+    );
+    const crewArrayTv: StaffStat[] = Object.values(crewStatsTv).slice(0, 100);
+    const tagArrayMovie = Object.values(tagStatsMovie).slice(0, 100);
+    const tagArrayTv = Object.values(tagStatsTv).slice(0, 100);
 
     await UserModel.updateOne(
       { _id: userId },

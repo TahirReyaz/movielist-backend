@@ -28,9 +28,9 @@ export const fetchMediaData = async (mediaType: string, mediaid: number) => {
       mediaType == "tv"
         ? mediaData.keywords?.results
         : mediaData.keywords?.keywords;
-    mediaData.tags = tagData;
-    mediaData.cast = mediaData.credits?.cast;
-    mediaData.crew = mediaData.credits?.crew;
+    mediaData.tags = tagData.slice(0, 50);
+    mediaData.cast = mediaData.credits?.cast.slice(0, 50);
+    mediaData.crew = mediaData.credits?.crew.slice(0, 50);
     delete mediaData.keywords;
     delete mediaData.credits;
 
