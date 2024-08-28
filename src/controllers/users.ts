@@ -208,11 +208,17 @@ export const toggleFav = async (
 
     const favs = user.fav;
     if (fav) {
+      if (favs[entityType as keyof typeof favs].includes(entityId)) {
+        return res.status(400).send({ message: "Already in fav" });
+      }
       favs[entityType as keyof typeof favs].push(entityId);
     } else {
+      if (!favs[entityType as keyof typeof favs].includes(entityId)) {
+        return res.status(400).send({ message: "Already not in fav" });
+      }
       favs[entityType as keyof typeof favs] = favs[
         entityType as keyof typeof favs
-      ].filter((id) => id !== entityId);
+      ].filter((id) => id != entityId);
     }
 
     user.set("fav", favs);
