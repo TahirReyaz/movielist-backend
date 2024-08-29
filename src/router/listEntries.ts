@@ -1,6 +1,6 @@
 import express from "express";
 
-import { isAuthenticated, isEntryCreater, isOwnEntry } from "../middlewares";
+import { isAuthenticated, isOwnEntry } from "../middlewares";
 import {
   createListEntry,
   deleteEntry,
@@ -16,7 +16,7 @@ export default (router: express.Router) => {
   router.get("/entries", isAuthenticated, getAllListEntries);
   router.get("/entries/user/:username/:mediaType", getUserEntriesByMediaType);
   router.get("/entry/:id", getEntryController);
-  router.post("/entry", isAuthenticated, isEntryCreater, createListEntry);
+  router.post("/entry", isAuthenticated, createListEntry);
   router.delete("/entry/:entryid", isAuthenticated, isOwnEntry, deleteEntry);
   router.patch("/entry/:entryid", isAuthenticated, isOwnEntry, updateListEntry);
   router.get(
