@@ -4,6 +4,7 @@ import { isAuthenticated, paramActivityExists } from "../middlewares";
 import {
   commentOnActivity,
   getActivitiesByUsername,
+  getActivityComments,
   getAllActivities,
   getFollowingActivities,
   likeActivity,
@@ -21,5 +22,10 @@ export default (router: express.Router) => {
     isAuthenticated,
     paramActivityExists,
     commentOnActivity
+  );
+  router.get(
+    "/activity/comments/:activityId",
+    paramActivityExists,
+    getActivityComments
   );
 };

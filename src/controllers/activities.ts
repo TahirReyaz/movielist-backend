@@ -5,7 +5,8 @@ import lodash from "lodash";
 import { getActivities, getActivityById } from "../db/activities";
 import { getUserById, getUserByUsername } from "../db/users";
 import { getActivitiesCount } from "../helpers/activity";
-import { createComment } from "../db/comments";
+import { createComment, getComments } from "../db/comments";
+import { getCommentsCount } from "../helpers/comments";
 
 export const getAllActivities = async (
   req: express.Request,
@@ -193,6 +194,41 @@ export const commentOnActivity = async (
     });
 
     res.status(200).json(newComment);
+  } catch (error) {
+    console.error(error);
+    res.status(500).end();
+  }
+};
+
+export const getActivityComments = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const { activityId } = req.params;
+
+    const query = { activityId };
+
+    const startIndex = (page - 1) * limit;
+
+    const totalComments = await getCommentsCount(query);
+
+    const pagination = {
+      totalItems: totalComments,
+      totalPages: Math.ceil(totalComments / limit),
+      currentPage: page,
+      pageSize: limit,
+    };
+
+    const comments = await getComments({
+      skip: startIndex,
+      limit,
+      query,
+    });
+
+    res.status(200).json({ comments, pagination });
   } catch (error) {
     console.error(error);
     res.status(500).end();

@@ -24,7 +24,21 @@ export type Comment = mongoose.InferSchemaType<typeof CommentSchema>;
 
 export const CommentModel = mongoose.model("Comment", CommentSchema);
 
-export const getComments = () => CommentModel.find();
+export const getComments = ({
+  skip,
+  limit,
+  query,
+}: {
+  skip: number;
+  limit: number;
+  query?: any;
+}) =>
+  CommentModel.find(query ?? {})
+    .skip(skip || 0)
+    .limit(limit || 10)
+    .sort({ createdAt: -1 })
+    .populate("owner", "username avatar")
+    .populate("likes", "username avatar");
 export const getCommentById = (id: string) => CommentModel.findById(id);
 export const createComment = (values: Record<string, any>) =>
   new CommentModel(values).save().then((activity) => activity.toObject());
