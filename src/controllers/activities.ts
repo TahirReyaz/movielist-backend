@@ -5,6 +5,7 @@ import lodash from "lodash";
 import { getActivities, getActivityById } from "../db/activities";
 import { getUserById, getUserByUsername } from "../db/users";
 import { getActivitiesCount } from "../helpers/activity";
+import { createComment } from "../db/comments";
 
 export const getAllActivities = async (
   req: express.Request,
@@ -173,6 +174,27 @@ export const unlikeActivity = async (
     return res.status(200).send({ message: "You like that, huh" });
   } catch (error) {
     console.error(error);
-    return res.status(400).send({ message: "Database error" });
+    return res.status(500).send({ message: "Database error" });
+  }
+};
+
+export const commentOnActivity = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const { activityId } = req.params;
+    const { content } = req.body;
+    const userid = lodash.get(req, "identity._id") as mongoose.Types.ObjectId;
+    const newComment = await createComment({
+      activityId,
+      content,
+      owner: userid,
+    });
+
+    res.status(200).json(newComment);
+  } catch (error) {
+    console.error(error);
+    res.status(500).end();
   }
 };

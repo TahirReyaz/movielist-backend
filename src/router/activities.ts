@@ -1,7 +1,8 @@
 import express from "express";
 
-import { isAuthenticated } from "../middlewares";
+import { isAuthenticated, paramActivityExists } from "../middlewares";
 import {
+  commentOnActivity,
   getActivitiesByUsername,
   getAllActivities,
   getFollowingActivities,
@@ -15,4 +16,10 @@ export default (router: express.Router) => {
   router.get("/activities/following", isAuthenticated, getFollowingActivities);
   router.patch("/activity/like/:activityId", isAuthenticated, likeActivity);
   router.patch("/activity/unlike/:activityId", isAuthenticated, unlikeActivity);
+  router.post(
+    "/activity/comment/:activityId",
+    isAuthenticated,
+    paramActivityExists,
+    commentOnActivity
+  );
 };

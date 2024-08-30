@@ -5,7 +5,7 @@ import lodash from "lodash";
 import { getUserBySessionToken } from "../db/users";
 import { AUTH_COOKIE_NAME } from "../controllers/authentication";
 import { getEntryById } from "../db/listEntries";
-// import { getListById } from "../db/lists";
+import { getActivityById } from "../db/activities";
 
 export const isAuthenticated = async (
   req: express.Request,
@@ -82,6 +82,27 @@ export const isOwnEntry = async (
       return res.status(401).send({
         message: "Not own entry",
       });
+    }
+
+    next();
+  } catch (error) {
+    console.error(error);
+    return res.sendStatus(400);
+  }
+};
+
+export const paramActivityExists = async (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) => {
+  try {
+    const { activityId } = req.params;
+
+    const activity = await getActivityById(activityId);
+
+    if (!activity) {
+      return res.status(404).send({ message: "Activity not found" });
     }
 
     next();

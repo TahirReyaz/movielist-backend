@@ -3,9 +3,17 @@ import mongoose from "mongoose";
 export const CommentSchema = new mongoose.Schema(
   {
     likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-    content: String,
-    owner: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    activityId: { type: mongoose.Schema.Types.ObjectId, ref: "Activity" },
+    content: { type: String, required: true },
+    owner: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    activityId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Activity",
+      required: true,
+    },
   },
   {
     timestamps: true,
