@@ -25,7 +25,7 @@ export type Activity = mongoose.InferSchemaType<typeof ActivitySchema>;
 
 export const ActivityModel = mongoose.model("Activity", ActivitySchema);
 
-export const getActivities = ({
+export const getActivities = async ({
   skip,
   limit,
   query,
@@ -33,13 +33,35 @@ export const getActivities = ({
   skip: number;
   limit: number;
   query?: any;
-}) =>
-  ActivityModel.find(query ?? {})
-    .skip(skip || 0)
-    .limit(limit || 10)
-    .sort({ createdAt: -1 })
-    .populate("owner", "username avatar")
-    .populate("likes", "username avatar");
+}) => {
+  const activities = await ActivityModel.aggregate([
+    { $match: query ?? {} },
+    {
+      $lookup: {
+        from: "comments",
+        localField: "_id",
+        foreignField: "activityId",
+        as: "comments",
+      },
+    },
+    {
+      $addFields: {
+        commentCount: { $size: "$comments" },
+      },
+    },
+    { $project: { comments: 0 } },
+    { $sort: { createdAt: -1 } },
+    { $skip: skip || 0 },
+    { $limit: limit || 10 },
+  ]).exec();
+
+  const populatedActivities = await ActivityModel.populate(activities, [
+    { path: "owner", select: "username avatar" },
+    { path: "likes", select: "username avatar" },
+  ]);
+
+  return populatedActivities;
+};
 
 export const getActivityById = (id: string) => ActivityModel.findById(id);
 export const createActivity = (values: Record<string, any>) =>
