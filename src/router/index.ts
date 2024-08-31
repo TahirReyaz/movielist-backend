@@ -7,6 +7,7 @@ import entries from "./listEntries";
 import staff from "./staff";
 import activities from "./activities";
 import comments from "./comments";
+import notifications from "./notifications";
 
 const router = express.Router();
 
@@ -21,5 +22,6 @@ export default (): express.Router => {
   entries(router);
   activities(router);
   comments(router);
+  notifications(router);
   return router;
 };

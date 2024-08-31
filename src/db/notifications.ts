@@ -43,12 +43,19 @@ export const getNotifications = ({
 
 export const getNotificationById = (id: string) =>
   NotificationModel.findById(id);
+
 export const createNotification = (values: Record<string, any>) =>
   new NotificationModel(values)
     .save()
     .then((notification) => notification.toObject());
+
 export const deleteNotificationById = (id: string) =>
   NotificationModel.findOneAndDelete({ _id: id });
+
+export const getNotifsCount = async (query?: any) => {
+  return NotificationModel.countDocuments(query ?? {}).exec();
+};
+
 export const updateNotificationById = (
   id: string,
   values: Record<string, any>

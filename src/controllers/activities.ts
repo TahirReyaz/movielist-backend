@@ -7,8 +7,8 @@ import { getUserById, getUserByUsername } from "../db/users";
 import { getActivitiesCount } from "../helpers/activity";
 import { createComment, getComments } from "../db/comments";
 import { getCommentsCount } from "../helpers/comments";
-import { createNotification } from "db/notifications";
-import { DEFAULT_AVATAR_URL } from "constants/misc";
+import { createNotification } from "../db/notifications";
+import { DEFAULT_AVATAR_URL } from "../constants/misc";
 
 export const getAllActivities = async (
   req: express.Request,

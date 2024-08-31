@@ -10,6 +10,14 @@ export const FRONTEND_DOMAIN = process.env.FRONTEND_DOMAIN;
 export const DEFAULT_AVATAR_URL =
   "https://firebasestorage.googleapis.com/v0/b/movie-list-3532f.appspot.com/o/user-avatar%2FuserAvatar.png?alt=media";
 
+export const notificationTypes = [
+  "airing",
+  "activity",
+  "forum",
+  "follows",
+  "media",
+];
+
 export const MediaStatus = {
   completed: "completed",
   watching: "watching",

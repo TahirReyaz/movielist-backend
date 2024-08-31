@@ -2,7 +2,7 @@ import express from "express";
 
 import { createUser, getUserByEmail } from "../db/users";
 import { authentication, checkWhitespace, random } from "../helpers";
-import { DEFAULT_AVATAR_URL } from "constants/misc";
+import { DEFAULT_AVATAR_URL } from "../constants/misc";
 export const AUTH_COOKIE_NAME = "MOVIELIST-AUTH";
 
 export const login = async (req: express.Request, res: express.Response) => {
