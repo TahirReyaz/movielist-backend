@@ -152,6 +152,7 @@ export const likeActivity = async (
       pointingImg: user.avatar ?? DEFAULT_AVATAR_URL,
       pointingId: user.username,
       pointingType: "user",
+      activityId,
       owner: activity.owner._id,
     });
 

@@ -5,9 +5,10 @@ export const NotificationSchema = new mongoose.Schema(
     type: { type: String, required: true },
     read: { type: String, required: true },
     content: { type: String, required: true },
-    pointingImage: { type: String, required: true },
+    pointingImg: { type: String, required: true },
     pointingId: { type: String, required: true },
     pointingType: { type: String, required: true },
+    activityId: String,
     owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
