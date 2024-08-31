@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 export const NotificationSchema = new mongoose.Schema(
   {
     type: { type: String, required: true },
-    read: { type: String, required: true },
+    read: { type: String, required: true, default: false },
     content: { type: String, required: true },
     pointingImg: { type: String, required: true },
     pointingId: { type: String, required: true },

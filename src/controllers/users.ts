@@ -9,6 +9,8 @@ import {
   getUsers,
 } from "../db/users";
 import { deleteEntriesByUserid } from "../db/listEntries";
+import { createNotification } from "../db/notifications";
+import { DEFAULT_AVATAR_URL } from "../constants/misc";
 
 interface idsString {
   ids: string;
@@ -141,6 +143,16 @@ export const followUser = async (
     await user.save();
     target.followers.push(userid);
     await target.save();
+
+    // Create Notification
+    await createNotification({
+      type: "follows",
+      content: "started following you",
+      pointingImg: user.avatar ?? DEFAULT_AVATAR_URL,
+      pointingId: user.username,
+      pointingType: "user",
+      owner: target._id,
+    });
 
     return res.status(200).json(user).end();
   } catch (error) {
