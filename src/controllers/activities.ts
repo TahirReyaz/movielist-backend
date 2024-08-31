@@ -209,6 +209,21 @@ export const commentOnActivity = async (
       owner: userid,
     });
 
+    // Generate Notification
+    const user = await getUserById(userid.toString());
+    const activity = await getActivityById(activityId.toString());
+
+    await createNotification({
+      type: "activity",
+      read: false,
+      content: "commented on your activity",
+      pointingImg: user.avatar ?? DEFAULT_AVATAR_URL,
+      pointingId: user.username,
+      pointingType: "user",
+      activityId,
+      owner: activity.owner._id,
+    });
+
     res.status(200).json(newComment);
   } catch (error) {
     console.error(error);
