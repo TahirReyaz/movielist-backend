@@ -89,7 +89,7 @@ export const UserSchema = new mongoose.Schema(
       prod_companies: [String],
     },
     avatar: String,
-    bannerImg: String,
+    banner: String,
     genreOverview: [GenreOverviewSchema],
     followers: [
       {
