@@ -63,7 +63,8 @@ export const getActivities = async ({
   return populatedActivities;
 };
 
-export const getActivityById = (id: string) => ActivityModel.findById(id);
+export const getActivityById = (id: string) =>
+  ActivityModel.findById(id).populate("owner", "username avatar");
 export const createActivity = (values: Record<string, any>) =>
   new ActivityModel(values).save().then((activity) => activity.toObject());
 export const deleteActivityById = (id: string) =>

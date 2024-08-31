@@ -7,6 +7,8 @@ import { getUserById, getUserByUsername } from "../db/users";
 import { getActivitiesCount } from "../helpers/activity";
 import { createComment, getComments } from "../db/comments";
 import { getCommentsCount } from "../helpers/comments";
+import { createNotification } from "db/notifications";
+import { DEFAULT_AVATAR_URL } from "constants/misc";
 
 export const getAllActivities = async (
   req: express.Request,
@@ -139,6 +141,19 @@ export const likeActivity = async (
       activity.likes.push(userid);
     }
     await activity.save();
+
+    // Generate Notification
+    const user = await getUserById(userid.toString());
+
+    await createNotification({
+      type: "activity",
+      read: false,
+      content: "liked your activity",
+      pointingImg: user.avatar ?? DEFAULT_AVATAR_URL,
+      pointingId: user.username,
+      pointingType: "user",
+      owner: activity.owner._id,
+    });
 
     return res.status(200).send({ message: "You like that, huh" });
   } catch (error) {

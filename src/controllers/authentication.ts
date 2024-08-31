@@ -2,6 +2,7 @@ import express from "express";
 
 import { createUser, getUserByEmail } from "../db/users";
 import { authentication, checkWhitespace, random } from "../helpers";
+import { DEFAULT_AVATAR_URL } from "constants/misc";
 export const AUTH_COOKIE_NAME = "MOVIELIST-AUTH";
 
 export const login = async (req: express.Request, res: express.Response) => {
@@ -86,8 +87,7 @@ export const register = async (req: express.Request, res: express.Response) => {
       },
       following: [],
       followers: [],
-      avatar:
-        "https://firebasestorage.googleapis.com/v0/b/movie-list-3532f.appspot.com/o/user-avatar%2FuserAvatar.png?alt=media",
+      avatar: DEFAULT_AVATAR_URL,
     });
 
     return res
