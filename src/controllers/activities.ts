@@ -4,6 +4,7 @@ import lodash from "lodash";
 
 import {
   createActivity,
+  deleteActivityById,
   getActivities,
   getActivityById,
 } from "../db/activities";
@@ -286,6 +287,49 @@ export const createActivityController = async (
     });
 
     return res.status(200).json(activity);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ message: "Database error" });
+  }
+};
+
+export const getActivityController = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const { id } = req.params;
+
+    const objectId = new mongoose.Types.ObjectId(id);
+
+    const activities = await getActivities({
+      query: { _id: objectId },
+      skip: 0,
+      limit: 10,
+    });
+
+    if (!activities || activities.length === 0) {
+      return res.status(404).send({ message: "Activity not found" });
+    }
+
+    return res.status(200).json(activities[0]);
+  } catch (error) {
+    console.error(error);
+    return res.status(400).send({ message: "Database error" });
+  }
+};
+
+export const deleteActivity = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const { id } = req.params;
+
+    const deletedActivity = await deleteActivityById(id);
+
+    // Return the activities and pagination info
+    return res.status(200).json(deletedActivity);
   } catch (error) {
     console.error(error);
     return res.status(500).send({ message: "Database error" });
