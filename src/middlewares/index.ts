@@ -131,7 +131,7 @@ export const isOwnActivity = async (
       return res.status(404).send({ message: "Activity not found" });
     }
 
-    if (!currentUserId.equals(currentActivity.owner)) {
+    if (!currentUserId.equals(currentActivity.owner._id)) {
       return res.status(401).send({
         message: "Not own Activity",
       });

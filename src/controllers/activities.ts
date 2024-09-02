@@ -328,6 +328,8 @@ export const deleteActivity = async (
 
     const deletedActivity = await deleteActivityById(id);
 
+    // Delete associated comments too
+
     // Return the activities and pagination info
     return res.status(200).json(deletedActivity);
   } catch (error) {
