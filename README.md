@@ -9,7 +9,7 @@
 - Stats are generated based on the data stored in users watchlists such total number of movies and shows watched, total time watched, distribute entries according to country, language, release year, genre, cast and crew, etc.
 - Generation of Activity when a new entry is added or updated.
 - Like and Comment on activities.
-- Generation of Notifications when user's Activities are liked or commented on
+- Generation of Notifications when user's Activities are liked or commented on.
   
 ##  Technical Features
 
@@ -19,6 +19,9 @@
 - Uses Mongodb and mongoose for database
 - TMDB API for details of movies and shows
 - Firebase for storing images
+
+[Front-end Repo](https://github.com/TahirReyaz/movielist-frontend)
+[Hosted backend](https://movielist-backend.onrender.com)
 
 ## Installation notes
 
