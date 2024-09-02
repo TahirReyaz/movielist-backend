@@ -23,5 +23,7 @@
 ## Installation notes
 
 - connect to a mongo cluster by getting the url
-- install npm packages using `npm i `
+- install npm packages using `npm i`
+- Add an .env file and provide data according to the .env-example file
+- run the project using `npm run dev`
 
