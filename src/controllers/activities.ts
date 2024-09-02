@@ -275,7 +275,7 @@ export const createActivityController = async (
   res: express.Response
 ) => {
   try {
-    const { content } = req.params;
+    const { content } = req.body;
 
     const userid = lodash.get(req, "identity._id") as mongoose.Types.ObjectId;
 
