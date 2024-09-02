@@ -2,7 +2,11 @@ import express from "express";
 import mongoose from "mongoose";
 import lodash from "lodash";
 
-import { getActivities, getActivityById } from "../db/activities";
+import {
+  createActivity,
+  getActivities,
+  getActivityById,
+} from "../db/activities";
 import { getUserById, getUserByUsername } from "../db/users";
 import { getActivitiesCount } from "../helpers/activity";
 import { createComment, getComments } from "../db/comments";
@@ -263,5 +267,27 @@ export const getActivityComments = async (
   } catch (error) {
     console.error(error);
     res.status(500).end();
+  }
+};
+
+export const createActivityController = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const { content } = req.params;
+
+    const userid = lodash.get(req, "identity._id") as mongoose.Types.ObjectId;
+
+    const activity = await createActivity({
+      owner: userid.toString(),
+      content,
+      type: "status",
+    });
+
+    return res.status(200).json(activity);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ message: "Database error" });
   }
 };

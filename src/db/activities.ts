@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 export const ActivitySchema = new mongoose.Schema(
   {
-    image: { type: String, required: true },
+    image: { type: String, required: false },
     likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     action: { type: String, required: false },
     owner: {
