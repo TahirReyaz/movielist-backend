@@ -23,14 +23,14 @@ export default (router: express.Router) => {
   router.get("/activities/user/:username", getActivitiesByUsername);
   router.get("/activities/following", isAuthenticated, getFollowingActivities);
   router.post("/activity", isAuthenticated, createActivityController);
-  router.delete("/activity/:id", isAuthenticated, deleteActivity);
-  router.get("/activity/:id", getActivityController);
-  router.patch(
-    "/activity/like/:activityId",
+  router.delete(
+    "/activity/:id",
     isAuthenticated,
     isOwnActivity,
-    likeActivity
+    deleteActivity
   );
+  router.get("/activity/:id", getActivityController);
+  router.patch("/activity/like/:activityId", isAuthenticated, likeActivity);
   router.patch("/activity/unlike/:activityId", isAuthenticated, unlikeActivity);
   router.post(
     "/activity/comment/:activityId",
