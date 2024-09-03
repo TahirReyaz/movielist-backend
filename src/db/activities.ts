@@ -63,6 +63,9 @@ export const getActivities = async ({
   return populatedActivities;
 };
 
+export const getPlainUserActivities = async (userid: string) =>
+  ActivityModel.find({ owner: userid }).sort({ createdAt: -1 });
+
 export const getActivityById = (id: string) =>
   ActivityModel.findById(id).populate("owner", "username avatar");
 export const createActivity = (values: Record<string, any>) =>

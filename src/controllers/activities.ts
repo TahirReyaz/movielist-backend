@@ -7,9 +7,14 @@ import {
   deleteActivityById,
   getActivities,
   getActivityById,
+  getPlainUserActivities,
 } from "../db/activities";
 import { getUserById, getUserByUsername } from "../db/users";
-import { getActivitiesCount } from "../helpers/activity";
+import {
+  calculateActivityHistory,
+  countActivitiesPerDay,
+  getActivitiesCount,
+} from "../helpers/activity";
 import { createComment, getComments } from "../db/comments";
 import { getCommentsCount } from "../helpers/comments";
 import { createNotification } from "../db/notifications";
@@ -319,6 +324,31 @@ export const getActivityController = async (
   }
 };
 
+export const getActivityHistory = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const { username } = req.params;
+
+    //  Find the user by username
+    const user = await getUserByUsername(username);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const activities = await getPlainUserActivities(user._id.toString());
+
+    const dailyHistory = countActivitiesPerDay(activities);
+    const weeklyHistory = calculateActivityHistory(dailyHistory);
+
+    return res.status(200).json(weeklyHistory);
+  } catch (error) {
+    console.error(error);
+    return res.status(400).send({ message: "Database error" });
+  }
+};
+
 export const deleteActivity = async (
   req: express.Request,
   res: express.Response
@@ -328,7 +358,7 @@ export const deleteActivity = async (
 
     const deletedActivity = await deleteActivityById(id);
 
-    // Delete associated comments too
+    // Delete associated comments and notifications too
 
     // Return the activities and pagination info
     return res.status(200).json(deletedActivity);

@@ -16,11 +16,13 @@ import {
   getFollowingActivities,
   likeActivity,
   unlikeActivity,
+  getActivityHistory,
 } from "../controllers/activities";
 
 export default (router: express.Router) => {
   router.get("/activities", getAllActivities);
   router.get("/activities/user/:username", getActivitiesByUsername);
+  router.get("/activities/history/:username", getActivityHistory);
   router.get("/activities/following", isAuthenticated, getFollowingActivities);
   router.post("/activity", isAuthenticated, createActivityController);
   router.delete(
