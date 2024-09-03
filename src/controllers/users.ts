@@ -9,7 +9,7 @@ import {
   getUsers,
 } from "../db/users";
 import { deleteEntriesByUserid } from "../db/listEntries";
-import { createNotification } from "../db/notifications";
+import { NotificationModel, createNotification } from "../db/notifications";
 import { DEFAULT_AVATAR_URL } from "../constants/misc";
 
 interface idsString {
@@ -62,7 +62,15 @@ export const getProfile = async (
         .send({ message: "User with this username not found" });
     }
 
-    return res.status(200).json(user);
+    const unreadNotificationCount = await NotificationModel.countDocuments({
+      owner: user._id,
+      read: false,
+    });
+
+    return res.status(200).json({
+      ...user.toObject(),
+      unreadNotificationCount,
+    });
   } catch (error) {
     console.error(error);
     return res.status(400).send({ message: "Some error occurred" });
