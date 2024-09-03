@@ -67,6 +67,14 @@ export const getProfile = async (
       read: false,
     });
 
+    const test = await NotificationModel.countDocuments({
+      owner: user._id,
+    });
+
+    const test2 = await NotificationModel.countDocuments({
+      read: false,
+    });
+
     return res.status(200).json({
       ...user.toObject(),
       unreadNotifs: unreadNotificationCount,

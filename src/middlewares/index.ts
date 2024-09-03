@@ -6,6 +6,7 @@ import { getUserBySessionToken } from "../db/users";
 import { AUTH_COOKIE_NAME } from "../controllers/authentication";
 import { getEntryById } from "../db/listEntries";
 import { getActivityById } from "../db/activities";
+import { getNotificationById } from "../db/notifications";
 
 export const isAuthenticated = async (
   req: express.Request,
@@ -134,6 +135,38 @@ export const isOwnActivity = async (
     if (!currentUserId.equals(currentActivity.owner._id)) {
       return res.status(401).send({
         message: "Not own Activity",
+      });
+    }
+
+    next();
+  } catch (error) {
+    console.error(error);
+    return res.sendStatus(400);
+  }
+};
+
+export const isOwnNotif = async (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) => {
+  try {
+    const { id } = req.params;
+
+    const currentUserId = lodash.get(
+      req,
+      "identity._id"
+    ) as mongoose.Types.ObjectId;
+
+    const currentNotif = await getNotificationById(id);
+
+    if (!currentNotif) {
+      return res.status(404).send({ message: "Notification not found" });
+    }
+
+    if (!currentUserId.equals(currentNotif.owner)) {
+      return res.status(401).send({
+        message: "Not own Notification",
       });
     }
 

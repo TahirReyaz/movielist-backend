@@ -1,8 +1,12 @@
 import mongoose from "mongoose";
 import express from "express";
 import lodash from "lodash";
-import { getCommentById } from "../db/comments";
-import { getNotifications, getNotifsCount } from "../db/notifications";
+import {
+  NotificationModel,
+  getNotificationById,
+  getNotifications,
+  getNotifsCount,
+} from "../db/notifications";
 import { notificationTypes } from "../constants/misc";
 
 export const getUserNotifsByType = async (
@@ -55,27 +59,30 @@ export const markNotifAsRead = async (
   res: express.Response
 ) => {
   try {
-    const { commentId } = req.params;
-    const comment = await getCommentById(commentId);
-    if (!comment) {
-      return res.status(404).send({ message: "Comment not found" });
-    }
+    const { id } = req.params;
 
+    const notif = await getNotificationById(id);
+
+    notif.read = true;
+    await notif.save();
+
+    return res.status(200).send({ message: "Marked read" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ message: "Database error" });
+  }
+};
+
+export const markAllUserNotifAsRead = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
     const userid = lodash.get(req, "identity._id") as mongoose.Types.ObjectId;
-    const foundUser = comment.likes?.some(
-      (likedUserid: mongoose.Types.ObjectId) => likedUserid.equals(userid)
-    );
 
-    if (!foundUser) {
-      return res.status(400).send({ message: "Already not liked" });
-    } else {
-      comment.likes = comment.likes.filter(
-        (likedUserid: mongoose.Types.ObjectId) => !likedUserid.equals(userid)
-      );
-    }
-    await comment.save();
+    await NotificationModel.updateMany({ owner: userid }, { read: true });
 
-    return res.status(200).send({ message: "You like that, huh" });
+    return res.status(200).send({ message: "Marked all as read" });
   } catch (error) {
     console.error(error);
     return res.status(500).send({ message: "Database error" });
