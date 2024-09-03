@@ -69,7 +69,7 @@ export const getProfile = async (
 
     return res.status(200).json({
       ...user.toObject(),
-      unreadNotificationCount,
+      unreadNotifs: unreadNotificationCount,
     });
   } catch (error) {
     console.error(error);
