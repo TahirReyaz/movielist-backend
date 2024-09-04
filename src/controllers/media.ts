@@ -5,9 +5,6 @@ import { Season } from "../constants/types";
 import { getSeason } from "../helpers/time";
 import { searchUsers } from "../db/users";
 import { translateBulkType } from "../helpers/tmdb";
-import { fuzzySearch } from "../helpers";
-import { filter } from "lodash";
-// import { detailTranslation } from "constants/misc";
 
 const TMDB_ENDPOINT = "https://api.themoviedb.org/3";
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
@@ -35,11 +32,21 @@ export const getBulkMedia = async (
         },
       }
     );
-    res.status(200).json(response.data.results);
+
+    const results = response.data?.results;
+
+    // Filter out anime using genre id 16 and origin country contains 'JP'
+    const filteredResults = results?.filter((result: any) => {
+      const hasGenre16 = result.genre_ids?.includes(16);
+      const hasOriginCountryJP = result.original_language === "ja";
+      return !(hasGenre16 && hasOriginCountryJP);
+    });
+
+    res.status(200).json(filteredResults);
   } catch (error) {
     console.error(error);
     console.error({ bulkType: req.params.bulktype });
-    return res.sendStatus(400);
+    return res.sendStatus(500);
   }
 };
 
@@ -114,13 +121,11 @@ export const getMediaCharacters = async (
       `${TMDB_ENDPOINT}/${mediaType}/${mediaid}/credits?api_key=${TMDB_API_KEY}`
     );
 
-    res
-      .status(200)
-      .json({
-        id: response.data.id,
-        characters: response.data.cast,
-        crew: response.data.crew,
-      });
+    res.status(200).json({
+      id: response.data.id,
+      characters: response.data.cast,
+      crew: response.data.crew,
+    });
   } catch (error) {
     console.error(error);
     return res.status(400).send({ message: error });
