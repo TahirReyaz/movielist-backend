@@ -1,7 +1,8 @@
 import mongoose from "mongoose";
 import express from "express";
 import lodash from "lodash";
-import { getCommentById } from "../db/comments";
+
+import { deleteCommentById, getCommentById } from "../db/comments";
 
 export const likeComment = async (
   req: express.Request,
@@ -10,9 +11,6 @@ export const likeComment = async (
   try {
     const { commentId } = req.params;
     const comment = await getCommentById(commentId);
-    if (!comment) {
-      return res.status(404).send({ message: "Comment not found" });
-    }
 
     const userid = lodash.get(req, "identity._id") as mongoose.Types.ObjectId;
     const foundUser: boolean = comment.likes?.some(
@@ -40,9 +38,6 @@ export const unlikeComment = async (
   try {
     const { commentId } = req.params;
     const comment = await getCommentById(commentId);
-    if (!comment) {
-      return res.status(404).send({ message: "Comment not found" });
-    }
 
     const userid = lodash.get(req, "identity._id") as mongoose.Types.ObjectId;
     const foundUser = comment.likes?.some(
@@ -58,7 +53,22 @@ export const unlikeComment = async (
     }
     await comment.save();
 
-    return res.status(200).send({ message: "You like that, huh" });
+    return res.status(200).send({ message: "Unliked that filthy comment" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ message: "Database error" });
+  }
+};
+
+export const deleteComment = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const { commentId } = req.params;
+    const deletedComment = await deleteCommentById(commentId);
+
+    return res.status(200).json(deletedComment);
   } catch (error) {
     console.error(error);
     return res.status(500).send({ message: "Database error" });

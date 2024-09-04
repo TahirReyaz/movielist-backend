@@ -7,6 +7,7 @@ import { AUTH_COOKIE_NAME } from "../controllers/authentication";
 import { getEntryById } from "../db/listEntries";
 import { getActivityById } from "../db/activities";
 import { getNotificationById } from "../db/notifications";
+import { getCommentById } from "../db/comments";
 
 export const isAuthenticated = async (
   req: express.Request,
@@ -110,6 +111,27 @@ export const paramActivityExists = async (
   } catch (error) {
     console.error(error);
     return res.sendStatus(400);
+  }
+};
+
+export const paramCommentExists = async (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) => {
+  try {
+    const { commentId } = req.params;
+
+    const activity = await getCommentById(commentId);
+
+    if (!activity) {
+      return res.status(404).send({ message: "Comment not found" });
+    }
+
+    next();
+  } catch (error) {
+    console.error(error);
+    return res.sendStatus(500);
   }
 };
 
