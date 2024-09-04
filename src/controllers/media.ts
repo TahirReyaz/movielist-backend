@@ -4,7 +4,7 @@ import axios, { AxiosResponse, AxiosResponseHeaders } from "axios";
 import { Season } from "../constants/types";
 import { getSeason } from "../helpers/time";
 import { searchUsers } from "../db/users";
-import { translateBulkType } from "../helpers/tmdb";
+import { removeAnime, translateBulkType } from "../helpers/tmdb";
 
 const TMDB_ENDPOINT = "https://api.themoviedb.org/3";
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
@@ -35,12 +35,7 @@ export const getBulkMedia = async (
 
     const results = response.data?.results;
 
-    // Filter out anime using genre id 16 and origin country contains 'JP'
-    const filteredResults = results?.filter((result: any) => {
-      const hasGenre16 = result.genre_ids?.includes(16);
-      const hasOriginCountryJP = result.original_language === "ja";
-      return !(hasGenre16 && hasOriginCountryJP);
-    });
+    const filteredResults = removeAnime(results);
 
     res.status(200).json(filteredResults);
   } catch (error) {
@@ -166,8 +161,8 @@ export const searchMulti = async (
     });
     const users = await searchUsers(query);
 
-    const movies: any[] = [];
-    const tv: any[] = [];
+    let movies: any[] = [];
+    let tv: any[] = [];
     const people: any[] = [];
 
     response.data.results.forEach((item: any) => {
@@ -179,6 +174,9 @@ export const searchMulti = async (
         people.push(item);
       }
     });
+
+    tv = removeAnime(tv);
+    movies = removeAnime(movies);
 
     const categorizedResults = {
       movies,

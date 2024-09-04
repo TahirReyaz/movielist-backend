@@ -41,3 +41,12 @@ export const fetchMediaData = async (mediaType: string, mediaid: number) => {
     return null;
   }
 };
+
+export const removeAnime = (results: any[]) => {
+  const filteredResults = results?.filter((result: any) => {
+    const hasGenre16 = result.genre_ids?.includes(16);
+    const hasOriginCountryJP = result.original_language === "ja";
+    return !(hasGenre16 && hasOriginCountryJP);
+  });
+  return filteredResults;
+};
