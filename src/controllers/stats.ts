@@ -144,11 +144,11 @@ export const generateUserStats = async (userId: string) => {
         });
 
         // Country Distribution
-        if (status === MediaStatus.completed && data?.production_countries) {
+        if (status === MediaStatus.completed && data?.origin_country) {
           countryDist = calculateCountryDist({
             countryDist,
             hoursWatched,
-            countries: data.production_countries,
+            countries: data.origin_country,
           });
         }
 

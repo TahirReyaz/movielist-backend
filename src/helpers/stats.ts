@@ -286,13 +286,13 @@ export const calculateCountryDist = ({
 }) => {
   countries.forEach((country) => {
     let foundStatusIndex = countryDist.findIndex(
-      (item: Distribution) => item.format === country.iso_3166_1
+      (item: Distribution) => item.format === country
     );
     if (foundStatusIndex === -1) {
       countryDist.push({
         count: 0,
         hoursWatched: 0,
-        format: country.iso_3166_1,
+        format: country,
         meanScore: 0,
       });
       foundStatusIndex = 0;
