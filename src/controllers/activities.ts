@@ -155,16 +155,18 @@ export const likeActivity = async (
     // Generate Notification
     const user = await getUserById(userid.toString());
 
-    await createNotification({
-      type: "activity",
-      read: false,
-      content: "liked your activity",
-      pointingImg: user.avatar ?? DEFAULT_AVATAR_URL,
-      pointingId: user.username,
-      pointingType: "user",
-      activityId,
-      owner: activity.owner._id,
-    });
+    if (!userid.equals(activity.owner._id)) {
+      await createNotification({
+        type: "activity",
+        read: false,
+        content: "liked your activity",
+        pointingImg: user.avatar ?? DEFAULT_AVATAR_URL,
+        pointingId: user.username,
+        pointingType: "user",
+        activityId,
+        owner: activity.owner._id,
+      });
+    }
 
     return res.status(200).send({ message: "You like that, huh" });
   } catch (error) {
@@ -223,16 +225,18 @@ export const commentOnActivity = async (
     const user = await getUserById(userid.toString());
     const activity = await getActivityById(activityId.toString());
 
-    await createNotification({
-      type: "activity",
-      read: false,
-      content: "commented on your activity",
-      pointingImg: user.avatar ?? DEFAULT_AVATAR_URL,
-      pointingId: user.username,
-      pointingType: "user",
-      activityId,
-      owner: activity.owner._id,
-    });
+    if (!userid.equals(activityId)) {
+      await createNotification({
+        type: "activity",
+        read: false,
+        content: "commented on your activity",
+        pointingImg: user.avatar ?? DEFAULT_AVATAR_URL,
+        pointingId: user.username,
+        pointingType: "user",
+        activityId,
+        owner: activity.owner._id,
+      });
+    }
 
     res.status(200).json(newComment);
   } catch (error) {
