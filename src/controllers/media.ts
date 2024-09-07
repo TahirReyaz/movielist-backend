@@ -52,7 +52,12 @@ export const getMediaDetail = async (
   try {
     const { mediaType, mediaid } = req.params;
     const response = await axios.get(
-      `${TMDB_ENDPOINT}/${mediaType}/${mediaid}?api_key=${TMDB_API_KEY}`
+      `${TMDB_ENDPOINT}/${mediaType}/${mediaid}`,
+      {
+        params: {
+          api_key: TMDB_API_KEY,
+        },
+      }
     );
     try {
       res.status(200).json(response.data);
@@ -73,7 +78,12 @@ export const getMediaTags = async (
   try {
     const { mediaType, mediaid } = req.params;
     const response = await axios.get(
-      `${TMDB_ENDPOINT}/${mediaType}/${mediaid}/keywords?api_key=${TMDB_API_KEY}`
+      `${TMDB_ENDPOINT}/${mediaType}/${mediaid}/keywords`,
+      {
+        params: {
+          api_key: TMDB_API_KEY,
+        },
+      }
     );
     res.status(200).json({
       id: response.data.id,
@@ -113,7 +123,12 @@ export const getMediaCharacters = async (
   try {
     const { mediaType, mediaid } = req.params;
     const response = await axios.get(
-      `${TMDB_ENDPOINT}/${mediaType}/${mediaid}/credits?api_key=${TMDB_API_KEY}`
+      `${TMDB_ENDPOINT}/${mediaType}/${mediaid}/credits`,
+      {
+        params: {
+          api_key: TMDB_API_KEY,
+        },
+      }
     );
 
     res.status(200).json({
@@ -134,7 +149,12 @@ export const getMediaRecommendations = async (
   try {
     const { mediaType, mediaid } = req.params;
     const response = await axios.get(
-      `${TMDB_ENDPOINT}/${mediaType}/${mediaid}/similar?api_key=${TMDB_API_KEY}`
+      `${TMDB_ENDPOINT}/${mediaType}/${mediaid}/similar`,
+      {
+        params: {
+          api_key: TMDB_API_KEY,
+        },
+      }
     );
 
     res.status(200).json({
@@ -144,6 +164,34 @@ export const getMediaRecommendations = async (
   } catch (error) {
     console.error(error);
     return res.status(400).send({ message: error });
+  }
+};
+
+export const getMediaRelations = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const { collectionId, mediaid } = req.params;
+    const response = await axios.get(
+      `${TMDB_ENDPOINT}/collection/${collectionId}`,
+      {
+        params: {
+          api_key: TMDB_API_KEY,
+        },
+      }
+    );
+
+    const collection = response.data?.parts;
+
+    const relations = collection?.filter(
+      (media: any) => media?.id?.toString() !== mediaid
+    );
+
+    res.status(200).json(relations);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ message: error });
   }
 };
 

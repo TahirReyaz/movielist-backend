@@ -6,6 +6,7 @@ import {
   getMediaCharacters,
   getMediaDetail,
   getMediaRecommendations,
+  getMediaRelations,
   getMediaTags,
   searchMedia,
   searchMulti,
@@ -18,6 +19,7 @@ export default (router: express.Router) => {
   router.get("/:mediaType/credits/:mediaid", getMediaCharacters);
   router.get("/:mediaType/recommendations/:mediaid", getMediaRecommendations);
   router.get("/:mediaType/genre", getGenreList);
+  router.get("/media/:mediaid/relations/:collectionId", getMediaRelations);
   router.get("/search/multi/:query", searchMulti);
   router.get("/search/:mediaType", searchMedia);
 };
