@@ -18,13 +18,13 @@ export const isAuthenticated = async (
     const sessionToken = req.cookies[AUTH_COOKIE_NAME];
 
     if (!sessionToken) {
-      return res.status(400).send({ message: "Not logged in" });
+      return res.status(401).send({ message: "Not logged in" });
     }
 
     const existingUser = await getUserBySessionToken(sessionToken);
 
     if (!existingUser) {
-      return res.status(403).send({ message: "Forbidden! user doesn't exist" });
+      return res.status(401).send({ message: "Forbidden! user doesn't exist" });
     }
 
     lodash.merge(req, { identity: existingUser });
