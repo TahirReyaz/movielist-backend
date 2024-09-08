@@ -9,6 +9,7 @@ import {
 import { authentication, checkWhitespace, random } from "../helpers";
 import { DEFAULT_AVATAR_URL } from "../constants/misc";
 import { NotificationModel } from "../db/notifications";
+import { ListEntryModel } from "../db/listEntries";
 
 export const AUTH_COOKIE_NAME = "MOVIELIST-AUTH";
 
@@ -84,7 +85,27 @@ export const loginUsingToken = async (
       return res.status(401).send({ message: "Forbidden! token not valid" });
     }
 
-    const detailedUser = await getUserByUsername(user.username);
+    // Populate user with other data
+    const [tvEntries, movieEntries] = await Promise.all([
+      ListEntryModel.find({ owner: user._id, mediaType: "tv" }),
+      ListEntryModel.find({ owner: user._id, mediaType: "movie" }),
+    ]);
+
+    const userWithEntries = {
+      ...user.toObject(),
+      entries: {
+        tv: tvEntries.map((entry) => ({
+          _id: entry._id,
+          mediaid: entry.mediaid,
+          status: entry.status,
+        })),
+        movie: movieEntries.map((entry) => ({
+          _id: entry._id,
+          mediaid: entry.mediaid,
+          status: entry.status,
+        })),
+      },
+    };
 
     const unreadNotificationCount = await NotificationModel.countDocuments({
       owner: user._id,
@@ -101,7 +122,7 @@ export const loginUsingToken = async (
     return res
       .status(200)
       .json({
-        ...detailedUser.toObject(),
+        ...userWithEntries,
         message: "Successfully logged in",
         token: sessionToken,
         unreadNotifs: unreadNotificationCount,

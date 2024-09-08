@@ -8,7 +8,7 @@ import {
   getUserByUsername,
   getUsers,
 } from "../db/users";
-import { deleteEntriesByUserid } from "../db/listEntries";
+import { ListEntryModel, deleteEntriesByUserid } from "../db/listEntries";
 import { NotificationModel, createNotification } from "../db/notifications";
 import { DEFAULT_AVATAR_URL } from "../constants/misc";
 
@@ -30,25 +30,6 @@ export const getAllUsers = async (
   }
 };
 
-export const getBulkUsers = async (
-  req: express.Request<{}, {}, {}, idsString>,
-  res: express.Response
-) => {
-  try {
-    const { ids } = req.query;
-    const idArray = ids.split(",");
-
-    const users = await getUsers();
-
-    return res
-      .status(200)
-      .json(users.filter((user) => idArray.includes(user._id.toString())));
-  } catch (error) {
-    console.error(error);
-    return res.sendStatus(400);
-  }
-};
-
 export const getProfile = async (
   req: express.Request,
   res: express.Response
@@ -62,13 +43,35 @@ export const getProfile = async (
         .send({ message: "User with this username not found" });
     }
 
+    // Populate user with other data
+    const [tvEntries, movieEntries] = await Promise.all([
+      ListEntryModel.find({ owner: user._id, mediaType: "tv" }),
+      ListEntryModel.find({ owner: user._id, mediaType: "movie" }),
+    ]);
+
+    const userWithEntries = {
+      ...user.toObject(),
+      entries: {
+        tv: tvEntries.map((entry) => ({
+          _id: entry._id,
+          mediaid: entry.mediaid,
+          status: entry.status,
+        })),
+        movie: movieEntries.map((entry) => ({
+          _id: entry._id,
+          mediaid: entry.mediaid,
+          status: entry.status,
+        })),
+      },
+    };
+
     const unreadNotificationCount = await NotificationModel.countDocuments({
       owner: user._id,
       read: false,
     });
 
     return res.status(200).json({
-      ...user.toObject(),
+      ...userWithEntries,
       unreadNotifs: unreadNotificationCount,
     });
   } catch (error) {
