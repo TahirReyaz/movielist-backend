@@ -1,8 +1,15 @@
 import express from "express";
 
-import { createUser, getUserByEmail } from "../db/users";
+import {
+  createUser,
+  getUserByEmail,
+  getUserBySessionToken,
+  getUserByUsername,
+} from "../db/users";
 import { authentication, checkWhitespace, random } from "../helpers";
 import { DEFAULT_AVATAR_URL } from "../constants/misc";
+import { NotificationModel } from "../db/notifications";
+
 export const AUTH_COOKIE_NAME = "MOVIELIST-AUTH";
 
 export const login = async (req: express.Request, res: express.Response) => {
@@ -10,7 +17,7 @@ export const login = async (req: express.Request, res: express.Response) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.sendStatus(400);
+      return res.status(400).send({ message: "Missing Fields" });
     }
 
     const user = await getUserByEmail(email).select(
@@ -44,17 +51,65 @@ export const login = async (req: express.Request, res: express.Response) => {
       secure: true,
     });
 
+    const unreadNotificationCount = await NotificationModel.countDocuments({
+      owner: user._id,
+      read: false,
+    });
+
     return res
       .status(200)
       .json({
-        ...user,
+        ...user.toObject(),
         message: "Successfully logged in",
         token: user.authentication.sessionToken,
+        unreadNotifs: unreadNotificationCount,
       })
       .end();
   } catch (error) {
     console.error(error);
     return res.status(400).send({ message: "Error loggin in" });
+  }
+};
+
+export const loginUsingToken = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const { sessionToken } = req.body;
+
+    const user = await getUserBySessionToken(sessionToken);
+
+    if (!user) {
+      return res.status(401).send({ message: "Forbidden! token not valid" });
+    }
+
+    const detailedUser = await getUserByUsername(user.username);
+
+    const unreadNotificationCount = await NotificationModel.countDocuments({
+      owner: user._id,
+      read: false,
+    });
+
+    // set the cookie
+    res.cookie(AUTH_COOKIE_NAME, sessionToken, {
+      path: "/",
+      sameSite: "none",
+      secure: true,
+    });
+
+    return res
+      .status(200)
+      .json({
+        ...detailedUser.toObject(),
+        message: "Successfully logged in",
+        token: sessionToken,
+        unreadNotifs: unreadNotificationCount,
+      })
+      .end();
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ message: "Error loggin in" });
   }
 };
 
