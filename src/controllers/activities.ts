@@ -99,7 +99,7 @@ export const getActivitiesByMediaid = async (
     const limit = parseInt(req.query.limit as string) || 10;
     const { mediaid } = req.params;
 
-    const query = { mediaid };
+    const query = { mediaid: Number(mediaid) };
 
     const startIndex = (page - 1) * limit;
 

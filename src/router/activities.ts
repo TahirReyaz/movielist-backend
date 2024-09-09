@@ -25,11 +25,7 @@ export default (router: express.Router) => {
   router.get("/activities/user/:username", getActivitiesByUsername);
   router.get("/activities/history/:username", getActivityHistory);
   router.get("/activities/following", isAuthenticated, getFollowingActivities);
-  router.get(
-    "/activities/media/:mediaid",
-    isAuthenticated,
-    getActivitiesByMediaid
-  );
+  router.get("/activities/media/:mediaid", getActivitiesByMediaid);
   router.post("/activity", isAuthenticated, createActivityController);
   router.delete(
     "/activity/:id",
