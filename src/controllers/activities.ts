@@ -90,6 +90,41 @@ export const getActivitiesByUsername = async (
   }
 };
 
+export const getActivitiesByMediaid = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const { mediaid } = req.params;
+
+    const query = { mediaid };
+
+    const startIndex = (page - 1) * limit;
+
+    const totalActivities = await getActivitiesCount(query);
+    const activities = await getActivities({
+      skip: startIndex,
+      limit,
+      query,
+    });
+
+    // Prepare pagination information
+    const pagination = {
+      totalItems: totalActivities,
+      totalPages: Math.ceil(totalActivities / limit),
+      currentPage: page,
+      pageSize: limit,
+    };
+
+    return res.status(200).json({ activities, pagination });
+  } catch (error) {
+    console.error(error);
+    return res.status(400).send({ message: "Database error" });
+  }
+};
+
 export const getFollowingActivities = async (
   req: express.Request,
   res: express.Response
