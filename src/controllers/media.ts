@@ -4,6 +4,7 @@ import axios, { AxiosResponse, AxiosResponseHeaders } from "axios";
 import { Season } from "../constants/types";
 import { getSeason } from "../helpers/time";
 import { searchUsers } from "../db/users";
+import { getEntries } from "../db/listEntries";
 import { removeAnime, translateBulkType } from "../helpers/tmdb";
 
 const TMDB_ENDPOINT = "https://api.themoviedb.org/3";
@@ -342,5 +343,34 @@ export const searchMedia = async (
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "SOMETHING WENT WRONG" });
+  }
+};
+
+export const getStatusDistributionByMediaId = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const { mediaid } = req.params;
+    const entries = await getEntries({ mediaid });
+    const statusMap = new Map();
+    entries.forEach((entry) => {
+      const status = entry.status;
+      if (statusMap.has(status)) {
+        statusMap.set(status, statusMap.get(status) + 1);
+      } else {
+        statusMap.set(status, 1);
+      }
+    });
+
+    const statusArray = Array.from(statusMap, ([name, value]) => ({
+      status: name,
+      count: value,
+    }));
+
+    return res.status(200).json(statusArray);
+  } catch (error) {
+    console.error(error);
+    return res.status(400).send({ message: "Databse error" });
   }
 };
