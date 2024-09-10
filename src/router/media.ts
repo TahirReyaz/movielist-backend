@@ -2,6 +2,7 @@ import express from "express";
 
 import {
   getBulkMedia,
+  getFollowingStatusByMediaid,
   getGenreList,
   getMediaCharacters,
   getMediaDetail,
@@ -12,6 +13,7 @@ import {
   searchMedia,
   searchMulti,
 } from "../controllers/media";
+import { isAuthenticated } from "../middlewares";
 
 export default (router: express.Router) => {
   router.get("/:mediaType/bulk/:bulktype", getBulkMedia);
@@ -24,6 +26,11 @@ export default (router: express.Router) => {
   router.get(
     "/media/:mediaid/statusdistribution",
     getStatusDistributionByMediaId
+  );
+  router.get(
+    "/media/:mediaid/followingstatus",
+    isAuthenticated,
+    getFollowingStatusByMediaid
   );
   router.get("/search/multi/:query", searchMulti);
   router.get("/search/:mediaType", searchMedia);

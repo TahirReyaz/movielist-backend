@@ -1,9 +1,11 @@
 import express from "express";
-import axios, { AxiosResponse, AxiosResponseHeaders } from "axios";
+import axios, { AxiosResponse } from "axios";
+import lodash from "lodash";
+import mongoose from "mongoose";
 
 import { Season } from "../constants/types";
 import { getSeason } from "../helpers/time";
-import { searchUsers } from "../db/users";
+import { getUserById, searchUsers } from "../db/users";
 import { getEntries } from "../db/listEntries";
 import { removeAnime, translateBulkType } from "../helpers/tmdb";
 
@@ -68,7 +70,7 @@ export const getMediaDetail = async (
     }
   } catch (error) {
     console.error(error);
-    return res.status(400).send({ message: error });
+    return res.status(500).send({ message: error });
   }
 };
 
@@ -92,7 +94,7 @@ export const getMediaTags = async (
     });
   } catch (error) {
     console.error(error);
-    return res.status(400).send({ message: error });
+    return res.status(500).send({ message: error });
   }
 };
 
@@ -113,7 +115,7 @@ export const getGenreList = async (
     res.status(200).json(response.data);
   } catch (error) {
     console.error(error);
-    return res.status(400).send({ message: error });
+    return res.status(500).send({ message: error });
   }
 };
 
@@ -139,7 +141,7 @@ export const getMediaCharacters = async (
     });
   } catch (error) {
     console.error(error);
-    return res.status(400).send({ message: error });
+    return res.status(500).send({ message: error });
   }
 };
 
@@ -164,7 +166,7 @@ export const getMediaRecommendations = async (
     });
   } catch (error) {
     console.error(error);
-    return res.status(400).send({ message: error });
+    return res.status(500).send({ message: error });
   }
 };
 
@@ -237,7 +239,7 @@ export const searchMulti = async (
     res.status(200).json(categorizedResults);
   } catch (error) {
     console.error(error);
-    return res.status(400).send({ message: error });
+    return res.status(500).send({ message: error });
   }
 };
 
@@ -371,6 +373,54 @@ export const getStatusDistributionByMediaId = async (
     return res.status(200).json(statusArray);
   } catch (error) {
     console.error(error);
-    return res.status(400).send({ message: "Databse error" });
+    return res.status(500).send({ message: "Databse error" });
+  }
+};
+
+export const getFollowingStatusByMediaid = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const { mediaid } = req.params;
+    const userid = lodash.get(req, "identity._id") as mongoose.Types.ObjectId;
+
+    const user = await getUserById(userid.toString());
+
+    const dist: {
+      username: string;
+      avatar?: string;
+      status: string;
+      score: number;
+    }[] = [];
+
+    if (user.following) {
+      for (const followingUserId of user.following) {
+        const entries = await getEntries({ owner: followingUserId, mediaid });
+        if (entries && entries.length > 0) {
+          const entry = entries[0];
+
+          // Type assertion to tell TypeScript that entry.owner is not ObjectId but a populated owner
+          const populatedOwner = entry.owner as unknown as {
+            username: string;
+            avatar?: string;
+          };
+
+          if (entry?.owner) {
+            dist.push({
+              username: populatedOwner.username,
+              avatar: populatedOwner.avatar,
+              status: entry.status,
+              score: entry.score,
+            });
+          }
+        }
+      }
+    }
+
+    return res.status(200).json(dist);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ message: "Internal server error" });
   }
 };
