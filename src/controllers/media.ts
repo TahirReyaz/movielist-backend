@@ -364,7 +364,7 @@ export const getStatusDistributionByMediaId = async (
     });
 
     const statusArray = Array.from(statusMap, ([name, value]) => ({
-      status: name,
+      title: name,
       count: value,
     }));
 
