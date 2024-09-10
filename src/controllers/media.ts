@@ -62,12 +62,8 @@ export const getMediaDetail = async (
         },
       }
     );
-    try {
-      res.status(200).json(response.data);
-    } catch (error) {
-      console.error(error);
-      res.send({ message: "SOMETHING WENT WRONG" });
-    }
+
+    return res.status(200).json(response.data);
   } catch (error) {
     console.error(error);
     return res.status(500).send({ message: error });
