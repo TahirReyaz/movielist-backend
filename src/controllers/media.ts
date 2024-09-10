@@ -70,6 +70,28 @@ export const getMediaDetail = async (
   }
 };
 
+export const getMediaVideos = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const { mediaType, mediaid } = req.params;
+    const response = await axios.get(
+      `${TMDB_ENDPOINT}/${mediaType}/${mediaid}/videos`,
+      {
+        params: {
+          api_key: TMDB_API_KEY,
+        },
+      }
+    );
+
+    return res.status(200).json(response.data.results);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ message: error });
+  }
+};
+
 export const getMediaTags = async (
   req: express.Request,
   res: express.Response

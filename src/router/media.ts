@@ -9,6 +9,7 @@ import {
   getMediaRecommendations,
   getMediaRelations,
   getMediaTags,
+  getMediaVideos,
   getStatusDistributionByMediaId,
   searchMedia,
   searchMulti,
@@ -21,6 +22,7 @@ export default (router: express.Router) => {
   router.get("/:mediaType/tags/:mediaid", getMediaTags);
   router.get("/:mediaType/credits/:mediaid", getMediaCharacters);
   router.get("/:mediaType/recommendations/:mediaid", getMediaRecommendations);
+  router.get("/:mediaType/videos/:mediaid", getMediaVideos);
   router.get("/:mediaType/genre", getGenreList);
   router.get("/media/:mediaid/relations/:collectionId", getMediaRelations);
   router.get(
