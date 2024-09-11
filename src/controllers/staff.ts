@@ -1,8 +1,8 @@
 import express from "express";
 import axios from "axios";
+
 import { TMDB_API_KEY, TMDB_ENDPOINT } from "../constants/misc";
 import { divideMediaByYear } from "../helpers";
-import { isCallOrNewExpression } from "typescript";
 
 export const getStaffDetail = async (
   req: express.Request,
@@ -13,13 +13,14 @@ export const getStaffDetail = async (
     const response = await axios.get(`${TMDB_ENDPOINT}/person/${staffid}`, {
       params: {
         api_key: TMDB_API_KEY,
+        append_to_response: "external_ids",
       },
     });
 
     res.status(200).json(response.data);
   } catch (error) {
     console.error(error);
-    return res.status(400).send({ message: error });
+    return res.status(500).send({ message: error.message });
   }
 };
 
@@ -64,6 +65,6 @@ export const getStaffCredits = async (
     res.status(200).json({ credits: dividedCredits });
   } catch (error) {
     console.error(error);
-    return res.status(400).send({ message: error });
+    return res.status(500).send({ message: error.message });
   }
 };
