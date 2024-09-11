@@ -260,7 +260,7 @@ export const commentOnActivity = async (
     const user = await getUserById(userid.toString());
     const activity = await getActivityById(activityId.toString());
 
-    if (!userid.equals(activityId)) {
+    if (!userid.equals(activity.owner._id)) {
       await createNotification({
         type: "activity",
         read: false,
