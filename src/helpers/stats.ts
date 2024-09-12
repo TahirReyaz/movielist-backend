@@ -5,6 +5,7 @@ import { MediaStatus, MediaType } from "../constants/misc";
 import { ListEntry, ListEntryModel, getEntries } from "../db/listEntries";
 import { Distribution } from "../db/users";
 import { fetchMediaData } from "./tmdb";
+import { some } from "lodash";
 
 export interface EntryDocument extends ListEntry, Document {}
 
@@ -57,6 +58,13 @@ export const calculateStatusDist = ({
     foundStatusIndex = statusDist.length - 1;
   }
   statusDist[foundStatusIndex].count += 1;
+
+  statusDist[foundStatusIndex].meanScore = calculateMeanScore(
+    statusDist[foundStatusIndex].meanScore,
+    score,
+    statusDist[foundStatusIndex].count
+  );
+
   statusDist[foundStatusIndex].hoursWatched += hoursWatched;
 
   const meanScore = calculateMeanScore(
@@ -116,10 +124,12 @@ export const generateWatchYearStats = ({
   stats,
   watchDate,
   hoursWatched,
+  score,
 }: {
   stats: Distribution[];
   watchDate: string;
   hoursWatched: number;
+  score: number;
 }) => {
   const watchYear = new Date(watchDate).getFullYear();
   let foundStatusIndex = stats.findIndex(
@@ -135,6 +145,13 @@ export const generateWatchYearStats = ({
     foundStatusIndex = stats.length - 1;
   }
   stats[foundStatusIndex].count += 1;
+
+  stats[foundStatusIndex].meanScore = calculateMeanScore(
+    stats[foundStatusIndex].meanScore,
+    score,
+    stats[foundStatusIndex].count
+  );
+
   stats[foundStatusIndex].hoursWatched += hoursWatched;
 
   return stats;
@@ -148,6 +165,7 @@ export const calculateGenreStats = ({
   poster,
   mediaid,
   mediaType,
+  score,
 }: {
   genres: { id: number; name: string }[];
   genreStats: Record<string, any>;
@@ -156,6 +174,7 @@ export const calculateGenreStats = ({
   poster: string;
   mediaid: number;
   mediaType: string;
+  score: number;
 }) => {
   genres.forEach((genre: { id: number; name: string }) => {
     if (!genreStats[genre.id]) {
@@ -170,7 +189,13 @@ export const calculateGenreStats = ({
     }
     genreStats[genre.id].count += 1;
     genreStats[genre.id].timeWatched += hoursWatched;
-    genreStats[genre.id].meanScore = 0;
+
+    genreStats[genre.id].meanScore = calculateMeanScore(
+      genreStats[genre.id].meanScore,
+      score,
+      genreStats[genre.id].count
+    );
+
     genreStats[genre.id].list.push({
       title: title,
       posterPath: poster,
@@ -190,6 +215,7 @@ export const generateTagsStats = ({
   poster,
   mediaid,
   mediaType,
+  score,
 }: {
   tags: { id: number; name: string }[];
   tagStats: Record<string, any>;
@@ -198,6 +224,7 @@ export const generateTagsStats = ({
   poster: string;
   mediaid: number;
   mediaType: string;
+  score: number;
 }) => {
   tags.forEach((tag: { id: number; name: string }) => {
     try {
@@ -213,7 +240,13 @@ export const generateTagsStats = ({
       }
       tagStats[tag.id].count += 1;
       tagStats[tag.id].timeWatched += hoursWatched;
-      tagStats[tag.id].meanScore = 0;
+
+      tagStats[tag.id].meanScore = calculateMeanScore(
+        tagStats[tag.id].meanScore,
+        score,
+        tagStats[tag.id].count
+      );
+
       tagStats[tag.id].list.push({
         title: title,
         posterPath: poster,
@@ -290,10 +323,12 @@ export const calculateCountryDist = ({
   countryDist,
   countries,
   hoursWatched,
+  score,
 }: {
   countryDist: Distribution[];
   countries: any[];
   hoursWatched: number;
+  score: number;
 }) => {
   countries.forEach((country) => {
     let foundStatusIndex = countryDist.findIndex(
@@ -309,6 +344,13 @@ export const calculateCountryDist = ({
       foundStatusIndex = countryDist.length - 1;
     }
     countryDist[foundStatusIndex].count += 1;
+
+    countryDist[foundStatusIndex].meanScore = calculateMeanScore(
+      countryDist[foundStatusIndex].meanScore,
+      score,
+      countryDist[foundStatusIndex].count
+    );
+
     countryDist[foundStatusIndex].hoursWatched += hoursWatched;
   });
 

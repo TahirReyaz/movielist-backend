@@ -159,6 +159,7 @@ export const generateUserStats = async (userId: string) => {
             countryDist,
             hoursWatched,
             countries: data.origin_country,
+            score,
           });
         }
 
@@ -181,6 +182,7 @@ export const generateUserStats = async (userId: string) => {
             stats: watchYearStats,
             hoursWatched,
             watchDate: entry.endDate,
+            score,
           });
         }
 
@@ -194,6 +196,7 @@ export const generateUserStats = async (userId: string) => {
             poster,
             genres: data.genres,
             hoursWatched,
+            score,
           });
         }
 
@@ -207,6 +210,7 @@ export const generateUserStats = async (userId: string) => {
             poster,
             tags: data.tags,
             hoursWatched,
+            score,
           });
         }
 
