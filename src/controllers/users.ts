@@ -11,6 +11,7 @@ import {
 import { ListEntryModel, deleteEntriesByUserid } from "../db/listEntries";
 import { NotificationModel, createNotification } from "../db/notifications";
 import { DEFAULT_AVATAR_URL } from "../constants/misc";
+import { generateUserStats } from "./stats";
 
 interface idsString {
   ids: string;
@@ -248,6 +249,22 @@ export const toggleFav = async (
     await user.save();
 
     return res.status(200).json(user).end();
+  } catch (error) {
+    console.error(error);
+    return res.status(400).send({ message: "Some error occurred" });
+  }
+};
+
+export const updateStats = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const userid = lodash.get(req, "identity._id") as mongoose.Types.ObjectId;
+
+    await generateUserStats(userid.toString());
+
+    return res.status(200).send({ message: "Generated user stats" });
   } catch (error) {
     console.error(error);
     return res.status(400).send({ message: "Some error occurred" });

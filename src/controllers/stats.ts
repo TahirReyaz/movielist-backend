@@ -12,6 +12,7 @@ import {
   generateReleaseYearStats,
   generateTagsStats,
   generateWatchYearStats,
+  calculateMeanScore,
 } from "../helpers/stats";
 
 export const generateUserStats = async (userId: string) => {
@@ -102,7 +103,11 @@ export const generateUserStats = async (userId: string) => {
 
         if (status === "completed") {
           overviewStats.count += 1;
-          overviewStats.meanScore += score;
+          overviewStats.meanScore = calculateMeanScore(
+            overviewStats.meanScore,
+            score,
+            overviewStats.count
+          );
         }
         if (mediaType === MediaType.tv) {
           overviewStats.episodesWatched += progress;
