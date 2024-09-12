@@ -171,6 +171,7 @@ export const generateUserStats = async (userId: string) => {
             stats: releaseYearStats,
             hoursWatched,
             releaseDate: data.release_date || data.first_air_date,
+            score,
           });
         }
 

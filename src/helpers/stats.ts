@@ -54,7 +54,7 @@ export const calculateStatusDist = ({
       format: status,
       meanScore: 0,
     });
-    foundStatusIndex = 0;
+    foundStatusIndex = statusDist.length - 1;
   }
   statusDist[foundStatusIndex].count += 1;
   statusDist[foundStatusIndex].hoursWatched += hoursWatched;
@@ -74,10 +74,12 @@ export const calculateStatusDist = ({
 };
 
 export const generateReleaseYearStats = ({
+  score,
   stats,
   releaseDate,
   hoursWatched,
 }: {
+  score: number;
   stats: Distribution[];
   releaseDate: string;
   hoursWatched: number;
@@ -93,9 +95,18 @@ export const generateReleaseYearStats = ({
       format: releaseYear.toString(),
       meanScore: 0,
     });
-    foundStatusIndex = 0;
+    foundStatusIndex = stats.length - 1;
   }
+
   stats[foundStatusIndex].count += 1;
+
+  const meanScore = calculateMeanScore(
+    stats[foundStatusIndex].meanScore,
+    score,
+    stats[foundStatusIndex].count
+  );
+
+  stats[foundStatusIndex].meanScore = meanScore;
   stats[foundStatusIndex].hoursWatched += hoursWatched;
 
   return stats;
@@ -121,7 +132,7 @@ export const generateWatchYearStats = ({
       format: watchYear.toString(),
       meanScore: 0,
     });
-    foundStatusIndex = 0;
+    foundStatusIndex = stats.length - 1;
   }
   stats[foundStatusIndex].count += 1;
   stats[foundStatusIndex].hoursWatched += hoursWatched;
@@ -295,7 +306,7 @@ export const calculateCountryDist = ({
         format: country,
         meanScore: 0,
       });
-      foundStatusIndex = 0;
+      foundStatusIndex = countryDist.length - 1;
     }
     countryDist[foundStatusIndex].count += 1;
     countryDist[foundStatusIndex].hoursWatched += hoursWatched;
