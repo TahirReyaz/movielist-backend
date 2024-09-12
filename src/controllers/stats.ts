@@ -75,6 +75,7 @@ export const generateUserStats = async (userId: string) => {
       try {
         const { mediaType, status, progress, data, title, poster, mediaid } =
           entry;
+        const score = data?.vote_average ?? 0;
 
         // Pick the stats to update
         let overviewStats = overviewStatsMovie,
@@ -86,6 +87,7 @@ export const generateUserStats = async (userId: string) => {
           tagStats: Record<string, any> = tagStatsMovie,
           castStats: Record<string, any> = castStatsMovie,
           crewStats: Record<string, any> = crewStatsMovie;
+
         if (mediaType == MediaType.tv) {
           overviewStats = overviewStatsTv;
           releaseYearStats = releaseYearStatsTv;
@@ -98,7 +100,10 @@ export const generateUserStats = async (userId: string) => {
           crewStats = crewStatsTv;
         }
 
-        if (status === "completed") overviewStats.count += 1;
+        if (status === "completed") {
+          overviewStats.count += 1;
+          overviewStats.meanScore += score;
+        }
         if (mediaType === MediaType.tv) {
           overviewStats.episodesWatched += progress;
         }
@@ -140,7 +145,7 @@ export const generateUserStats = async (userId: string) => {
           hoursWatched,
           hoursPlanned,
           status,
-          score: entry.data?.vote_average ?? 0,
+          score,
         });
 
         // Country Distribution
@@ -209,7 +214,7 @@ export const generateUserStats = async (userId: string) => {
             poster,
             staff: data.cast,
             hoursWatched,
-            score: data?.vote_average ?? 0,
+            score,
           });
         }
 
@@ -223,7 +228,7 @@ export const generateUserStats = async (userId: string) => {
             poster,
             staff: data.crew,
             hoursWatched,
-            score: data?.vote_average ?? 0,
+            score,
           });
         }
 
