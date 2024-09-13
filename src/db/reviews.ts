@@ -2,15 +2,20 @@ import mongoose from "mongoose";
 
 export const ReviewSchema = new mongoose.Schema(
   {
-    mediaid: Number,
-    mediaType: String,
-    title: String,
+    mediaid: { type: String, required: true },
+    mediaType: { type: String, required: true },
+    title: { type: String, required: true },
     likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     dislikes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-    content: String,
-    summary: String,
-    owner: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    score: Number,
+    content: { type: String, required: true },
+    summary: { type: String, required: true },
+    owner: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    score: { type: Number, required: true },
+    private: { type: Boolean, default: false },
   },
   {
     timestamps: true,
