@@ -5,6 +5,7 @@ export const ReviewSchema = new mongoose.Schema(
     mediaid: { type: String, required: true },
     mediaType: { type: String, required: true },
     title: { type: String, required: true },
+    backdrop: { type: String, required: false },
     likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     dislikes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     content: { type: String, required: true },
