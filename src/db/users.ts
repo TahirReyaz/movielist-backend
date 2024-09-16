@@ -124,7 +124,9 @@ export const getUserByEmail = (email: string) => UserModel.findOne({ email });
 export const getUserBySessionToken = (sessionToken: string) =>
   UserModel.findOne({
     "authentication.sessionToken": sessionToken,
-  });
+  })
+    .populate("followers", "username avatar")
+    .populate("following", "username avatar");
 export const getUserById = (id: string) => UserModel.findById(id);
 export const getUserByUsername = (username: string) =>
   UserModel.findOne({ username })
