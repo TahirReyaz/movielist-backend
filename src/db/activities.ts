@@ -1,4 +1,6 @@
 import mongoose from "mongoose";
+import { CommentModel } from "./comments";
+import { NotificationModel } from "./notifications";
 
 export const ActivitySchema = new mongoose.Schema(
   {
@@ -18,6 +20,23 @@ export const ActivitySchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+  }
+);
+
+// Cascade delete
+ActivitySchema.pre(
+  "deleteMany",
+  { document: false, query: true },
+  async function (next) {
+    const filter = this.getFilter();
+    const activityId = filter._id;
+
+    if (activityId) {
+      await CommentModel.deleteMany({ activityId });
+      await NotificationModel.deleteMany({ activityId });
+    }
+
+    next();
   }
 );
 
@@ -71,6 +90,6 @@ export const getActivityById = (id: string) =>
 export const createActivity = (values: Record<string, any>) =>
   new ActivityModel(values).save().then((activity) => activity.toObject());
 export const deleteActivityById = (id: string) =>
-  ActivityModel.findOneAndDelete({ _id: id });
+  ActivityModel.deleteMany({ _id: id });
 export const updateActivityById = (id: string, values: Record<string, any>) =>
   ActivityModel.findByIdAndUpdate(id, values);
