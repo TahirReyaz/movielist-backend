@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { ActivityModel } from "./activities";
+import { ListEntryModel } from "./listEntries";
 
 const ScoreSchema = new mongoose.Schema({
   num: Number,
@@ -128,6 +129,7 @@ UserSchema.pre(
 
     if (userid) {
       await ActivityModel.deleteMany({ owner: userid });
+      await ListEntryModel.deleteMany({ owner: userid });
     }
 
     next();
