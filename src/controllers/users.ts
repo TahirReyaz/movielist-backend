@@ -12,10 +12,7 @@ import { ListEntryModel, deleteEntriesByUserid } from "../db/listEntries";
 import { NotificationModel, createNotification } from "../db/notifications";
 import { DEFAULT_AVATAR_URL } from "../constants/misc";
 import { generateUserStats } from "./stats";
-
-interface idsString {
-  ids: string;
-}
+import { authentication } from "../helpers";
 
 export const getAllUsers = async (
   req: express.Request,
@@ -77,7 +74,7 @@ export const getProfile = async (
     });
   } catch (error) {
     console.error(error);
-    return res.status(400).send({ message: "Some error occurred" });
+    return res.status(500).send({ message: "Some error occurred" });
   }
 };
 
@@ -112,7 +109,7 @@ export const updateUser = async (
 
     // If the user with this id doesn't exist
     if (!user) {
-      return res.status(400).send({ message: "User not found" });
+      return res.status(404).send({ message: "User not found" });
     }
 
     for (const key in req.body) {
@@ -143,7 +140,7 @@ export const followUser = async (
 
     // If the user with this id doesn't exist
     if (!user || !target) {
-      return res.status(400).send({ message: "User not found" });
+      return res.status(404).send({ message: "User not found" });
     }
 
     const targetId = target._id;
@@ -169,7 +166,7 @@ export const followUser = async (
     return res.status(200).json(user).end();
   } catch (error) {
     console.error(error);
-    return res.status(400).send({ message: "Some error occurred" });
+    return res.status(500).send({ message: "Some error occurred" });
   }
 };
 
@@ -186,7 +183,7 @@ export const unfollowUser = async (
 
     // If the user with this id doesn't exist
     if (!user || !target) {
-      return res.status(400).send({ message: "User not found" });
+      return res.status(404).send({ message: "User not found" });
     }
 
     const targetId = target._id;
@@ -210,7 +207,7 @@ export const unfollowUser = async (
     return res.status(200).json(user).end();
   } catch (error) {
     console.error(error);
-    return res.status(400).send({ message: "Some error occurred" });
+    return res.status(500).send({ message: "Some error occurred" });
   }
 };
 
@@ -251,7 +248,7 @@ export const toggleFav = async (
     return res.status(200).json(user).end();
   } catch (error) {
     console.error(error);
-    return res.status(400).send({ message: "Some error occurred" });
+    return res.status(500).send({ message: "Some error occurred" });
   }
 };
 
@@ -267,6 +264,37 @@ export const updateStats = async (
     return res.status(200).send({ message: "Generated user stats" });
   } catch (error) {
     console.error(error);
-    return res.status(400).send({ message: "Some error occurred" });
+    return res.status(500).send({ message: "Some error occurred" });
+  }
+};
+
+export const flagForDeletion = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const userid = lodash.get(req, "identity._id") as mongoose.Types.ObjectId;
+    const { password } = req.body;
+
+    if (!password) {
+      return res.status(400).send({ message: "Missing Password" });
+    }
+
+    const user = await getUserById(userid.toString()).select(
+      "+authentication.salt +authentication.password"
+    );
+
+    const expectedHash = authentication(user.authentication.salt, password);
+
+    if (user.authentication.password != expectedHash) {
+      return res.status(403).send({ message: "Wrong Password" });
+    }
+
+    await deleteUserById(userid);
+
+    return res.status(200).send({ message: "Deleted User" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ message: "Some error occurred" });
   }
 };

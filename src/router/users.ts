@@ -9,6 +9,7 @@ import {
   toggleFav,
   unfollowUser,
   updateStats,
+  flagForDeletion,
 } from "../controllers/users";
 import { isAuthenticated, isOwner } from "../middlewares";
 import { generateAllUserStats } from "../controllers/stats";
@@ -24,5 +25,6 @@ export default (router: express.Router) => {
   router.delete("/user/unfollow/:username", isAuthenticated, unfollowUser);
   router.patch("/user/fav/toggle", isAuthenticated, toggleFav);
   router.patch("/user/stats/update", isAuthenticated, updateStats);
+  router.patch("/user/flag/delete", isAuthenticated, flagForDeletion);
   router.patch("/user/:id/transformentries", isAuthenticated, transformEntries);
 };

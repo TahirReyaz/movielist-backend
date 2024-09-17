@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { ActivityModel } from "./activities";
 
 const ScoreSchema = new mongoose.Schema({
   num: Number,
@@ -117,26 +118,50 @@ export type Distribution = mongoose.InferSchemaType<typeof DistributionSchema>;
 export type User = mongoose.InferSchemaType<typeof UserSchema>;
 export type StaffStat = mongoose.InferSchemaType<typeof StaffStatSchema>;
 
+// Cascade delete
+UserSchema.pre(
+  "deleteMany",
+  { document: false, query: true },
+  async function (next) {
+    const filter = this.getFilter();
+    const userid = filter._id;
+
+    if (userid) {
+      await ActivityModel.deleteMany({ owner: userid });
+    }
+
+    next();
+  }
+);
+
 export const UserModel = mongoose.model("User", UserSchema);
 
 export const getUsers = () => UserModel.find();
+
 export const getUserByEmail = (email: string) => UserModel.findOne({ email });
+
 export const getUserBySessionToken = (sessionToken: string) =>
   UserModel.findOne({
     "authentication.sessionToken": sessionToken,
   })
     .populate("followers", "username avatar")
     .populate("following", "username avatar");
+
 export const getUserById = (id: string) => UserModel.findById(id);
+
 export const getUserByUsername = (username: string) =>
   UserModel.findOne({ username })
     .populate("followers", "username avatar")
     .populate("following", "username avatar");
+
 export const searchUsers = (query: string) =>
   UserModel.find({ username: { $regex: query, $options: "i" } });
+
 export const createUser = (values: Record<string, any>) =>
   new UserModel(values).save().then((user) => user.toObject());
+
 export const deleteUserById = (id: mongoose.Types.ObjectId) =>
-  UserModel.findOneAndDelete({ _id: id });
+  UserModel.deleteMany({ _id: id });
+
 export const updateUserById = (id: string, values: Record<string, any>) =>
   UserModel.findByIdAndUpdate(id, values);

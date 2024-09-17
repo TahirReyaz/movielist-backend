@@ -29,12 +29,12 @@ ActivitySchema.pre(
   { document: false, query: true },
   async function (next) {
     const filter = this.getFilter();
-    const activityId = filter._id;
+    const activities = await ActivityModel.find(filter);
+    const activityIds = activities.map((activity) => activity._id);
 
-    if (activityId) {
-      await CommentModel.deleteMany({ activityId });
-      await NotificationModel.deleteMany({ activityId });
-    }
+    // Delete associated comments and notifications
+    await CommentModel.deleteMany({ activityId: { $in: activityIds } });
+    await NotificationModel.deleteMany({ activityId: { $in: activityIds } });
 
     next();
   }
