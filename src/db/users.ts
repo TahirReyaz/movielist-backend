@@ -1,6 +1,9 @@
 import mongoose from "mongoose";
+
 import { ActivityModel } from "./activities";
 import { ListEntryModel } from "./listEntries";
+import { CommentModel } from "./comments";
+import { NotificationModel } from "./notifications";
 
 const ScoreSchema = new mongoose.Schema({
   num: Number,
@@ -130,6 +133,8 @@ UserSchema.pre(
     if (userid) {
       await ActivityModel.deleteMany({ owner: userid });
       await ListEntryModel.deleteMany({ owner: userid });
+      await CommentModel.deleteMany({ owner: userid });
+      await NotificationModel.deleteMany({ owner: userid });
     }
 
     next();
