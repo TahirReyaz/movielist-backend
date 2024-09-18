@@ -1,8 +1,11 @@
 import express from "express";
+import lodash from "lodash";
+import mongoose from "mongoose";
 
 import {
   createUser,
   getUserByEmail,
+  getUserById,
   getUserBySessionToken,
   getUserByUsername,
 } from "../db/users";
@@ -10,6 +13,7 @@ import { authentication, checkWhitespace, random } from "../helpers";
 import { DEFAULT_AVATAR_URL } from "../constants/misc";
 import { NotificationModel } from "../db/notifications";
 import { ListEntryModel } from "../db/listEntries";
+import { passwordValidity } from "../helpers/auth";
 
 export const AUTH_COOKIE_NAME = "MOVIELIST-AUTH";
 
@@ -68,7 +72,7 @@ export const login = async (req: express.Request, res: express.Response) => {
       .end();
   } catch (error) {
     console.error(error);
-    return res.status(400).send({ message: "Error loggin in" });
+    return res.status(500).send({ message: "Error loggin in" });
   }
 };
 
@@ -172,6 +176,61 @@ export const register = async (req: express.Request, res: express.Response) => {
       .end();
   } catch (error) {
     console.error(error);
-    return res.status(400).send({ message: "Error while registering" });
+    return res.status(500).send({ message: "Error while registering" });
+  }
+};
+
+export const changePassword = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const { newPassword, oldPassword } = req.body;
+    const userid = lodash.get(req, "identity._id") as mongoose.Types.ObjectId;
+
+    if (!newPassword) {
+      return res.status(400).send({ message: "Missing Password" });
+    }
+
+    if (!passwordValidity(newPassword)) {
+      return res.status(400).send({ message: "Wrong Password Format" });
+    }
+
+    const user = await getUserById(userid.toString()).select(
+      "+authentication.salt +authentication.password"
+    );
+
+    const expectedOldHash = authentication(
+      user.authentication.salt,
+      oldPassword
+    );
+    const expectedNewHash = authentication(
+      user.authentication.salt,
+      newPassword
+    );
+
+    if (user.authentication.password !== expectedOldHash) {
+      return res.status(403).send({ message: "Wrong Password" });
+    }
+
+    if (expectedNewHash === expectedOldHash) {
+      return res
+        .status(400)
+        .send({ message: "New Password can not be same as the old one" });
+    }
+
+    // save new password in db
+    const salt = random();
+    user.authentication.salt = salt;
+    user.authentication.password = authentication(salt, newPassword);
+    await user.save();
+
+    return res
+      .status(200)
+      .send({ message: "Changed Password successfully" })
+      .end();
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ message: "Server error" });
   }
 };
