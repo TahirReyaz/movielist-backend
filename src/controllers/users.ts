@@ -13,6 +13,7 @@ import { NotificationModel, createNotification } from "../db/notifications";
 import { DEFAULT_AVATAR_URL } from "../constants/misc";
 import { generateUserStats } from "./stats";
 import { authentication } from "../helpers";
+import { validateUsername } from "../helpers/auth";
 
 export const getAllUsers = async (
   req: express.Request,
@@ -293,6 +294,39 @@ export const flagForDeletion = async (
     await deleteUserById(userid);
 
     return res.status(200).send({ message: "Deleted User" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ message: "Some error occurred" });
+  }
+};
+
+export const changeUsername = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const userid = lodash.get(req, "identity._id") as mongoose.Types.ObjectId;
+    const { username: newUsername } = req.body;
+
+    if (!validateUsername(newUsername)) {
+      return res.status(400).send({ message: "Invalid username" });
+    }
+
+    const user = await getUserById(userid.toString());
+
+    if (user.username === newUsername) {
+      return res
+        .status(400)
+        .send({ message: "New username can not be same as the old one" });
+    }
+
+    user.username = newUsername;
+
+    user.save();
+
+    return res
+      .status(200)
+      .send({ message: `Updated username to ${newUsername}` });
   } catch (error) {
     console.error(error);
     return res.status(500).send({ message: "Some error occurred" });
