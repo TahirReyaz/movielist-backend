@@ -9,6 +9,11 @@ export const NotificationSchema = new mongoose.Schema(
     pointingId: { type: String, required: true },
     pointingType: { type: String, required: true },
     activityId: String,
+    pointingUser: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: false,
+    },
     owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -40,7 +45,8 @@ export const getNotifications = ({
     .skip(skip || 0)
     .limit(limit || 10)
     .sort({ createdAt: -1 })
-    .populate("owner", "username avatar");
+    .populate("owner", "username avatar")
+    .populate("pointingUser", "username avatar");
 
 export const getNotificationById = (id: string) =>
   NotificationModel.findById(id);

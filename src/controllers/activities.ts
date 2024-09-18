@@ -198,6 +198,7 @@ export const likeActivity = async (
         pointingImg: user.avatar ?? DEFAULT_AVATAR_URL,
         pointingId: user.username,
         pointingType: "user",
+        pointingUser: userid,
         activityId,
         owner: activity.owner._id,
       });
@@ -268,6 +269,7 @@ export const commentOnActivity = async (
         pointingImg: user.avatar ?? DEFAULT_AVATAR_URL,
         pointingId: user.username,
         pointingType: "user",
+        pointingUser: userid,
         activityId,
         owner: activity.owner._id,
       });
