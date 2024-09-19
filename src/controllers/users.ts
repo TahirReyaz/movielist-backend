@@ -3,6 +3,7 @@ import lodash from "lodash";
 import mongoose from "mongoose";
 
 import {
+  UserModel,
   deleteUserById,
   getUserById,
   getUserByUsername,
@@ -12,7 +13,6 @@ import { ListEntryModel, deleteEntriesByUserid } from "../db/listEntries";
 import { NotificationModel, createNotification } from "../db/notifications";
 import { DEFAULT_AVATAR_URL } from "../constants/misc";
 import { generateUserStats } from "./stats";
-import { authentication } from "../helpers";
 import { validateUsername } from "../helpers/auth";
 
 export const getAllUsers = async (
@@ -23,6 +23,53 @@ export const getAllUsers = async (
     const users = await getUsers();
 
     return res.status(200).json(users);
+  } catch (error) {
+    console.error(error);
+    return res.sendStatus(400);
+  }
+};
+
+export const getMods = async (req: express.Request, res: express.Response) => {
+  try {
+    const mods = await UserModel.find({
+      roles: { $exists: true, $not: { $size: 0 } },
+    });
+
+    const admins: any[] = [];
+    const communityMods: any[] = [];
+    const devs: any[] = [];
+    const retired: any[] = [];
+
+    if (mods) {
+      mods.forEach((mod) => {
+        const transMod = {
+          username: mod.username,
+          avatar: mod.avatar,
+          roles: mod.roles,
+        };
+
+        if (mod.roles.some((role) => role.role === "admin")) {
+          admins.push(transMod);
+        }
+        if (mod.roles.some((role) => role.role === "community mod")) {
+          admins.push(transMod);
+        }
+        if (mod.roles.some((role) => role.role === "developer")) {
+          devs.push(transMod);
+        }
+        if (mod.roles.some((role) => role.retired === true)) {
+          retired.push(transMod);
+        }
+      });
+    }
+
+    return res.status(200).json({
+      all: mods,
+      admins,
+      communityMods,
+      devs,
+      retired,
+    });
   } catch (error) {
     console.error(error);
     return res.sendStatus(400);

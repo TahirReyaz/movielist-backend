@@ -108,7 +108,13 @@ export const UserSchema = new mongoose.Schema(
     verified: { type: Boolean, required: true, default: false },
     authentication: AuthSchema,
     authorisation: { type: Number, required: true, default: 0 },
-    roles: [String],
+    roles: [
+      {
+        role: String,
+        lead: { type: Boolean, required: true, default: false },
+        retired: { type: Boolean, required: true, default: false },
+      },
+    ],
     about: String,
     fav: {
       movie: [String],
