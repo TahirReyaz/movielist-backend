@@ -14,9 +14,8 @@ import {
 import { MediaStatus, MediaType } from "../constants/misc";
 import { EntryDocument } from "../helpers/stats";
 import { createNewActivity } from "../helpers/activity";
-import { getUserById, getUserByUsername } from "../db/users";
+import { getUserByUsername } from "../db/users";
 import { fetchMediaData } from "../helpers/tmdb";
-import { authentication } from "../helpers";
 
 export const getAllListEntries = async (req: Request, res: Response) => {
   try {

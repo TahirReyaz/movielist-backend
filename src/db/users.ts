@@ -38,6 +38,7 @@ const AuthSchema = new mongoose.Schema({
   password: { type: String, required: true, select: false },
   salt: { type: String, select: false },
   sessionToken: { type: String, select: false },
+  verificationCode: { type: Number, select: false },
 });
 
 const GenreOverviewSchema = new mongoose.Schema({
@@ -80,11 +81,34 @@ const StatSchema = new mongoose.Schema({
   crew: [StaffStatSchema],
 });
 
+const PrefSchema = new mongoose.Schema({
+  adult: { type: Boolean, required: true, default: false },
+  profileColor: { type: String, required: false },
+  siteThem: { type: String, required: false },
+  restrictMessages: { type: Boolean, required: true, default: false },
+  privacy: { type: Number, required: true, default: 0 },
+  loginLocation: { type: Boolean, required: true, default: true },
+  activityMergeTime: { type: Number, required: true, default: 3600 },
+  airingNotifs: { type: Boolean, required: true, default: true },
+  defaultListOrder: { type: String, required: true, default: "title" },
+  listActivityCreation: {
+    watching: { type: Boolean, required: true, default: true },
+    planning: { type: Boolean, required: true, default: true },
+    completed: { type: Boolean, required: true, default: true },
+    paused: { type: Boolean, required: true, default: true },
+    dropped: { type: Boolean, required: true, default: true },
+    rewatching: { type: Boolean, required: true, default: true },
+  },
+});
+
 export const UserSchema = new mongoose.Schema(
   {
     username: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
+    verified: { type: Boolean, required: true, default: false },
     authentication: AuthSchema,
+    authorisation: { type: Number, required: true, default: 0 },
+    roles: [String],
     about: String,
     fav: {
       movie: [String],
@@ -112,6 +136,7 @@ export const UserSchema = new mongoose.Schema(
       movie: StatSchema,
       tv: StatSchema,
     },
+    preferences: { type: PrefSchema, required: true, default: {} },
   },
   {
     timestamps: true,
