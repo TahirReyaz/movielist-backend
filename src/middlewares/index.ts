@@ -2,12 +2,13 @@ import express from "express";
 import mongoose from "mongoose";
 import lodash from "lodash";
 
-import { getUserBySessionToken } from "../db/users";
+import { getUserById, getUserBySessionToken } from "../db/users";
 import { AUTH_COOKIE_NAME } from "../controllers/authentication";
 import { getEntryById } from "../db/listEntries";
 import { getActivityById } from "../db/activities";
 import { getNotificationById } from "../db/notifications";
 import { getCommentById } from "../db/comments";
+import { authentication } from "../helpers";
 
 export const isAuthenticated = async (
   req: express.Request,
@@ -190,6 +191,36 @@ export const isOwnNotif = async (
       return res.status(401).send({
         message: "Not own Notification",
       });
+    }
+
+    next();
+  } catch (error) {
+    console.error(error);
+    return res.sendStatus(400);
+  }
+};
+
+export const isPasswordCorrect = async (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) => {
+  try {
+    const { password } = req.body;
+    const userid = lodash.get(req, "identity._id") as mongoose.Types.ObjectId;
+
+    if (!password) {
+      return res.status(400).send({ message: "Missing Password" });
+    }
+
+    const user = await getUserById(userid.toString()).select(
+      "+authentication.salt +authentication.password"
+    );
+
+    const expectedHash = authentication(user.authentication.salt, password);
+
+    if (user.authentication.password != expectedHash) {
+      return res.status(403).send({ message: "Wrong Password" });
     }
 
     next();

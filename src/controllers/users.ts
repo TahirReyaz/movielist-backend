@@ -275,21 +275,6 @@ export const flagForDeletion = async (
 ) => {
   try {
     const userid = lodash.get(req, "identity._id") as mongoose.Types.ObjectId;
-    const { password } = req.body;
-
-    if (!password) {
-      return res.status(400).send({ message: "Missing Password" });
-    }
-
-    const user = await getUserById(userid.toString()).select(
-      "+authentication.salt +authentication.password"
-    );
-
-    const expectedHash = authentication(user.authentication.salt, password);
-
-    if (user.authentication.password != expectedHash) {
-      return res.status(403).send({ message: "Wrong Password" });
-    }
 
     await deleteUserById(userid);
 

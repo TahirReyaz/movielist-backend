@@ -4,22 +4,19 @@ import lodash from "lodash";
 
 import {
   ListEntry,
+  ListEntryModel,
   createNewEntry,
   deleteEntryById,
   getEntries,
   getEntry,
   getEntryById,
 } from "../db/listEntries";
-import {
-  MediaStatus,
-  MediaType,
-  TMDB_API_KEY,
-  TMDB_ENDPOINT,
-} from "../constants/misc";
+import { MediaStatus, MediaType } from "../constants/misc";
 import { EntryDocument } from "../helpers/stats";
 import { createNewActivity } from "../helpers/activity";
-import { getUserByUsername } from "../db/users";
+import { getUserById, getUserByUsername } from "../db/users";
 import { fetchMediaData } from "../helpers/tmdb";
+import { authentication } from "../helpers";
 
 export const getAllListEntries = async (req: Request, res: Response) => {
   try {
@@ -328,5 +325,23 @@ export const increaseProgress = async (req: Request, res: Response) => {
   } catch (error) {
     console.error(error);
     return res.status(400).send({ message: "Database error" });
+  }
+};
+
+export const delAllUserEntries = async (req: Request, res: Response) => {
+  try {
+    const { mediaType } = req.params;
+    const userid = lodash.get(req, "identity._id") as mongoose.Types.ObjectId;
+
+    if (!mediaType || (mediaType !== "movie" && mediaType !== "tv")) {
+      return res.status(400).send({ message: "Wrong media type" });
+    }
+
+    await ListEntryModel.deleteMany({ owner: userid, mediaType });
+
+    return res.status(200).send({ message: "Deleted all user entries" });
+  } catch (error) {
+    console.error(error);
+    return res.sendStatus(500);
   }
 };
