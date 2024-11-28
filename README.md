@@ -21,7 +21,7 @@
 - Firebase for storing images
 
 [Front-end Repo](https://github.com/TahirReyaz/movielist-frontend)
-[Hosted backend](https://movielist-backend.onrender.com)
+[Hosted backend](https://movielist-backend-five.vercel.app)
 
 ## Installation notes
 
