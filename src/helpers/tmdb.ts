@@ -50,3 +50,10 @@ export const removeAnime = (results: any[]) => {
   });
   return filteredResults;
 };
+
+export const tmdbClient = axios.create({
+  baseURL: TMDB_ENDPOINT,
+  params: {
+    api_key: TMDB_API_KEY,
+  },
+});

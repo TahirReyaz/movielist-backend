@@ -7,7 +7,7 @@ import { Season } from "../constants/types";
 import { getSeason } from "../helpers/time";
 import { getUserById, searchUsers } from "../db/users";
 import { getEntries } from "../db/listEntries";
-import { removeAnime, translateBulkType } from "../helpers/tmdb";
+import { removeAnime, tmdbClient, translateBulkType } from "../helpers/tmdb";
 
 const TMDB_ENDPOINT = "https://api.themoviedb.org/3";
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
@@ -67,6 +67,25 @@ export const getMediaDetail = async (
   } catch (error) {
     console.error(error);
     return res.status(500).send({ message: error });
+  }
+};
+
+export const getSeasonDetails = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const { mediaType, mediaid, seasonNumber } = req.params;
+    const response = await tmdbClient.get(
+      `/${mediaType}/${mediaid}/season/${seasonNumber}`
+    );
+
+    return res.status(200).json(response.data);
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .send({ message: "Error occurred while fetching season details" });
   }
 };
 
