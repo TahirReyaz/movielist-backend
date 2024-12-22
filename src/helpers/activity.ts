@@ -15,7 +15,7 @@ export const createNewActivity = async ({
   userid: string;
   poster: string;
   status: string;
-  mediaid: number;
+  mediaid: string;
   mediaType: string;
   title: string;
   progress?: number;
@@ -39,9 +39,9 @@ export const createNewActivity = async ({
     image,
     action,
     owner: userid,
-    mediaid: mediaid,
-    mediaType: mediaType,
-    title: title,
+    mediaid,
+    mediaType,
+    title,
     type,
   });
 };

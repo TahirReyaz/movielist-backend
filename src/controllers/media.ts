@@ -7,7 +7,8 @@ import { Season } from "../constants/types";
 import { getSeason } from "../helpers/time";
 import { getUserById, searchUsers } from "../db/users";
 import { getEntries } from "../db/listEntries";
-import { removeAnime, tmdbClient, translateBulkType } from "../helpers/tmdb";
+import { removeAnime, translateBulkType } from "../helpers/tmdb";
+import tmdbClient from "../utils/api";
 
 const TMDB_ENDPOINT = "https://api.themoviedb.org/3";
 const TMDB_API_KEY = process.env.TMDB_API_KEY;

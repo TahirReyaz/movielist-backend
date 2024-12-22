@@ -119,10 +119,7 @@ export const updateListEntry = async (req: Request, res: Response) => {
       }
     }
 
-    const mediaData = await fetchMediaData(
-      entry.mediaType,
-      Number(entry.mediaid)
-    );
+    const mediaData = await fetchMediaData(entry.mediaType, entry.mediaid);
     entry.data = mediaData;
 
     // Add start and end date if not present and required
@@ -147,7 +144,7 @@ export const updateListEntry = async (req: Request, res: Response) => {
       status,
       title: entry.title,
       poster: entry.poster,
-      mediaid: parseInt(entry.mediaid),
+      mediaid: entry.mediaid,
       mediaType: entry.mediaType,
       type: "media",
     });
@@ -191,20 +188,17 @@ export const createListEntry = async (req: Request, res: Response) => {
     }
 
     // Check if this entry already exists
-    const userEntries = await getEntries({ userid });
-    const existingEntry = userEntries.find(
-      (entry: ListEntry) => entry.mediaid == mediaid
-    );
-    if (existingEntry) {
+    const existingEntry = await getEntries({ userid, mediaid });
+    if (existingEntry.length > 0) {
       return res.status(400).send({ message: "Entry already exists" });
     }
 
-    const mediaData = await fetchMediaData(mediaType, Number(mediaid));
+    const mediaData = await fetchMediaData(mediaType, mediaid);
 
     let calculatedProgress = 0;
     if (status == MediaStatus.completed) {
       if (mediaType == MediaType.tv) {
-        calculatedProgress = mediaData.number_of_episodes;
+        calculatedProgress = mediaData?.episodes?.length || 1;
       } else {
         calculatedProgress = 1;
       }
@@ -246,7 +240,7 @@ export const createListEntry = async (req: Request, res: Response) => {
       status,
       title: entry.title,
       poster: entry.poster,
-      mediaid: parseInt(entry.mediaid),
+      mediaid: entry.mediaid,
       mediaType: entry.mediaType,
       type: "media",
     });
@@ -299,7 +293,7 @@ export const increaseProgress = async (req: Request, res: Response) => {
         userid: entry.owner.toString(),
         poster: entry.poster,
         status: "completed",
-        mediaid: parseInt(entry.mediaid),
+        mediaid: entry.mediaid,
         mediaType: entry.mediaType,
         title: entry.title,
         type: "media",
@@ -309,7 +303,7 @@ export const increaseProgress = async (req: Request, res: Response) => {
         userid: entry.owner.toString(),
         poster: entry.poster,
         status: "completed",
-        mediaid: parseInt(entry.mediaid),
+        mediaid: entry.mediaid,
         mediaType: entry.mediaType,
         title: entry.title,
         progress: updatedEntry.progress,

@@ -1,5 +1,5 @@
-import axios from "axios";
-import { TMDB_API_KEY, TMDB_ENDPOINT } from "../constants/misc";
+import { TMDB_API_KEY } from "../constants/misc";
+import tmdbClient from "../utils/api";
 
 export const translateBulkType = {
   trending: "popular",
@@ -12,23 +12,40 @@ export const translateBulkType = {
   top_rated: "top_rated",
 };
 
-export const fetchMediaData = async (mediaType: string, mediaid: number) => {
+export const fetchMediaData = async (mediaType: string, mediaid: string) => {
   try {
-    const { data: mediaData } = await axios.get(
-      `${TMDB_ENDPOINT}/${mediaType}/${mediaid}`,
-      {
-        params: {
-          api_key: TMDB_API_KEY,
-          append_to_response: "keywords,credits",
-        },
-      }
-    );
+    let mediaData;
+
+    if (mediaType === "movie") {
+      const { data: movieData } = await tmdbClient.get(
+        `/${mediaType}/${mediaid}`,
+        {
+          params: {
+            append_to_response: "keywords,credits",
+          },
+        }
+      );
+      mediaData = movieData;
+    } else {
+      const [showId, seasonNumber] = mediaid.split("-");
+
+      const { data: seasonData } = await tmdbClient.get(
+        `/${mediaType}/${showId}/season/${seasonNumber}`,
+        {
+          params: {
+            append_to_response: "keywords,credits",
+          },
+        }
+      );
+
+      mediaData = seasonData;
+    }
 
     const tagData =
       mediaType == "tv"
         ? mediaData.keywords?.results
         : mediaData.keywords?.keywords;
-    mediaData.tags = tagData.slice(0, 50);
+    mediaData.tags = tagData?.slice(0, 50);
     mediaData.cast = mediaData.credits?.cast.slice(0, 50);
     mediaData.crew = mediaData.credits?.crew.slice(0, 50);
     delete mediaData.keywords;
@@ -37,7 +54,6 @@ export const fetchMediaData = async (mediaType: string, mediaid: number) => {
     return mediaData;
   } catch (error) {
     console.error(error);
-    console.log({ mediaType, mediaid });
     return null;
   }
 };
@@ -50,10 +66,3 @@ export const removeAnime = (results: any[]) => {
   });
   return filteredResults;
 };
-
-export const tmdbClient = axios.create({
-  baseURL: TMDB_ENDPOINT,
-  params: {
-    api_key: TMDB_API_KEY,
-  },
-});

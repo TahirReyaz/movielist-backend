@@ -5,7 +5,6 @@ import { MediaStatus, MediaType } from "../constants/misc";
 import { ListEntry, ListEntryModel, getEntries } from "../db/listEntries";
 import { Distribution } from "../db/users";
 import { fetchMediaData } from "./tmdb";
-import { some } from "lodash";
 
 export interface EntryDocument extends ListEntry, Document {}
 
@@ -385,7 +384,7 @@ export const transformEntries = async (
 
           const mediaData = await fetchMediaData(
             entry.mediaType,
-            Number(entry.mediaid)
+            entry.mediaid
           );
 
           // Save the updated entry to MongoDB
