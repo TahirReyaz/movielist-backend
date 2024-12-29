@@ -8,3 +8,5 @@ export default axios.create({
     api_key: TMDB_API_KEY,
   },
 });
+
+console.log({ TMDB_API_KEY });

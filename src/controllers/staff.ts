@@ -1,7 +1,5 @@
 import express from "express";
-import axios from "axios";
 
-import { TMDB_API_KEY, TMDB_ENDPOINT } from "../constants/misc";
 import { divideMediaByYear } from "../helpers";
 import tmdbClient from "../utils/api";
 

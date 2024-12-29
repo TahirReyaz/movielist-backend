@@ -9,6 +9,7 @@ import { getUserById, searchUsers } from "../db/users";
 import { getEntries } from "../db/listEntries";
 import { removeAnime, translateBulkType } from "../helpers/tmdb";
 import tmdbClient from "../utils/api";
+import { logTMDBError } from "../utils/logger";
 
 export const getBulkMedia = async (
   req: express.Request<
@@ -51,7 +52,7 @@ export const getMediaDetail = async (
 
     return res.status(200).json(response.data);
   } catch (error) {
-    console.error("Error getting media details: ", error);
+    logTMDBError(req.path, error, "media details", req);
     return res.status(500).send({ message: error });
   }
 };
@@ -68,7 +69,7 @@ export const getSeasonDetails = async (
 
     return res.status(200).json(response.data);
   } catch (error) {
-    console.error("Error getting season details", error);
+    logTMDBError(req.path, error, "season details", req);
     return res
       .status(500)
       .send({ message: "Error occurred while fetching season details" });
