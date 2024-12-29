@@ -3,6 +3,7 @@ import axios from "axios";
 
 import { TMDB_API_KEY, TMDB_ENDPOINT } from "../constants/misc";
 import { divideMediaByYear } from "../helpers";
+import tmdbClient from "../utils/api";
 
 export const getStaffDetail = async (
   req: express.Request,
@@ -10,9 +11,9 @@ export const getStaffDetail = async (
 ) => {
   try {
     const { staffid } = req.params;
-    const response = await axios.get(`${TMDB_ENDPOINT}/person/${staffid}`, {
+
+    const response = await tmdbClient.get(`/person/${staffid}`, {
       params: {
-        api_key: TMDB_API_KEY,
         append_to_response: "external_ids",
       },
     });
@@ -30,13 +31,8 @@ export const getStaffCredits = async (
 ) => {
   try {
     const { staffid } = req.params;
-    const response = await axios.get(
-      `${TMDB_ENDPOINT}/person/${staffid}/combined_credits`,
-      {
-        params: {
-          api_key: TMDB_API_KEY,
-        },
-      }
+    const response = await tmdbClient.get(
+      `/person/${staffid}/combined_credits`
     );
 
     const cast = response.data?.cast;
