@@ -1,4 +1,3 @@
-import { TMDB_API_KEY } from "../constants/misc";
 import tmdbClient from "../utils/api";
 
 export const translateBulkType = {

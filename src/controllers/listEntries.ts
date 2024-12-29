@@ -16,6 +16,7 @@ import { EntryDocument } from "../helpers/stats";
 import { createNewActivity } from "../helpers/activity";
 import { getUserByUsername } from "../db/users";
 import { fetchMediaData } from "../helpers/tmdb";
+import tmdbClient from "../utils/api";
 
 export const getAllListEntries = async (req: Request, res: Response) => {
   try {
@@ -195,10 +196,15 @@ export const createListEntry = async (req: Request, res: Response) => {
 
     const mediaData = await fetchMediaData(mediaType, mediaid);
 
+    const { data: parentShow } = await tmdbClient.get(
+      `/tv/${mediaid.split("-")[0]}`
+    );
+    const fullTitle = parentShow ? `${title} - ${parentShow.name}` : title;
+
     let calculatedProgress = 0;
     if (status == MediaStatus.completed) {
       if (mediaType == MediaType.tv) {
-        calculatedProgress = mediaData?.episodes?.length || 1;
+        calculatedProgress = mediaData?.number_of_episodes || 1;
       } else {
         calculatedProgress = 1;
       }
@@ -228,7 +234,7 @@ export const createListEntry = async (req: Request, res: Response) => {
       rewatches: rewatches ?? 0,
       score,
       notes,
-      title,
+      title: fullTitle,
       poster,
       backdrop,
       data: mediaData,
