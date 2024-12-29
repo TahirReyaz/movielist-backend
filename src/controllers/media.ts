@@ -67,7 +67,12 @@ export const getSeasonDetails = async (
       `/${mediaType}/${mediaid}/season/${seasonNumber}`
     );
 
-    return res.status(200).json(response.data);
+    return res
+      .status(200)
+      .json({
+        ...response.data,
+        number_of_episodes: response.data.episodes?.length,
+      });
   } catch (error) {
     logTMDBError(req.path, error, "season details", req);
     return res
