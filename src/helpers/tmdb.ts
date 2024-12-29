@@ -38,6 +38,9 @@ export const fetchMediaData = async (mediaType: string, mediaid: string) => {
         }
       );
 
+      seasonData.number_of_episodes = seasonData.episodes.length;
+      seasonData.episodes = undefined;
+
       mediaData = seasonData;
     }
 
@@ -45,9 +48,9 @@ export const fetchMediaData = async (mediaType: string, mediaid: string) => {
       mediaType == "tv"
         ? mediaData.keywords?.results
         : mediaData.keywords?.keywords;
-    mediaData.tags = tagData?.slice(0, 50);
-    mediaData.cast = mediaData.credits?.cast.slice(0, 50);
-    mediaData.crew = mediaData.credits?.crew.slice(0, 50);
+    mediaData.tags = tagData?.slice(0, 20);
+    mediaData.cast = mediaData.credits?.cast.slice(0, 20);
+    mediaData.crew = mediaData.credits?.crew.slice(0, 20);
     delete mediaData.keywords;
     delete mediaData.credits;
 
