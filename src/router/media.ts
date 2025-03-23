@@ -4,7 +4,7 @@ import {
   getBulkMedia,
   getFollowingStatusByMediaid,
   getGenreList,
-  getMediaCharacters,
+  getMediaCredits,
   getMediaDetail,
   getMediaRecommendations,
   getMediaRelations,
@@ -21,7 +21,7 @@ export default (router: express.Router) => {
   router.get("/:mediaType/bulk/:bulktype", getBulkMedia);
   router.get("/:mediaType/detail/:mediaid", getMediaDetail);
   router.get("/:mediaType/tags/:mediaid", getMediaTags);
-  router.get("/:mediaType/credits/:mediaid", getMediaCharacters);
+  router.get("/:mediaType/credits/:mediaid/:season", getMediaCredits);
   router.get("/:mediaType/recommendations/:mediaid", getMediaRecommendations);
   router.get("/:mediaType/videos/:mediaid", getMediaVideos);
   router.get("/:mediaType/genre", getGenreList);

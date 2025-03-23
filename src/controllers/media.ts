@@ -67,12 +67,10 @@ export const getSeasonDetails = async (
       `/${mediaType}/${mediaid}/season/${seasonNumber}`
     );
 
-    return res
-      .status(200)
-      .json({
-        ...response.data,
-        number_of_episodes: response.data.episodes?.length,
-      });
+    return res.status(200).json({
+      ...response.data,
+      number_of_episodes: response.data.episodes?.length,
+    });
   } catch (error) {
     logTMDBError(req.path, error, "season details", req);
     return res
@@ -129,13 +127,19 @@ export const getGenreList = async (
   }
 };
 
-export const getMediaCharacters = async (
+export const getMediaCredits = async (
   req: express.Request,
   res: express.Response
 ) => {
   try {
-    const { mediaType, mediaid } = req.params;
-    const response = await tmdbClient.get(`/${mediaType}/${mediaid}/credits`);
+    const { mediaType, mediaid, season } = req.params;
+    const seasonNumber = season ? parseInt(season) : 999;
+    const response =
+      seasonNumber < 999
+        ? await tmdbClient.get(
+            `/${mediaType}/${mediaid}/season/${seasonNumber}/credits`
+          )
+        : await tmdbClient.get(`/${mediaType}/${mediaid}/credits`);
 
     res.status(200).json({
       id: response.data.id,
