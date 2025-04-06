@@ -28,17 +28,27 @@ export const fetchMediaData = async (mediaType: string, mediaid: string) => {
     } else {
       const [showId, seasonNumber] = mediaid.split("-");
 
-      const { data: seasonData } = await tmdbClient.get(
-        `/${mediaType}/${showId}/season/${seasonNumber}`,
-        {
-          params: {
-            append_to_response: "keywords,credits",
-          },
-        }
+      const { data: showData } = await tmdbClient.get(`/tv/${showId}`, {
+        params: {
+          append_to_response: "keywords",
+        },
+      });
+
+      const seasonData = showData?.seasons.find(
+        (season: any) => season.season_number === seasonNumber
       );
 
-      seasonData.number_of_episodes = seasonData.episodes.length;
-      seasonData.episodes = undefined;
+      seasonData.number_of_episodes = seasonData.episode_count;
+      seasonData.first_air_date = seasonData.air_date;
+      seasonData.genres = showData.genres;
+      seasonData.origin_country = showData.origin_country;
+      seasonData.keywords = showData.keywords;
+      const totalRunTime = showData.episode_run_time.reduce(
+        (accumulator: number, currentValue: number) =>
+          accumulator + currentValue,
+        0
+      );
+      seasonData.episode_run_time = totalRunTime / seasonData.episode_count;
 
       mediaData = seasonData;
     }
