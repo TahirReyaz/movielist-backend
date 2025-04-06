@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 
+import { DEFAULT_ENTRY_BANNER_URL } from "../constants/misc";
+
 export const ListEntrySchema = new mongoose.Schema(
   {
     mediaid: { type: String, required: true },
@@ -18,7 +20,11 @@ export const ListEntrySchema = new mongoose.Schema(
     notes: String,
     title: { type: String, required: true },
     poster: String,
-    backdrop: String,
+    backdrop: {
+      type: String,
+      required: true,
+      default: DEFAULT_ENTRY_BANNER_URL,
+    },
     data: mongoose.Schema.Types.Mixed,
   },
   {

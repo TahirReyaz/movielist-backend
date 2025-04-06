@@ -1,5 +1,5 @@
 import express from "express";
-import axios, { AxiosResponse } from "axios";
+import { AxiosResponse } from "axios";
 import lodash from "lodash";
 import mongoose from "mongoose";
 
@@ -8,9 +8,8 @@ import { getSeason } from "../helpers/time";
 import { getUserById, searchUsers } from "../db/users";
 import { getEntries } from "../db/listEntries";
 import { removeAnime, translateBulkType } from "../helpers/tmdb";
-
-const TMDB_ENDPOINT = "https://api.themoviedb.org/3";
-const TMDB_API_KEY = process.env.TMDB_API_KEY;
+import tmdbClient from "../utils/api";
+import { logTMDBError } from "../utils/logger";
 
 export const getBulkMedia = async (
   req: express.Request<
@@ -26,14 +25,9 @@ export const getBulkMedia = async (
     const { page } = req.query;
     const translatedBulkType = translateBulkType[bulktype];
 
-    const response = await axios.get(
-      `${TMDB_ENDPOINT}/${mediaType}/${translatedBulkType}`,
-      {
-        params: {
-          api_key: TMDB_API_KEY,
-          page,
-        },
-      }
+    const response = await tmdbClient.get(
+      `/${mediaType}/${translatedBulkType}`,
+      { params: { page } }
     );
 
     const results = response.data?.results;
@@ -42,7 +36,7 @@ export const getBulkMedia = async (
 
     res.status(200).json(filteredResults);
   } catch (error) {
-    console.error(error);
+    console.error("Error getting bulk media", error);
     console.error({ bulkType: req.params.bulktype });
     return res.sendStatus(500);
   }
@@ -54,19 +48,34 @@ export const getMediaDetail = async (
 ) => {
   try {
     const { mediaType, mediaid } = req.params;
-    const response = await axios.get(
-      `${TMDB_ENDPOINT}/${mediaType}/${mediaid}`,
-      {
-        params: {
-          api_key: TMDB_API_KEY,
-        },
-      }
-    );
+    const response = await tmdbClient.get(`/${mediaType}/${mediaid}`);
 
     return res.status(200).json(response.data);
   } catch (error) {
-    console.error(error);
+    logTMDBError(req.path, error, "media details", req);
     return res.status(500).send({ message: error });
+  }
+};
+
+export const getSeasonDetails = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const { mediaType, mediaid, seasonNumber } = req.params;
+    const response = await tmdbClient.get(
+      `/${mediaType}/${mediaid}/season/${seasonNumber}`
+    );
+
+    return res.status(200).json({
+      ...response.data,
+      number_of_episodes: response.data.episodes?.length,
+    });
+  } catch (error) {
+    logTMDBError(req.path, error, "season details", req);
+    return res
+      .status(500)
+      .send({ message: "Error occurred while fetching season details" });
   }
 };
 
@@ -76,18 +85,11 @@ export const getMediaVideos = async (
 ) => {
   try {
     const { mediaType, mediaid } = req.params;
-    const response = await axios.get(
-      `${TMDB_ENDPOINT}/${mediaType}/${mediaid}/videos`,
-      {
-        params: {
-          api_key: TMDB_API_KEY,
-        },
-      }
-    );
+    const response = await tmdbClient.get(`/${mediaType}/${mediaid}/videos`);
 
     return res.status(200).json(response.data.results);
   } catch (error) {
-    console.error(error);
+    console.error("Error getting media videos", error);
     return res.status(500).send({ message: error });
   }
 };
@@ -98,14 +100,8 @@ export const getMediaTags = async (
 ) => {
   try {
     const { mediaType, mediaid } = req.params;
-    const response = await axios.get(
-      `${TMDB_ENDPOINT}/${mediaType}/${mediaid}/keywords`,
-      {
-        params: {
-          api_key: TMDB_API_KEY,
-        },
-      }
-    );
+    const response = await tmdbClient.get(`/${mediaType}/${mediaid}/keywords`);
+
     res.status(200).json({
       id: response.data.id,
       tags: mediaType == "tv" ? response.data.results : response.data.keywords,
@@ -122,14 +118,8 @@ export const getGenreList = async (
 ) => {
   try {
     const { mediaType } = req.params;
-    const response = await axios.get(
-      `${TMDB_ENDPOINT}/genre/${mediaType}/list`,
-      {
-        params: {
-          api_key: TMDB_API_KEY,
-        },
-      }
-    );
+    const response = await tmdbClient.get(`/genre/${mediaType}/list`);
+
     res.status(200).json(response.data);
   } catch (error) {
     console.error(error);
@@ -137,20 +127,19 @@ export const getGenreList = async (
   }
 };
 
-export const getMediaCharacters = async (
+export const getMediaCredits = async (
   req: express.Request,
   res: express.Response
 ) => {
   try {
-    const { mediaType, mediaid } = req.params;
-    const response = await axios.get(
-      `${TMDB_ENDPOINT}/${mediaType}/${mediaid}/credits`,
-      {
-        params: {
-          api_key: TMDB_API_KEY,
-        },
-      }
-    );
+    const { mediaType, mediaid, season } = req.params;
+    const seasonNumber = season ? parseInt(season) : 999;
+    const response =
+      seasonNumber < 999
+        ? await tmdbClient.get(
+            `/${mediaType}/${mediaid}/season/${seasonNumber}/credits`
+          )
+        : await tmdbClient.get(`/${mediaType}/${mediaid}/credits`);
 
     res.status(200).json({
       id: response.data.id,
@@ -169,14 +158,7 @@ export const getMediaRecommendations = async (
 ) => {
   try {
     const { mediaType, mediaid } = req.params;
-    const response = await axios.get(
-      `${TMDB_ENDPOINT}/${mediaType}/${mediaid}/similar`,
-      {
-        params: {
-          api_key: TMDB_API_KEY,
-        },
-      }
-    );
+    const response = await tmdbClient.get(`/${mediaType}/${mediaid}/similar`);
 
     res.status(200).json({
       id: response.data.mediaid,
@@ -194,14 +176,7 @@ export const getMediaRelations = async (
 ) => {
   try {
     const { collectionId, mediaid } = req.params;
-    const response = await axios.get(
-      `${TMDB_ENDPOINT}/collection/${collectionId}`,
-      {
-        params: {
-          api_key: TMDB_API_KEY,
-        },
-      }
-    );
+    const response = await tmdbClient.get(`/collection/${collectionId}`);
 
     const collection = response.data?.parts;
 
@@ -222,12 +197,10 @@ export const searchMulti = async (
 ) => {
   try {
     const { query } = req.params;
-    const response = await axios.get(`${TMDB_ENDPOINT}/search/multi`, {
-      params: {
-        query,
-        api_key: TMDB_API_KEY,
-      },
+    const response = await tmdbClient.get(`/search/multi`, {
+      params: { query },
     });
+
     const users = await searchUsers(query);
 
     let movies: any[] = [];
@@ -284,13 +257,12 @@ export const searchMedia = async (
       req.query;
 
     const searchParams = {
-      api_key: TMDB_API_KEY,
       query,
       page: page && page != "" ? page : "1",
     };
 
     if (mediaType == "staff") {
-      const response = await axios.get(`${TMDB_ENDPOINT}/search/person`, {
+      const response = await tmdbClient.get(`/search/person`, {
         params: searchParams,
       });
       return res.status(200).json(response.data);
@@ -304,7 +276,6 @@ export const searchMedia = async (
     }
 
     const discoverParams = {
-      api_key: TMDB_API_KEY,
       include_adult: !!include_adult,
       page: page && page != "" ? page : "1",
       ...(language && { language }),
@@ -316,16 +287,16 @@ export const searchMedia = async (
       Array.from({ length: 100 }, (_, page) => {
         const nextPage = page + 1;
         searchParams.page = nextPage.toString();
-        const pageUrl = `${TMDB_ENDPOINT}/search/${mediaType}`;
-        return axios.get(pageUrl, { params: searchParams });
+        return tmdbClient.get(`/search/${mediaType}`, { params: searchParams });
       })
     );
     const discoverResponses: AxiosResponse[] = await Promise.all(
       Array.from({ length: 100 }, (_, page) => {
         const nextPage = page + 1;
         discoverParams.page = nextPage.toString();
-        const pageUrl = `${TMDB_ENDPOINT}/discover/${mediaType}`;
-        return axios.get(pageUrl, { params: discoverParams });
+        return tmdbClient.get(`/discover/${mediaType}`, {
+          params: discoverParams,
+        });
       })
     );
     const searchResults = searchResponses.flatMap(

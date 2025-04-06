@@ -12,7 +12,7 @@ export const ActivitySchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    mediaid: { type: Number, required: false },
+    mediaid: { type: String, required: false },
     mediaType: { type: String, required: false },
     title: { type: String, required: false },
     content: { type: String, required: false },

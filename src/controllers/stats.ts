@@ -118,10 +118,7 @@ export const generateUserStats = async (userId: string) => {
         if (mediaType === MediaType.movie) {
           episodeDuration = data?.runtime ? data.runtime : 60;
         } else {
-          episodeDuration =
-            data?.episode_run_time && data?.episode_run_time[0]
-              ? data.episode_run_time[0]
-              : 40;
+          episodeDuration = data?.episode_run_time ? data.episode_run_time : 40;
         }
         episodeDuration /= 60;
 

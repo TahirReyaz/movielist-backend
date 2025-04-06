@@ -13,7 +13,6 @@ dotenv.config();
 const app = express();
 
 app.use(cors({ credentials: true, origin: process.env.FRONTEND_URL }));
-// app.use(cors({ credentials: true, origin: "*" }));
 
 app.use(compression());
 app.use(cookieParser());
@@ -31,3 +30,5 @@ app.use("/", router());
 app.listen(port, () => {
   console.log("Server running on: ", port);
 });
+
+export default app;
