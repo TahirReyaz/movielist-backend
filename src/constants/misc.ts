@@ -37,3 +37,5 @@ export const MediaType = {
   movie: "movie",
   show: "tv",
 };
+
+export const mediaTypeEnum = ["movie", "tv"];

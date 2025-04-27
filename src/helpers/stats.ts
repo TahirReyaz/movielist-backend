@@ -411,3 +411,11 @@ export const transformEntries = async (
     throw error;
   }
 };
+
+// DATA: adult, vote avg, runtime: single for movies avg for tv, production_companies, status, number of episodes: default 1 for movies, origin country: array, original_language, (release date, first air date), genres [id, name], tags [id, name], cast [id, name, profile_path], crew [id, name, profile_path]
+// GENRES STATS: id, count, time watched, meanScore, list [title, posterPath, id]
+// TAG STATS: same as GENRE STATS
+// CAST STATS:  same as GENRE STATS, profilePath
+// CREW STATS:  same as GENRE STATS, profilePath
+// DIST: format, count, hoursWatched, meanScore
+// OVERVIEW STATS: count, daysWatched, daysPlanned, meanScore, score [], epsCount [], formatDist [], statusDist [DIST],  countryDist [DIST], releaseYear [DIST], watchYear: [DIST]

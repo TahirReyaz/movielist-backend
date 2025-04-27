@@ -2,6 +2,36 @@ import mongoose from "mongoose";
 
 import { DEFAULT_ENTRY_BANNER_URL } from "../constants/misc";
 
+export const ItemSchema = new mongoose.Schema({
+  id: String,
+  name: String,
+});
+
+export const DataStaffSchema = new mongoose.Schema({
+  id: String,
+  name: String,
+  profile_path: String,
+});
+
+export const EntryDataSchema = new mongoose.Schema(
+  {
+    adult: Boolean,
+    origin_country: [String],
+    original_language: String,
+    release_date: String,
+    runtime: Number,
+    number_of_episodes: { type: Number, default: 1 },
+    status: String,
+    vote_average: Number,
+    genres: [ItemSchema],
+    production_companies: [ItemSchema],
+    tags: [ItemSchema],
+    cast: [DataStaffSchema],
+    crew: [DataStaffSchema],
+  },
+  { timestamps: true }
+);
+
 export const ListEntrySchema = new mongoose.Schema(
   {
     mediaid: { type: String, required: true },
@@ -25,7 +55,7 @@ export const ListEntrySchema = new mongoose.Schema(
       required: true,
       default: DEFAULT_ENTRY_BANNER_URL,
     },
-    data: mongoose.Schema.Types.Mixed,
+    data: EntryDataSchema,
   },
   {
     timestamps: true,
