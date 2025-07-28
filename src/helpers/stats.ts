@@ -3,7 +3,7 @@ import { Document } from "mongoose";
 
 import { MediaStatus, MediaType } from "../constants/misc";
 import { ListEntry, ListEntryModel, getEntries } from "../db/listEntries";
-import { Distribution } from "../db/users";
+import { Distribution } from "../db/overviewStats";
 import { fetchMediaData } from "./tmdb";
 
 export interface EntryDocument extends ListEntry, Document {}
@@ -166,7 +166,7 @@ export const calculateGenreStats = ({
   mediaType,
   score,
 }: {
-  genres: { id: number; name: string }[];
+  genres: { id?: number; name?: string }[];
   genreStats: Record<string, any>;
   hoursWatched: number;
   title: string;
@@ -216,7 +216,7 @@ export const generateTagsStats = ({
   mediaType,
   score,
 }: {
-  tags: { id: number; name: string }[];
+  tags: { id?: number; name?: string }[];
   tagStats: Record<string, any>;
   hoursWatched: number;
   title: string;
@@ -271,7 +271,7 @@ export const generateStaffStats = ({
   mediaType,
   score,
 }: {
-  staff: { id: number; name: string }[];
+  staff: { id?: number; name?: string }[];
   stats: Record<string, any>;
   hoursWatched: number;
   title: string;

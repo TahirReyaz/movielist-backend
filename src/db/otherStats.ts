@@ -27,3 +27,5 @@ export const OtherStatSchema = new mongoose.Schema(
 );
 
 export const OtherStatModel = mongoose.model("OtherStat", OtherStatSchema);
+
+export type TOtherStat = mongoose.InferSchemaType<typeof OtherStatSchema>;

@@ -1,3 +1,4 @@
+import { ISeason, TTV } from "Interfaces/tmdb";
 import tmdbClient from "../utils/api";
 
 export const translateBulkType = {
@@ -28,29 +29,50 @@ export const fetchMediaData = async (mediaType: string, mediaid: string) => {
     } else {
       const [showId, seasonNumber] = mediaid.split("-");
 
-      const { data: showData } = await tmdbClient.get(`/tv/${showId}`, {
+      console.log({ showId, seasonNumber });
+
+      const showRes = await tmdbClient.get(`/tv/${showId}`, {
         params: {
           append_to_response: "keywords",
         },
       });
+      const showData: TTV & { keywords: any[] } = showRes.data;
 
-      const seasonData = showData?.seasons.find(
-        (season: any) => season.season_number === seasonNumber
+      const seasonRes = await tmdbClient.get(
+        `${showId}/season/${seasonNumber}`,
+        {
+          params: {
+            append_to_response: "credits",
+          },
+        }
+      );
+      const seasonData: ISeason & { credits: { cast: any[]; crew: any[] } } =
+        seasonRes.data;
+
+      // const seasonData = showData?.seasons.find(
+      //   (season: any) => season.season_number === seasonNumber
+      // );
+
+      const transformedSeasonData: any = seasonData;
+      transformedSeasonData.release_date = seasonData.air_date;
+      transformedSeasonData.number_of_episodes = seasonData.episodes.length;
+      transformedSeasonData.genres = showData.genres;
+      transformedSeasonData.origin_country = showData.origin_country;
+      transformedSeasonData.keywords = showData.keywords;
+      transformedSeasonData.original_language = showData.original_language;
+      transformedSeasonData.vote_average = seasonData.vote_average;
+      transformedSeasonData.credits = seasonData.credits;
+
+      let totalRunTime = 0;
+      seasonData.episodes.forEach(
+        (episode) => (totalRunTime += episode.runtime)
       );
 
-      seasonData.number_of_episodes = seasonData.episode_count;
-      seasonData.first_air_date = seasonData.air_date;
-      seasonData.genres = showData.genres;
-      seasonData.origin_country = showData.origin_country;
-      seasonData.keywords = showData.keywords;
-      const totalRunTime = showData.episode_run_time.reduce(
-        (accumulator: number, currentValue: number) =>
-          accumulator + currentValue,
-        0
-      );
-      seasonData.episode_run_time = totalRunTime / seasonData.episode_count;
+      transformedSeasonData.run_time =
+        totalRunTime / seasonData.episodes.length;
 
-      mediaData = seasonData;
+      mediaData = transformedSeasonData;
+      // add cast and crew data and tag data
     }
 
     const tagData =

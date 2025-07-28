@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import express from "express";
 
-import { Distribution, StaffStat, UserModel, getUserById } from "../db/users";
+import { UserModel, getUserById } from "../db/users";
 import { getEntries } from "../db/listEntries";
 import { MediaStatus, MediaType } from "../constants/misc";
 import {
@@ -14,6 +14,8 @@ import {
   generateWatchYearStats,
   calculateMeanScore,
 } from "../helpers/stats";
+import { Distribution } from "db/overviewStats";
+import { TOtherStat } from "db/otherStats";
 
 export const generateUserStats = async (userId: string) => {
   try {
@@ -114,13 +116,7 @@ export const generateUserStats = async (userId: string) => {
         }
 
         // Set episode duration
-        let episodeDuration = 60;
-        if (mediaType === MediaType.movie) {
-          episodeDuration = data?.runtime ? data.runtime : 60;
-        } else {
-          episodeDuration = data?.episode_run_time ? data.episode_run_time : 40;
-        }
-        episodeDuration /= 60;
+        const episodeDuration = (data?.runtime ? data.runtime : 60) / 60;
 
         // Calculate days watched and planned
         const hoursWatched = progress * episodeDuration;
@@ -161,14 +157,11 @@ export const generateUserStats = async (userId: string) => {
         }
 
         // Release year stats
-        if (
-          status === MediaStatus.completed &&
-          (data?.release_date || data?.first_air_date)
-        ) {
+        if (status === MediaStatus.completed && data?.release_date) {
           releaseYearStats = generateReleaseYearStats({
             stats: releaseYearStats,
             hoursWatched,
-            releaseDate: data.release_date || data.first_air_date,
+            releaseDate: data.release_date,
             score,
           });
         }
@@ -272,11 +265,11 @@ export const generateUserStats = async (userId: string) => {
     const genreArrayTv = Object.values(genreStatsTv).slice(0, 100);
     const castArrayMovie = Object.values(castStatsMovie).slice(0, 100);
     const castArrayTv = Object.values(castStatsTv).slice(0, 100);
-    const crewArrayMovie: StaffStat[] = Object.values(crewStatsMovie).slice(
+    const crewArrayMovie: TOtherStat[] = Object.values(crewStatsMovie).slice(
       0,
       100
     );
-    const crewArrayTv: StaffStat[] = Object.values(crewStatsTv).slice(0, 100);
+    const crewArrayTv: TOtherStat[] = Object.values(crewStatsTv).slice(0, 100);
     const tagArrayMovie = Object.values(tagStatsMovie).slice(0, 100);
     const tagArrayTv = Object.values(tagStatsTv).slice(0, 100);
 
