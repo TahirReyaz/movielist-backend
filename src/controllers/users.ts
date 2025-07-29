@@ -10,8 +10,7 @@ import {
   getUsers,
 } from "../db/users";
 import { ListEntryModel, deleteEntriesByUserid } from "../db/listEntries";
-import { NotificationModel, createNotification } from "../db/notifications";
-import { DEFAULT_AVATAR_URL } from "../constants/misc";
+import { NotificationModel } from "../db/notifications";
 import { generateUserStats } from "./stats";
 import { validateUsername } from "../helpers/auth";
 
@@ -171,91 +170,6 @@ export const updateUser = async (
   } catch (error) {
     console.error(error);
     return res.sendStatus(400);
-  }
-};
-
-// When delete user is called, remove this user from the follower list of other users
-export const followUser = async (
-  req: express.Request,
-  res: express.Response
-) => {
-  try {
-    const userid = lodash.get(req, "identity._id") as mongoose.Types.ObjectId;
-    const { username: targetUsername } = req.params;
-
-    const user = await getUserById(userid.toString());
-    const target = await getUserByUsername(targetUsername);
-
-    // If the user with this id doesn't exist
-    if (!user || !target) {
-      return res.status(404).send({ message: "User not found" });
-    }
-
-    const targetId = target._id;
-
-    if (user.following.includes(targetId)) {
-      return res.status(400).send({ message: "Already following" });
-    }
-    user.following.push(targetId);
-    await user.save();
-    target.followers.push(userid);
-    await target.save();
-
-    // Create Notification
-    await createNotification({
-      type: "follows",
-      content: "started following you",
-      pointingImg: user.avatar ?? DEFAULT_AVATAR_URL,
-      pointingId: user.username,
-      pointingType: "user",
-      owner: target._id,
-    });
-
-    return res.status(200).json(user).end();
-  } catch (error) {
-    console.error(error);
-    return res.status(500).send({ message: "Some error occurred" });
-  }
-};
-
-export const unfollowUser = async (
-  req: express.Request,
-  res: express.Response
-) => {
-  try {
-    const userid = lodash.get(req, "identity._id") as mongoose.Types.ObjectId;
-    const { username: targetUsername } = req.params;
-
-    const user = await getUserById(userid.toString());
-    const target = await getUserByUsername(targetUsername);
-
-    // If the user with this id doesn't exist
-    if (!user || !target) {
-      return res.status(404).send({ message: "User not found" });
-    }
-
-    const targetId = target._id;
-
-    if (!user.following.includes(targetId)) {
-      return res.status(400).send({ message: "Not following already" });
-    }
-
-    // Remove the targetId from the following array
-    user.following = user.following.filter(
-      (id: mongoose.Types.ObjectId) => !id.equals(targetId)
-    );
-    await user.save();
-
-    // Also remove the userid from the target's followers array
-    target.followers = target.followers.filter(
-      (id: mongoose.Types.ObjectId) => !id.equals(userid)
-    );
-    await target.save();
-
-    return res.status(200).json(user).end();
-  } catch (error) {
-    console.error(error);
-    return res.status(500).send({ message: "Some error occurred" });
   }
 };
 

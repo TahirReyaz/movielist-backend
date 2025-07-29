@@ -10,6 +10,7 @@ import { getEntries } from "../db/listEntries";
 import { removeAnime, translateBulkType } from "../helpers/tmdb";
 import tmdbClient from "../utils/api";
 import { logTMDBError } from "../utils/logger";
+import { getFollowers } from "db/followers";
 
 export const getBulkMedia = async (
   req: express.Request<
@@ -375,6 +376,7 @@ export const getFollowingStatusByMediaid = async (
     const userid = lodash.get(req, "identity._id") as mongoose.Types.ObjectId;
 
     const user = await getUserById(userid.toString());
+    const followers = await getFollowers({ user: userid });
 
     const dist: {
       username: string;

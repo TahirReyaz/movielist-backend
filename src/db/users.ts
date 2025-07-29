@@ -4,6 +4,7 @@ import { ActivityModel } from "./activities";
 import { ListEntryModel } from "./listEntries";
 import { CommentModel } from "./comments";
 import { NotificationModel } from "./notifications";
+import { FollowerModel } from "./followers";
 
 const AuthSchema = new mongoose.Schema({
   password: { type: String, required: true, select: false },
@@ -84,6 +85,8 @@ UserSchema.pre(
       await ListEntryModel.deleteMany({ owner: userid });
       await CommentModel.deleteMany({ owner: userid });
       await NotificationModel.deleteMany({ owner: userid });
+      await FollowerModel.deleteMany({ user: userid });
+      await FollowerModel.deleteMany({ target: userid });
     }
 
     next();

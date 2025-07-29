@@ -37,5 +37,10 @@ export const createNewFollower = (user: string, target: string) =>
 export const deleteFollowerById = (id: string) =>
   FollowerModel.findOneAndDelete({ _id: id });
 
+export const removeFollower = (
+  user: mongoose.Types.ObjectId,
+  target: mongoose.Types.ObjectId
+) => FollowerModel.findOneAndDelete({ user, target });
+
 export const deleteFollowersByUserid = (id: mongoose.Types.ObjectId) =>
   FollowerModel.deleteMany({ user: id });
