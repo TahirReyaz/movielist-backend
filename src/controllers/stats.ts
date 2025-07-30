@@ -14,8 +14,12 @@ import {
   generateWatchYearStats,
   calculateMeanScore,
 } from "../helpers/stats";
-import { Distribution } from "db/overviewStats";
-import { TOtherStat } from "db/otherStats";
+import {
+  Distribution,
+  createOverviewStats,
+  deleteOverviewStatsByUseridAndMediaType,
+} from "../db/overviewStats";
+import { TOtherStat } from "../db/otherStats";
 
 export const generateUserStats = async (userId: string) => {
   try {
@@ -286,37 +290,34 @@ export const generateUserStats = async (userId: string) => {
           "stats.tv.cast": [],
           "stats.movie.crew": [],
           "stats.tv.crew": [],
-          "stats.movie.overview.statusDist": [],
-          "stats.movie.overview.countryDist": [],
-          "stats.movie.overview.releaseYear": [],
-          "stats.movie.overview.watchYear": [],
-          "stats.tv.overview.statusDist": [],
-          "stats.tv.overview.countryDist": [],
-          "stats.tv.overview.releaseYear": [],
-          "stats.tv.overview.watchYear": [],
         },
       }
     );
 
+    await deleteOverviewStatsByUseridAndMediaType(userId, "tv");
+    await deleteOverviewStatsByUseridAndMediaType(userId, "movie");
+    await createOverviewStats({
+      user: userId,
+      mediaType: "tv",
+      ...overviewStatsTv,
+      statusDist: statusDistTv,
+      countryDist: countryDistTv,
+      releaseYear: releaseYearStatsTv,
+      watchYear: watchYearStatsTv,
+    });
+    await createOverviewStats({
+      user: userId,
+      mediaType: "movie",
+      ...overviewStatsMovie,
+      statusDist: statusDistMovie,
+      countryDist: countryDistMovie,
+      releaseYear: releaseYearStatsMovie,
+      watchYear: watchYearStatsMovie,
+    });
+
     await UserModel.updateOne(
       { _id: userId },
       {
-        $set: {
-          "stats.movie.overview": {
-            ...overviewStatsMovie,
-            statusDist: statusDistMovie,
-            countryDist: countryDistMovie,
-            releaseYear: releaseYearStatsMovie,
-            watchYear: watchYearStatsMovie,
-          },
-          "stats.tv.overview": {
-            ...overviewStatsTv,
-            statusDist: statusDistTv,
-            countryDist: countryDistTv,
-            releaseYear: releaseYearStatsTv,
-            watchYear: watchYearStatsTv,
-          },
-        },
         $push: {
           "stats.movie.genres": { $each: genreArrayMovie },
           "stats.tv.genres": { $each: genreArrayTv },
