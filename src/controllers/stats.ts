@@ -251,7 +251,7 @@ export const generateUserStats = async (userId: string) => {
           tagStatsTv = tagStats;
         }
       } catch (error) {
-        console.log(
+        console.error(
           "Error while stats of ",
           entry.mediaType,
           entry.mediaid,

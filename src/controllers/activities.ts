@@ -19,6 +19,7 @@ import { createComment, getComments } from "../db/comments";
 import { getCommentsCount } from "../helpers/comments";
 import { createNotification } from "../db/notifications";
 import { DEFAULT_AVATAR_URL } from "../constants/misc";
+import { getFollowers } from "../db/followers";
 
 export const getAllActivities = async (
   req: express.Request,
@@ -134,9 +135,10 @@ export const getFollowingActivities = async (
     const limit = parseInt(req.query.limit as string) || 10;
     const userid = lodash.get(req, "identity._id") as mongoose.Types.ObjectId;
 
-    const user = await getUserById(userid.toString());
+    const followers = await getFollowers({ user: userid });
 
-    const followingIds = user.following;
+    const followingIds = followers?.map((follower) => follower.target);
+
     followingIds.push(userid);
     const query = {
       owner: { $in: followingIds },

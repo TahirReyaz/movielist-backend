@@ -10,7 +10,7 @@ import { getEntries } from "../db/listEntries";
 import { removeAnime, translateBulkType } from "../helpers/tmdb";
 import tmdbClient from "../utils/api";
 import { logTMDBError } from "../utils/logger";
-import { getFollowers } from "db/followers";
+import { getFollowers } from "../db/followers";
 
 export const getBulkMedia = async (
   req: express.Request<
@@ -375,7 +375,6 @@ export const getFollowingStatusByMediaid = async (
     const { mediaid } = req.params;
     const userid = lodash.get(req, "identity._id") as mongoose.Types.ObjectId;
 
-    const user = await getUserById(userid.toString());
     const followers = await getFollowers({ user: userid });
 
     const dist: {
@@ -385,29 +384,27 @@ export const getFollowingStatusByMediaid = async (
       score: number;
     }[] = [];
 
-    if (user.following) {
-      for (const followingUserId of user.following) {
-        const entries = await getEntries({ owner: followingUserId, mediaid });
-        if (entries && entries.length > 0) {
-          const entry = entries[0];
+    followers?.forEach(async (follower) => {
+      const entries = await getEntries({ owner: follower.target, mediaid });
+      if (entries && entries.length > 0) {
+        const entry = entries[0];
 
-          // Type assertion to tell TypeScript that entry.owner is not ObjectId but a populated owner
-          const populatedOwner = entry.owner as unknown as {
-            username: string;
-            avatar?: string;
-          };
+        // Type assertion to tell TypeScript that entry.owner is not ObjectId but a populated owner
+        const populatedOwner = entry.owner as unknown as {
+          username: string;
+          avatar?: string;
+        };
 
-          if (entry?.owner) {
-            dist.push({
-              username: populatedOwner.username,
-              avatar: populatedOwner.avatar,
-              status: entry.status,
-              score: entry.score,
-            });
-          }
+        if (entry?.owner) {
+          dist.push({
+            username: populatedOwner.username,
+            avatar: populatedOwner.avatar,
+            status: entry.status,
+            score: entry.score,
+          });
         }
       }
-    }
+    });
 
     return res.status(200).json(dist);
   } catch (error) {
