@@ -196,10 +196,8 @@ export const createListEntry = async (req: Request, res: Response) => {
 
     const mediaData = await fetchMediaData(mediaType, mediaid);
 
-    const { data: parentShow } = await tmdbClient.get(
-      `/tv/${mediaid.split("-")[0]}`
-    );
-    const fullTitle = parentShow ? `${title} - ${parentShow.name}` : title;
+    const fullTitle =
+      mediaType === MediaType.tv ? `${title} - ${mediaData.title}` : title;
 
     let calculatedProgress = 0;
     if (status == MediaStatus.completed) {

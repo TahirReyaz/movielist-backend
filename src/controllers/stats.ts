@@ -120,7 +120,7 @@ export const generateUserStats = async (userId: string) => {
         }
 
         // Set episode duration
-        const episodeDuration = (data?.run_time ? data.run_time : 60) / 60;
+        const episodeDuration = (data?.runtime ? data.runtime : 60) / 60;
 
         // Calculate days watched and planned
         const hoursWatched = progress * episodeDuration;
