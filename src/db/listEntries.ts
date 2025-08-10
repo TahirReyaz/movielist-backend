@@ -19,7 +19,7 @@ export const EntryDataSchema = new mongoose.Schema(
     origin_country: [String],
     original_language: String,
     release_date: String,
-    runtime: Number,
+    run_time: Number,
     number_of_episodes: { type: Number, default: 1 },
     status: String,
     vote_average: Number,

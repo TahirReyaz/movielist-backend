@@ -31,7 +31,7 @@ export const fetchMediaData = async (mediaType: string, mediaid: string) => {
 
       console.log({ showId, seasonNumber });
 
-      const showRes = await tmdbClient.get(`/tv/${showId}`, {
+      const showRes = await tmdbClient.get(`tv/${showId}`, {
         params: {
           append_to_response: "keywords",
         },
@@ -39,7 +39,7 @@ export const fetchMediaData = async (mediaType: string, mediaid: string) => {
       const showData: TTV & { keywords: any[] } = showRes.data;
 
       const seasonRes = await tmdbClient.get(
-        `${showId}/season/${seasonNumber}`,
+        `tv/${showId}/season/${seasonNumber}`,
         {
           params: {
             append_to_response: "credits",
@@ -54,6 +54,7 @@ export const fetchMediaData = async (mediaType: string, mediaid: string) => {
       // );
 
       const transformedSeasonData: any = seasonData;
+      transformedSeasonData.adult = showData.adult;
       transformedSeasonData.release_date = seasonData.air_date;
       transformedSeasonData.number_of_episodes = seasonData.episodes.length;
       transformedSeasonData.genres = showData.genres;
@@ -72,6 +73,7 @@ export const fetchMediaData = async (mediaType: string, mediaid: string) => {
         totalRunTime / seasonData.episodes.length;
 
       mediaData = transformedSeasonData;
+      console.log("mediaData", mediaData);
       // add cast and crew data and tag data
     }
 
