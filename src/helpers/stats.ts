@@ -171,7 +171,7 @@ export const calculateGenreStats = ({
   hoursWatched: number;
   title: string;
   poster: string;
-  mediaid: number;
+  mediaid: string;
   mediaType: string;
   score: number;
 }) => {
@@ -221,7 +221,7 @@ export const generateTagsStats = ({
   hoursWatched: number;
   title: string;
   poster: string;
-  mediaid: number;
+  mediaid: string;
   mediaType: string;
   score: number;
 }) => {
@@ -276,7 +276,7 @@ export const generateStaffStats = ({
   hoursWatched: number;
   title: string;
   poster: string;
-  mediaid: number;
+  mediaid: string;
   mediaType: string;
   score: number;
 }) => {
@@ -286,7 +286,7 @@ export const generateStaffStats = ({
         if (!stats[person.id]) {
           stats[person.id] = {
             title: person.name,
-            staffId: person.id,
+            statTypeId: person.id,
             count: 0,
             meanScore: 0,
             timeWatched: 0,

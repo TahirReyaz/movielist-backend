@@ -19,7 +19,11 @@ import {
   createOverviewStats,
   deleteOverviewStatsByUseridAndMediaType,
 } from "../db/overviewStats";
-import { TOtherStat } from "../db/otherStats";
+import {
+  TOtherStat,
+  createOtherStats,
+  deleteOtherStatsByUserid,
+} from "../db/otherStats";
 
 export const generateUserStats = async (userId: string) => {
   try {
@@ -185,7 +189,7 @@ export const generateUserStats = async (userId: string) => {
           genreStats = calculateGenreStats({
             genreStats,
             mediaType,
-            mediaid: Number(mediaid),
+            mediaid,
             title,
             poster,
             genres: data.genres,
@@ -199,7 +203,7 @@ export const generateUserStats = async (userId: string) => {
           tagStats = generateTagsStats({
             tagStats,
             mediaType,
-            mediaid: Number(mediaid),
+            mediaid,
             title,
             poster,
             tags: data.tags,
@@ -213,7 +217,7 @@ export const generateUserStats = async (userId: string) => {
           castStats = generateStaffStats({
             stats: castStats,
             mediaType,
-            mediaid: Number(mediaid),
+            mediaid,
             title,
             poster,
             staff: data.cast,
@@ -227,7 +231,7 @@ export const generateUserStats = async (userId: string) => {
           crewStats = generateStaffStats({
             stats: crewStats,
             mediaType,
-            mediaid: Number(mediaid),
+            mediaid,
             title,
             poster,
             staff: data.crew,
@@ -265,17 +269,79 @@ export const generateUserStats = async (userId: string) => {
     });
 
     // Save stats
-    const genreArrayMovie = Object.values(genreStatsMovie).slice(0, 100);
-    const genreArrayTv = Object.values(genreStatsTv).slice(0, 100);
-    const castArrayMovie = Object.values(castStatsMovie).slice(0, 100);
-    const castArrayTv = Object.values(castStatsTv).slice(0, 100);
+    const genreArrayMovie = Object.values(genreStatsMovie).slice(0, 50);
+    const genreArrayTv = Object.values(genreStatsTv).slice(0, 50);
+    const castArrayMovie = Object.values(castStatsMovie).slice(0, 50);
+    const castArrayTv = Object.values(castStatsTv).slice(0, 50);
     const crewArrayMovie: TOtherStat[] = Object.values(crewStatsMovie).slice(
       0,
-      100
+      50
     );
-    const crewArrayTv: TOtherStat[] = Object.values(crewStatsTv).slice(0, 100);
-    const tagArrayMovie = Object.values(tagStatsMovie).slice(0, 100);
-    const tagArrayTv = Object.values(tagStatsTv).slice(0, 100);
+    const crewArrayTv: TOtherStat[] = Object.values(crewStatsTv).slice(0, 50);
+    const tagArrayMovie = Object.values(tagStatsMovie).slice(0, 50);
+    const tagArrayTv = Object.values(tagStatsTv).slice(0, 50);
+
+    await deleteOtherStatsByUserid(userId);
+    await Promise.all(
+      genreArrayMovie.map((genMov) => {
+        createOtherStats({
+          ...genMov,
+          user: userId,
+          mediaType: "movie",
+          type: "genre",
+        });
+      })
+    );
+    await Promise.all(
+      genreArrayTv.map((genTV) => {
+        createOtherStats({
+          ...genTV,
+          user: userId,
+          mediaType: "tv",
+          type: "genre",
+        });
+      })
+    );
+    await Promise.all(
+      castArrayMovie.map((castMov) => {
+        createOtherStats({
+          ...castMov,
+          user: userId,
+          mediaType: "movie",
+          type: "cast",
+        });
+      })
+    );
+    await Promise.all(
+      castArrayTv.map((castTV) => {
+        createOtherStats({
+          ...castTV,
+          user: userId,
+          mediaType: "tv",
+          type: "cast",
+        });
+      })
+    );
+    await Promise.all(
+      tagArrayMovie.map((tagMov) => {
+        createOtherStats({
+          ...tagMov,
+          user: userId,
+          mediaType: "movie",
+          type: "tag",
+        });
+      })
+    );
+    await Promise.all(
+      tagArrayTv.map((tagTV) => {
+        createOtherStats({
+          ...tagTV,
+          user: userId,
+          mediaType: "tv",
+          type: "tag",
+        });
+      })
+    );
 
     await UserModel.updateOne(
       { _id: userId },

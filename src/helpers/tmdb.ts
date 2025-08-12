@@ -44,10 +44,6 @@ export const fetchMediaData = async (mediaType: string, mediaid: string) => {
       const seasonData: ISeason & { credits: { cast: any[]; crew: any[] } } =
         seasonRes.data;
 
-      // const seasonData = showData?.seasons.find(
-      //   (season: any) => season.season_number === seasonNumber
-      // );
-
       const transformedSeasonData: any = seasonData;
       transformedSeasonData.adult = showData.adult;
       transformedSeasonData.release_date = seasonData.air_date;
@@ -68,7 +64,6 @@ export const fetchMediaData = async (mediaType: string, mediaid: string) => {
       transformedSeasonData.runtime = totalRunTime / seasonData.episodes.length;
 
       mediaData = transformedSeasonData;
-      // add cast and crew data and tag data
     }
 
     const tagData =
