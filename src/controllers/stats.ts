@@ -322,6 +322,27 @@ export const generateUserStats = async (userId: string) => {
         });
       })
     );
+
+    await Promise.all(
+      crewArrayMovie.map((crewMov) => {
+        createOtherStats({
+          ...crewMov,
+          user: userId,
+          mediaType: "movie",
+          type: "crew",
+        });
+      })
+    );
+    await Promise.all(
+      crewArrayTv.map((crewTV) => {
+        createOtherStats({
+          ...crewTV,
+          user: userId,
+          mediaType: "tv",
+          type: "crew",
+        });
+      })
+    );
     await Promise.all(
       tagArrayMovie.map((tagMov) => {
         createOtherStats({
