@@ -343,23 +343,6 @@ export const generateUserStats = async (userId: string) => {
       })
     );
 
-    await UserModel.updateOne(
-      { _id: userId },
-      {
-        $set: {
-          // Reset the genres arrays to empty
-          "stats.movie.genres": [],
-          "stats.tv.genres": [],
-          "stats.movie.tags": [],
-          "stats.tv.tags": [],
-          "stats.movie.cast": [],
-          "stats.tv.cast": [],
-          "stats.movie.crew": [],
-          "stats.tv.crew": [],
-        },
-      }
-    );
-
     await deleteOverviewStatsByUseridAndMediaType(userId, "tv");
     await deleteOverviewStatsByUseridAndMediaType(userId, "movie");
     await createOverviewStats({
@@ -380,22 +363,6 @@ export const generateUserStats = async (userId: string) => {
       releaseYear: releaseYearStatsMovie,
       watchYear: watchYearStatsMovie,
     });
-
-    await UserModel.updateOne(
-      { _id: userId },
-      {
-        $push: {
-          "stats.movie.genres": { $each: genreArrayMovie },
-          "stats.tv.genres": { $each: genreArrayTv },
-          "stats.movie.tags": { $each: tagArrayMovie },
-          "stats.tv.tags": { $each: tagArrayTv },
-          "stats.movie.cast": { $each: castArrayMovie },
-          "stats.tv.cast": { $each: castArrayTv },
-          "stats.movie.crew": { $each: crewArrayMovie },
-          "stats.tv.crew": { $each: crewArrayTv },
-        },
-      }
-    );
   } catch (error) {
     console.error("Error generating user stats:", userId, error);
   }
