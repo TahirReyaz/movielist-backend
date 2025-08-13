@@ -39,3 +39,4 @@ export const MediaType = {
 };
 
 export const mediaTypeEnum = ["movie", "tv"];
+export const statTypeEnum = ["genre", "tag", "studio", "cast", "crew"];

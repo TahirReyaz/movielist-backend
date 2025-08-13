@@ -1,9 +1,15 @@
 import mongoose from "mongoose";
 import express from "express";
+import lodash from "lodash";
 
 import { UserModel, getUserById } from "../db/users";
 import { getEntries } from "../db/listEntries";
-import { MediaStatus, MediaType } from "../constants/misc";
+import {
+  MediaStatus,
+  MediaType,
+  mediaTypeEnum,
+  statTypeEnum,
+} from "../constants/misc";
 import {
   calculateCountryDist,
   calculateGenreStats,
@@ -18,12 +24,73 @@ import {
   Distribution,
   createOverviewStats,
   deleteOverviewStatsByUseridAndMediaType,
+  getOverviewStatsByUseridAndMediaType,
 } from "../db/overviewStats";
 import {
   TOtherStat,
   createOtherStats,
   deleteOtherStatsByUserid,
+  getOtherStatsFromDB,
 } from "../db/otherStats";
+
+export const getOverviewStats = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const { userid, mediaType } = req.params;
+
+    if (!mediaTypeEnum.includes(mediaType)) {
+      return res.status(403).send("Wrong Media Type");
+    }
+
+    const stats = await getOverviewStatsByUseridAndMediaType(userid, mediaType);
+
+    return res.status(200).json(stats);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ message: "Some error occurred" });
+  }
+};
+
+export const getOtherStats = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const { userid, mediaType, statType } = req.params;
+
+    if (
+      !mediaTypeEnum.includes(mediaType) ||
+      !statTypeEnum.includes(statType)
+    ) {
+      return res.status(403).send("Wrong Media or Stat Type");
+    }
+
+    const stats = await getOtherStatsFromDB(userid, mediaType, statType);
+
+    return res.status(200).json(stats);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ message: "Some error occurred" });
+  }
+};
+
+export const updateStats = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const userid = lodash.get(req, "identity._id") as mongoose.Types.ObjectId;
+
+    await generateUserStats(userid.toString());
+
+    return res.status(200).send({ message: "Generated user stats" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ message: "Some error occurred" });
+  }
+};
 
 export const generateUserStats = async (userId: string) => {
   try {
@@ -366,6 +433,7 @@ export const generateUserStats = async (userId: string) => {
 
     await deleteOverviewStatsByUseridAndMediaType(userId, "tv");
     await deleteOverviewStatsByUseridAndMediaType(userId, "movie");
+
     await createOverviewStats({
       user: userId,
       mediaType: "tv",
@@ -385,7 +453,7 @@ export const generateUserStats = async (userId: string) => {
       watchYear: watchYearStatsMovie,
     });
   } catch (error) {
-    console.error("Error generating user stats:", userId, error);
+    console.error("Error generating user stats:", userId.toString(), error);
   }
 };
 

@@ -56,7 +56,7 @@ export const updateOverviewStats = (id: string, values: Record<string, any>) =>
 
 export const getOverviewStatsByUseridAndMediaType = (
   userid: string,
-  mediaType: "movie" | "tv"
+  mediaType: (typeof mediaTypeEnum)[number]
 ) => OverviewStatModel.findOne({ user: userid, mediaType });
 
 export const deleteOverviewStatsByUseridAndMediaType = (
