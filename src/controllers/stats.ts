@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import express from "express";
 import lodash from "lodash";
 
-import { UserModel, getUserById } from "../db/users";
+import { UserModel, getUserById, getUserByUsername } from "../db/users";
 import { getEntries } from "../db/listEntries";
 import {
   MediaStatus,
@@ -38,9 +38,11 @@ export const getOverviewStats = async (
   res: express.Response
 ) => {
   try {
-    const { userid, mediaType } = req.params;
+    const { mediaType } = req.params;
 
-    if (!mediaTypeEnum.includes(mediaType)) {
+    const userid = lodash.get(req, "identity._id") as string;
+
+    if (!mediaType || !mediaTypeEnum.includes(mediaType)) {
       return res.status(403).send("Wrong Media Type");
     }
 
@@ -58,13 +60,22 @@ export const getOtherStats = async (
   res: express.Response
 ) => {
   try {
-    const { userid, mediaType, statType } = req.params;
+    const { username, mediaType, statType } = req.params;
+
+    const user = await getUserByUsername(username);
+
+    if (!user) {
+      return res.status(404).send("User not found");
+    }
+
+    const userid = user._id.toString();
 
     if (
+      !username ||
       !mediaTypeEnum.includes(mediaType) ||
       !statTypeEnum.includes(statType)
     ) {
-      return res.status(403).send("Wrong Media or Stat Type");
+      return res.status(403).send("Wrong Media or Stat Type or Missing User");
     }
 
     const stats = await getOtherStatsFromDB(userid, mediaType, statType);

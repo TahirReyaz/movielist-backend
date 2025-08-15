@@ -24,7 +24,7 @@ export const OverviewStatSchema = new mongoose.Schema(
       required: true,
     },
     mediaType: { type: String, enum: mediaTypeEnum, required: true },
-    episodesWatched: String,
+    episodesWatched: Number,
     count: Number,
     daysWatched: { type: Number, default: 0 },
     daysPlanned: { type: Number, default: 0 },
