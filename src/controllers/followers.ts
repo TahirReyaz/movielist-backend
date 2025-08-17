@@ -2,15 +2,15 @@ import lodash from "lodash";
 import express from "express";
 import mongoose from "mongoose";
 
-import { getUserById, getUserByUsername } from "db/users";
-import { createNotification } from "db/notifications";
-import { DEFAULT_AVATAR_URL } from "constants/misc";
+import { getUserById, getUserByUsername } from "../db/users";
+import { createNotification } from "../db/notifications";
+import { DEFAULT_AVATAR_URL } from "../constants/misc";
 import {
   createNewFollower,
-  deleteFollowerById,
   getFollower,
+  getFollowers,
   removeFollower,
-} from "db/followers";
+} from "../db/followers";
 
 // TODO: When delete user is called, delete the user from follower table too
 export const followUser = async (
@@ -25,17 +25,20 @@ export const followUser = async (
     const target = await getUserByUsername(targetUsername);
 
     // If the user with this id doesn't exist
-    if (!user || !target) {
+    if (!target) {
       return res.status(404).send({ message: "User not found" });
     }
 
     const targetId = target._id;
 
-    if (getFollower({ user: userid, target: targetId })) {
+    if (await getFollower({ user: userid, target: targetId })) {
       return res.status(400).send({ message: "Already following" });
     }
 
-    await createNewFollower(userid.toString(), targetId.toString());
+    const newFollower = await createNewFollower(
+      userid.toString(),
+      targetId.toString()
+    );
 
     // Create Notification
     await createNotification({
@@ -47,7 +50,7 @@ export const followUser = async (
       owner: target._id,
     });
 
-    return res.status(200).json(user).end();
+    return res.status(200).json(newFollower).end();
   } catch (error) {
     console.error(error);
     return res.status(500).send({ message: "Some error occurred" });
@@ -79,6 +82,38 @@ export const unfollowUser = async (
     await removeFollower(userid, targetId);
 
     return res.status(200).json(user).end();
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ message: "Some error occurred" });
+  }
+};
+
+export const getUserFollowers = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const userid = lodash.get(req, "identity._id") as mongoose.Types.ObjectId;
+
+    const followers = await getFollowers({ target: userid });
+
+    return res.status(200).json(followers).end();
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ message: "Some error occurred" });
+  }
+};
+
+export const getUserFollowings = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const userid = lodash.get(req, "identity._id") as mongoose.Types.ObjectId;
+
+    const followers = await getFollowers({ user: userid });
+
+    return res.status(200).json(followers).end();
   } catch (error) {
     console.error(error);
     return res.status(500).send({ message: "Some error occurred" });
