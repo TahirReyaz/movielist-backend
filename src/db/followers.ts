@@ -29,7 +29,9 @@ export const getFollowers = (query?: any) =>
     .populate("target", "username avatar");
 
 export const getFollower = (query?: any) =>
-  FollowerModel.findOne(query ?? {}).populate("owner", "username avatar");
+  FollowerModel.findOne(query ?? {})
+    .populate("user", "username avatar")
+    .populate("target", "username avatar");
 
 export const createNewFollower = (user: string, target: string) =>
   new FollowerModel({ user, target }).save().then((list) => list.toObject());

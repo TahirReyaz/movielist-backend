@@ -12,6 +12,7 @@ import {
 import { ListEntryModel, deleteEntriesByUserid } from "../db/listEntries";
 import { NotificationModel } from "../db/notifications";
 import { validateUsername } from "../helpers/auth";
+import { getFollower } from "../db/followers";
 
 export const getAllUsers = async (
   req: express.Request,
@@ -80,12 +81,22 @@ export const getProfile = async (
 ) => {
   try {
     const { username } = req.params;
+    const loggedInUserid = lodash.get(
+      req,
+      "identity._id"
+    ) as mongoose.Types.ObjectId;
+
     const user = await getUserByUsername(username);
     if (!user) {
       return res
         .status(400)
         .send({ message: "User with this username not found" });
     }
+
+    const isFollowing = await getFollower({
+      user: loggedInUserid,
+      target: user._id,
+    });
 
     // Populate user with other data
     const [tvEntries, movieEntries] = await Promise.all([
@@ -107,6 +118,7 @@ export const getProfile = async (
           status: entry.status,
         })),
       },
+      isFollowing: !!isFollowing,
     };
 
     const unreadNotificationCount = await NotificationModel.countDocuments({
