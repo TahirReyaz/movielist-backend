@@ -41,6 +41,33 @@ export const isAuthenticated = async (
   }
 };
 
+export const addUserInfo = async (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) => {
+  try {
+    const sessionToken = req.cookies[AUTH_COOKIE_NAME];
+
+    if (!sessionToken) {
+      return next();
+    }
+
+    const existingUser = await getUserBySessionToken(sessionToken);
+
+    if (!existingUser) {
+      return res.status(401).send({ message: "Forbidden! user doesn't exist" });
+    }
+
+    lodash.merge(req, { identity: existingUser });
+
+    return next();
+  } catch (error) {
+    console.error(error);
+    return res.sendStatus(400);
+  }
+};
+
 export const isOwner = async (
   req: express.Request,
   res: express.Response,

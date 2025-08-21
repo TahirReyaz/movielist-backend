@@ -34,10 +34,10 @@ export const getUserEntriesByMediaType = async (
   res: Response
 ) => {
   try {
-    const { username, mediaType } = req.params;
-    const user = await getUserByUsername(username);
+    const { mediaType } = req.params;
+    const userid = lodash.get(req, "identity._id") as mongoose.Types.ObjectId;
 
-    const entries = await getEntries({ owner: user._id, mediaType });
+    const entries = await getEntries({ owner: userid, mediaType });
 
     return res.status(200).json(entries);
   } catch (error) {
