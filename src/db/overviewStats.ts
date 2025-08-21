@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-import { mediaTypeEnum } from "constants/misc";
+import { mediaTypeEnum } from "../constants/misc";
 
 const ScoreSchema = new mongoose.Schema({
   num: Number,
@@ -16,7 +16,7 @@ const DistributionSchema = new mongoose.Schema({
   meanScore: Number,
 });
 
-export const OtherStatSchema = new mongoose.Schema(
+export const OverviewStatSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
@@ -24,7 +24,7 @@ export const OtherStatSchema = new mongoose.Schema(
       required: true,
     },
     mediaType: { type: String, enum: mediaTypeEnum, required: true },
-    episodesWatched: String,
+    episodesWatched: Number,
     count: Number,
     daysWatched: { type: Number, default: 0 },
     daysPlanned: { type: Number, default: 0 },
@@ -43,4 +43,23 @@ export const OtherStatSchema = new mongoose.Schema(
 
 export type Distribution = mongoose.InferSchemaType<typeof DistributionSchema>;
 
-export const OtherStatModel = mongoose.model("OtherStat", OtherStatSchema);
+export const OverviewStatModel = mongoose.model(
+  "OverviewStat",
+  OverviewStatSchema
+);
+
+export const createOverviewStats = (values: Record<string, any>) =>
+  new OverviewStatModel(values).save().then((stats) => stats.toObject());
+
+export const updateOverviewStats = (id: string, values: Record<string, any>) =>
+  OverviewStatModel.findOneAndUpdate({ _id: id }, values);
+
+export const getOverviewStatsByUseridAndMediaType = (
+  userid: string,
+  mediaType: (typeof mediaTypeEnum)[number]
+) => OverviewStatModel.findOne({ user: userid, mediaType });
+
+export const deleteOverviewStatsByUseridAndMediaType = (
+  userid: string,
+  mediaType: "movie" | "tv"
+) => OverviewStatModel.findOneAndDelete({ user: userid, mediaType });

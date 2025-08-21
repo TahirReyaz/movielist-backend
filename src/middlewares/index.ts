@@ -2,7 +2,11 @@ import express from "express";
 import mongoose from "mongoose";
 import lodash from "lodash";
 
-import { getUserById, getUserBySessionToken } from "../db/users";
+import {
+  getUserById,
+  getUserBySessionToken,
+  getUserByUsername,
+} from "../db/users";
 import { AUTH_COOKIE_NAME } from "../controllers/authentication";
 import { getEntryById } from "../db/listEntries";
 import { getActivityById } from "../db/activities";
@@ -20,6 +24,33 @@ export const isAuthenticated = async (
 
     if (!sessionToken) {
       return res.status(401).send({ message: "Not logged in" });
+    }
+
+    const existingUser = await getUserBySessionToken(sessionToken);
+
+    if (!existingUser) {
+      return res.status(401).send({ message: "Forbidden! user doesn't exist" });
+    }
+
+    lodash.merge(req, { identity: existingUser });
+
+    return next();
+  } catch (error) {
+    console.error(error);
+    return res.sendStatus(400);
+  }
+};
+
+export const addUserInfo = async (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) => {
+  try {
+    const sessionToken = req.cookies[AUTH_COOKIE_NAME];
+
+    if (!sessionToken) {
+      return next();
     }
 
     const existingUser = await getUserBySessionToken(sessionToken);
@@ -222,6 +253,32 @@ export const isPasswordCorrect = async (
     if (user.authentication.password != expectedHash) {
       return res.status(403).send({ message: "Wrong Password" });
     }
+
+    next();
+  } catch (error) {
+    console.error(error);
+    return res.sendStatus(400);
+  }
+};
+
+export const isUserExists = async (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) => {
+  try {
+    let { username } = req.params;
+    if (!username) {
+      return res.status(400).send("Provide the username");
+    }
+
+    const user = await getUserByUsername(username);
+
+    if (!user) {
+      return res.status(404).send("User not found");
+    }
+
+    lodash.merge(req, { identity: user });
 
     next();
   } catch (error) {

@@ -1,6 +1,6 @@
 import express from "express";
 
-import { isAuthenticated, isOwnEntry, isPasswordCorrect } from "../middlewares";
+import { isAuthenticated, isOwnEntry, isPasswordCorrect, isUserExists } from "../middlewares";
 import {
   createListEntry,
   deleteEntry,
@@ -15,7 +15,7 @@ import {
 
 export default (router: express.Router) => {
   router.get("/entries", isAuthenticated, getAllListEntries);
-  router.get("/entries/user/:username/:mediaType", getUserEntriesByMediaType);
+  router.get("/entries/user/:username/:mediaType", isUserExists, getUserEntriesByMediaType);
   router.patch(
     "/entries/:mediaType/delete-all",
     isAuthenticated,

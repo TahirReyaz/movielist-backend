@@ -6,10 +6,11 @@ import mongoose from "mongoose";
 import { Season } from "../constants/types";
 import { getSeason } from "../helpers/time";
 import { getUserById, searchUsers } from "../db/users";
-import { getEntries } from "../db/listEntries";
+import { getEntries, getEntry } from "../db/listEntries";
 import { removeAnime, translateBulkType } from "../helpers/tmdb";
 import tmdbClient from "../utils/api";
 import { logTMDBError } from "../utils/logger";
+import { getFollowers } from "../db/followers";
 
 export const getBulkMedia = async (
   req: express.Request<
@@ -48,9 +49,17 @@ export const getMediaDetail = async (
 ) => {
   try {
     const { mediaType, mediaid } = req.params;
+    const userid = lodash.get(req, "identity._id") as mongoose.Types.ObjectId;
+
     const response = await tmdbClient.get(`/${mediaType}/${mediaid}`);
 
-    return res.status(200).json(response.data);
+    const entry = await getEntry({ owner: userid });
+
+    if (!entry) {
+      return res.status(200).json(response.data);
+    }
+
+    return res.status(200).json({ ...response.data, entry });
   } catch (error) {
     logTMDBError(req.path, error, "media details", req);
     return res.status(500).send({ message: error });
@@ -63,14 +72,24 @@ export const getSeasonDetails = async (
 ) => {
   try {
     const { mediaType, mediaid, seasonNumber } = req.params;
+    const userid = lodash.get(req, "identity._id") as mongoose.Types.ObjectId;
+
     const response = await tmdbClient.get(
       `/${mediaType}/${mediaid}/season/${seasonNumber}`
     );
 
-    return res.status(200).json({
+    const seasonDetails = {
       ...response.data,
       number_of_episodes: response.data.episodes?.length,
-    });
+    };
+
+    const entry = await getEntry({ owner: userid });
+
+    if (!entry) {
+      return res.status(200).json(seasonDetails);
+    }
+
+    return res.status(200).json({ ...seasonDetails, entry });
   } catch (error) {
     logTMDBError(req.path, error, "season details", req);
     return res
@@ -374,7 +393,7 @@ export const getFollowingStatusByMediaid = async (
     const { mediaid } = req.params;
     const userid = lodash.get(req, "identity._id") as mongoose.Types.ObjectId;
 
-    const user = await getUserById(userid.toString());
+    const followers = await getFollowers({ user: userid });
 
     const dist: {
       username: string;
@@ -383,29 +402,27 @@ export const getFollowingStatusByMediaid = async (
       score: number;
     }[] = [];
 
-    if (user.following) {
-      for (const followingUserId of user.following) {
-        const entries = await getEntries({ owner: followingUserId, mediaid });
-        if (entries && entries.length > 0) {
-          const entry = entries[0];
+    followers?.forEach(async (follower) => {
+      const entries = await getEntries({ owner: follower.target, mediaid });
+      if (entries && entries.length > 0) {
+        const entry = entries[0];
 
-          // Type assertion to tell TypeScript that entry.owner is not ObjectId but a populated owner
-          const populatedOwner = entry.owner as unknown as {
-            username: string;
-            avatar?: string;
-          };
+        // Type assertion to tell TypeScript that entry.owner is not ObjectId but a populated owner
+        const populatedOwner = entry.owner as unknown as {
+          username: string;
+          avatar?: string;
+        };
 
-          if (entry?.owner) {
-            dist.push({
-              username: populatedOwner.username,
-              avatar: populatedOwner.avatar,
-              status: entry.status,
-              score: entry.score,
-            });
-          }
+        if (entry?.owner) {
+          dist.push({
+            username: populatedOwner.username,
+            avatar: populatedOwner.avatar,
+            status: entry.status,
+            score: entry.score,
+          });
         }
       }
-    }
+    });
 
     return res.status(200).json(dist);
   } catch (error) {

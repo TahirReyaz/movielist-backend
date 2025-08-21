@@ -3,7 +3,7 @@ import { Document } from "mongoose";
 
 import { MediaStatus, MediaType } from "../constants/misc";
 import { ListEntry, ListEntryModel, getEntries } from "../db/listEntries";
-import { Distribution } from "../db/users";
+import { Distribution } from "../db/overviewStats";
 import { fetchMediaData } from "./tmdb";
 
 export interface EntryDocument extends ListEntry, Document {}
@@ -166,12 +166,12 @@ export const calculateGenreStats = ({
   mediaType,
   score,
 }: {
-  genres: { id: number; name: string }[];
+  genres: { id?: number; name?: string }[];
   genreStats: Record<string, any>;
   hoursWatched: number;
   title: string;
   poster: string;
-  mediaid: number;
+  mediaid: string;
   mediaType: string;
   score: number;
 }) => {
@@ -216,12 +216,12 @@ export const generateTagsStats = ({
   mediaType,
   score,
 }: {
-  tags: { id: number; name: string }[];
+  tags: { id?: number; name?: string }[];
   tagStats: Record<string, any>;
   hoursWatched: number;
   title: string;
   poster: string;
-  mediaid: number;
+  mediaid: string;
   mediaType: string;
   score: number;
 }) => {
@@ -271,12 +271,12 @@ export const generateStaffStats = ({
   mediaType,
   score,
 }: {
-  staff: { id: number; name: string }[];
+  staff: { id?: number; name?: string }[];
   stats: Record<string, any>;
   hoursWatched: number;
   title: string;
   poster: string;
-  mediaid: number;
+  mediaid: string;
   mediaType: string;
   score: number;
 }) => {
@@ -286,7 +286,7 @@ export const generateStaffStats = ({
         if (!stats[person.id]) {
           stats[person.id] = {
             title: person.name,
-            staffId: person.id,
+            statTypeId: person.id,
             count: 0,
             meanScore: 0,
             timeWatched: 0,

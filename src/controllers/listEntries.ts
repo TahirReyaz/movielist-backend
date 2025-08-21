@@ -34,10 +34,10 @@ export const getUserEntriesByMediaType = async (
   res: Response
 ) => {
   try {
-    const { username, mediaType } = req.params;
-    const user = await getUserByUsername(username);
+    const { mediaType } = req.params;
+    const userid = lodash.get(req, "identity._id") as mongoose.Types.ObjectId;
 
-    const entries = await getEntries({ owner: user._id, mediaType });
+    const entries = await getEntries({ owner: userid, mediaType });
 
     return res.status(200).json(entries);
   } catch (error) {
@@ -196,10 +196,8 @@ export const createListEntry = async (req: Request, res: Response) => {
 
     const mediaData = await fetchMediaData(mediaType, mediaid);
 
-    const { data: parentShow } = await tmdbClient.get(
-      `/tv/${mediaid.split("-")[0]}`
-    );
-    const fullTitle = parentShow ? `${title} - ${parentShow.name}` : title;
+    const fullTitle =
+      mediaType === MediaType.tv ? `${title} - ${mediaData.title}` : title;
 
     let calculatedProgress = 0;
     if (status == MediaStatus.completed) {

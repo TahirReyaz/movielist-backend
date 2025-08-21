@@ -1,9 +1,15 @@
 import mongoose from "mongoose";
 import express from "express";
+import lodash from "lodash";
 
-import { Distribution, StaffStat, UserModel, getUserById } from "../db/users";
+import { UserModel, getUserById, getUserByUsername } from "../db/users";
 import { getEntries } from "../db/listEntries";
-import { MediaStatus, MediaType } from "../constants/misc";
+import {
+  MediaStatus,
+  MediaType,
+  mediaTypeEnum,
+  statTypeEnum,
+} from "../constants/misc";
 import {
   calculateCountryDist,
   calculateGenreStats,
@@ -14,6 +20,88 @@ import {
   generateWatchYearStats,
   calculateMeanScore,
 } from "../helpers/stats";
+import {
+  Distribution,
+  createOverviewStats,
+  deleteOverviewStatsByUseridAndMediaType,
+  getOverviewStatsByUseridAndMediaType,
+} from "../db/overviewStats";
+import {
+  TOtherStat,
+  createOtherStats,
+  deleteOtherStatsByUserid,
+  getOtherStatsFromDB,
+} from "../db/otherStats";
+
+export const getOverviewStats = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const { mediaType } = req.params;
+
+    const userid = lodash.get(req, "identity._id") as string;
+
+    if (!mediaType || !mediaTypeEnum.includes(mediaType)) {
+      return res.status(403).send("Wrong Media Type");
+    }
+
+    const stats = await getOverviewStatsByUseridAndMediaType(userid, mediaType);
+
+    return res.status(200).json(stats);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ message: "Some error occurred" });
+  }
+};
+
+export const getOtherStats = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const { username, mediaType, statType } = req.params;
+
+    const user = await getUserByUsername(username);
+
+    if (!user) {
+      return res.status(404).send("User not found");
+    }
+
+    const userid = user._id.toString();
+
+    if (
+      !username ||
+      !mediaTypeEnum.includes(mediaType) ||
+      !statTypeEnum.includes(statType)
+    ) {
+      return res.status(403).send("Wrong Media or Stat Type or Missing User");
+    }
+
+    const stats = await getOtherStatsFromDB(userid, mediaType, statType);
+
+    return res.status(200).json(stats);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ message: "Some error occurred" });
+  }
+};
+
+export const updateStats = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const userid = lodash.get(req, "identity._id") as mongoose.Types.ObjectId;
+
+    await generateUserStats(userid.toString());
+
+    return res.status(200).send({ message: "Generated user stats" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ message: "Some error occurred" });
+  }
+};
 
 export const generateUserStats = async (userId: string) => {
   try {
@@ -114,13 +202,7 @@ export const generateUserStats = async (userId: string) => {
         }
 
         // Set episode duration
-        let episodeDuration = 60;
-        if (mediaType === MediaType.movie) {
-          episodeDuration = data?.runtime ? data.runtime : 60;
-        } else {
-          episodeDuration = data?.episode_run_time ? data.episode_run_time : 40;
-        }
-        episodeDuration /= 60;
+        const episodeDuration = (data?.runtime ? data.runtime : 60) / 60;
 
         // Calculate days watched and planned
         const hoursWatched = progress * episodeDuration;
@@ -161,14 +243,11 @@ export const generateUserStats = async (userId: string) => {
         }
 
         // Release year stats
-        if (
-          status === MediaStatus.completed &&
-          (data?.release_date || data?.first_air_date)
-        ) {
+        if (status === MediaStatus.completed && data?.release_date) {
           releaseYearStats = generateReleaseYearStats({
             stats: releaseYearStats,
             hoursWatched,
-            releaseDate: data.release_date || data.first_air_date,
+            releaseDate: data.release_date,
             score,
           });
         }
@@ -188,7 +267,7 @@ export const generateUserStats = async (userId: string) => {
           genreStats = calculateGenreStats({
             genreStats,
             mediaType,
-            mediaid: Number(mediaid),
+            mediaid,
             title,
             poster,
             genres: data.genres,
@@ -202,7 +281,7 @@ export const generateUserStats = async (userId: string) => {
           tagStats = generateTagsStats({
             tagStats,
             mediaType,
-            mediaid: Number(mediaid),
+            mediaid,
             title,
             poster,
             tags: data.tags,
@@ -216,7 +295,7 @@ export const generateUserStats = async (userId: string) => {
           castStats = generateStaffStats({
             stats: castStats,
             mediaType,
-            mediaid: Number(mediaid),
+            mediaid,
             title,
             poster,
             staff: data.cast,
@@ -230,7 +309,7 @@ export const generateUserStats = async (userId: string) => {
           crewStats = generateStaffStats({
             stats: crewStats,
             mediaType,
-            mediaid: Number(mediaid),
+            mediaid,
             title,
             poster,
             staff: data.crew,
@@ -258,7 +337,7 @@ export const generateUserStats = async (userId: string) => {
           tagStatsTv = tagStats;
         }
       } catch (error) {
-        console.log(
+        console.error(
           "Error while stats of ",
           entry.mediaType,
           entry.mediaid,
@@ -268,76 +347,124 @@ export const generateUserStats = async (userId: string) => {
     });
 
     // Save stats
-    const genreArrayMovie = Object.values(genreStatsMovie).slice(0, 100);
-    const genreArrayTv = Object.values(genreStatsTv).slice(0, 100);
-    const castArrayMovie = Object.values(castStatsMovie).slice(0, 100);
-    const castArrayTv = Object.values(castStatsTv).slice(0, 100);
-    const crewArrayMovie: StaffStat[] = Object.values(crewStatsMovie).slice(
+    const genreArrayMovie = Object.values(genreStatsMovie).slice(0, 50);
+    const genreArrayTv = Object.values(genreStatsTv).slice(0, 50);
+    const castArrayMovie = Object.values(castStatsMovie).slice(0, 50);
+    const castArrayTv = Object.values(castStatsTv).slice(0, 50);
+    const crewArrayMovie: TOtherStat[] = Object.values(crewStatsMovie).slice(
       0,
-      100
+      50
     );
-    const crewArrayTv: StaffStat[] = Object.values(crewStatsTv).slice(0, 100);
-    const tagArrayMovie = Object.values(tagStatsMovie).slice(0, 100);
-    const tagArrayTv = Object.values(tagStatsTv).slice(0, 100);
+    const crewArrayTv: TOtherStat[] = Object.values(crewStatsTv).slice(0, 50);
+    const tagArrayMovie = Object.values(tagStatsMovie).slice(0, 50);
+    const tagArrayTv = Object.values(tagStatsTv).slice(0, 50);
 
-    await UserModel.updateOne(
-      { _id: userId },
-      {
-        $set: {
-          // Reset the genres arrays to empty
-          "stats.movie.genres": [],
-          "stats.tv.genres": [],
-          "stats.movie.tags": [],
-          "stats.tv.tags": [],
-          "stats.movie.cast": [],
-          "stats.tv.cast": [],
-          "stats.movie.crew": [],
-          "stats.tv.crew": [],
-          "stats.movie.overview.statusDist": [],
-          "stats.movie.overview.countryDist": [],
-          "stats.movie.overview.releaseYear": [],
-          "stats.movie.overview.watchYear": [],
-          "stats.tv.overview.statusDist": [],
-          "stats.tv.overview.countryDist": [],
-          "stats.tv.overview.releaseYear": [],
-          "stats.tv.overview.watchYear": [],
-        },
-      }
+    await deleteOtherStatsByUserid(userId);
+    await Promise.all(
+      genreArrayMovie.map((genMov) => {
+        createOtherStats({
+          ...genMov,
+          user: userId,
+          mediaType: "movie",
+          type: "genre",
+        });
+      })
+    );
+    await Promise.all(
+      genreArrayTv.map((genTV) => {
+        createOtherStats({
+          ...genTV,
+          user: userId,
+          mediaType: "tv",
+          type: "genre",
+        });
+      })
+    );
+    await Promise.all(
+      castArrayMovie.map((castMov) => {
+        createOtherStats({
+          ...castMov,
+          user: userId,
+          mediaType: "movie",
+          type: "cast",
+        });
+      })
+    );
+    await Promise.all(
+      castArrayTv.map((castTV) => {
+        createOtherStats({
+          ...castTV,
+          user: userId,
+          mediaType: "tv",
+          type: "cast",
+        });
+      })
     );
 
-    await UserModel.updateOne(
-      { _id: userId },
-      {
-        $set: {
-          "stats.movie.overview": {
-            ...overviewStatsMovie,
-            statusDist: statusDistMovie,
-            countryDist: countryDistMovie,
-            releaseYear: releaseYearStatsMovie,
-            watchYear: watchYearStatsMovie,
-          },
-          "stats.tv.overview": {
-            ...overviewStatsTv,
-            statusDist: statusDistTv,
-            countryDist: countryDistTv,
-            releaseYear: releaseYearStatsTv,
-            watchYear: watchYearStatsTv,
-          },
-        },
-        $push: {
-          "stats.movie.genres": { $each: genreArrayMovie },
-          "stats.tv.genres": { $each: genreArrayTv },
-          "stats.movie.tags": { $each: tagArrayMovie },
-          "stats.tv.tags": { $each: tagArrayTv },
-          "stats.movie.cast": { $each: castArrayMovie },
-          "stats.tv.cast": { $each: castArrayTv },
-          "stats.movie.crew": { $each: crewArrayMovie },
-          "stats.tv.crew": { $each: crewArrayTv },
-        },
-      }
+    await Promise.all(
+      crewArrayMovie.map((crewMov) => {
+        createOtherStats({
+          ...crewMov,
+          user: userId,
+          mediaType: "movie",
+          type: "crew",
+        });
+      })
     );
+    await Promise.all(
+      crewArrayTv.map((crewTV) => {
+        createOtherStats({
+          ...crewTV,
+          user: userId,
+          mediaType: "tv",
+          type: "crew",
+        });
+      })
+    );
+    await Promise.all(
+      tagArrayMovie.map((tagMov) => {
+        createOtherStats({
+          ...tagMov,
+          user: userId,
+          mediaType: "movie",
+          type: "tag",
+        });
+      })
+    );
+    await Promise.all(
+      tagArrayTv.map((tagTV) => {
+        createOtherStats({
+          ...tagTV,
+          user: userId,
+          mediaType: "tv",
+          type: "tag",
+        });
+      })
+    );
+
+    await deleteOverviewStatsByUseridAndMediaType(userId, "tv");
+    await deleteOverviewStatsByUseridAndMediaType(userId, "movie");
+
+    await createOverviewStats({
+      user: userId,
+      mediaType: "tv",
+      ...overviewStatsTv,
+      statusDist: statusDistTv,
+      countryDist: countryDistTv,
+      releaseYear: releaseYearStatsTv,
+      watchYear: watchYearStatsTv,
+    });
+    await createOverviewStats({
+      user: userId,
+      mediaType: "movie",
+      ...overviewStatsMovie,
+      statusDist: statusDistMovie,
+      countryDist: countryDistMovie,
+      releaseYear: releaseYearStatsMovie,
+      watchYear: watchYearStatsMovie,
+    });
   } catch (error) {
-    console.error("Error generating user stats:", userId, error);
+    console.error("Error generating user stats:", userId.toString(), error);
   }
 };
 

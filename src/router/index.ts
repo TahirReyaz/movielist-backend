@@ -8,6 +8,8 @@ import staff from "./staff";
 import activities from "./activities";
 import comments from "./comments";
 import notifications from "./notifications";
+import stats from "./stats";
+import followers from "./followers";
 
 const router = express.Router();
 
@@ -23,5 +25,7 @@ export default (): express.Router => {
   activities(router);
   comments(router);
   notifications(router);
+  stats(router);
+  followers(router);
   return router;
 };
