@@ -71,7 +71,7 @@ export const fetchMediaData = async (mediaType: string, mediaid: string) => {
       transformedSeasonData.runtime = totalRunTime / seasonData.episodes.length;
 
       mediaData = transformedSeasonData;
-      console.log({ mediaDataaaaaaaaaaaaaaaaa });
+      console.log({ mediaData });
     }
 
     const tagData =
