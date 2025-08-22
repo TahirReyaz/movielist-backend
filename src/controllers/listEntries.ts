@@ -122,6 +122,7 @@ export const updateListEntry = async (req: Request, res: Response) => {
 
     const mediaData = await fetchMediaData(entry.mediaType, entry.mediaid);
     entry.data = mediaData;
+    console.log("media data in update", mediaData?.number_of_episodes);
 
     // Add start and end date if not present and required
     if (status == MediaStatus.completed) {
@@ -130,6 +131,9 @@ export const updateListEntry = async (req: Request, res: Response) => {
       }
       if (!entry.endDate) {
         entry.endDate = new Date().toISOString();
+      }
+      if (mediaData?.number_of_episodes) {
+        entry.progress = mediaData.number_of_episodes;
       }
     } else if (status == MediaStatus.watching) {
       if (!entry.startDate) {
@@ -189,12 +193,15 @@ export const createListEntry = async (req: Request, res: Response) => {
     }
 
     // Check if this entry already exists
-    const existingEntry = await getEntries({ userid, mediaid });
+    const existingEntry = await getEntries({ owner: userid, mediaid });
     if (existingEntry.length > 0) {
       return res.status(400).send({ message: "Entry already exists" });
     }
 
     const mediaData = await fetchMediaData(mediaType, mediaid);
+
+    console.log("media data", mediaData?.number_of_episodes);
+    console.log({ status, mediaType });
 
     const fullTitle =
       mediaType === MediaType.tv ? `${title} - ${mediaData.title}` : title;
@@ -207,6 +214,8 @@ export const createListEntry = async (req: Request, res: Response) => {
         calculatedProgress = 1;
       }
     }
+
+    console.log({ calculatedProgress });
 
     let calculatedStartDate = startDate;
     if (
