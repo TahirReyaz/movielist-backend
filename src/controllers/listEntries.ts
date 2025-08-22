@@ -122,7 +122,6 @@ export const updateListEntry = async (req: Request, res: Response) => {
 
     const mediaData = await fetchMediaData(entry.mediaType, entry.mediaid);
     entry.data = mediaData;
-    console.log("media data in update", mediaData?.number_of_episodes);
 
     // Add start and end date if not present and required
     if (status == MediaStatus.completed) {
@@ -200,9 +199,6 @@ export const createListEntry = async (req: Request, res: Response) => {
 
     const mediaData = await fetchMediaData(mediaType, mediaid);
 
-    console.log("media data", mediaData?.number_of_episodes);
-    console.log({ status, mediaType });
-
     const fullTitle =
       mediaType === MediaType.tv ? `${title} - ${mediaData.title}` : title;
 
@@ -214,8 +210,6 @@ export const createListEntry = async (req: Request, res: Response) => {
         calculatedProgress = 1;
       }
     }
-
-    console.log({ calculatedProgress });
 
     let calculatedStartDate = startDate;
     if (
