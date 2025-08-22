@@ -25,6 +25,7 @@ export const fetchMediaData = async (mediaType: string, mediaid: string) => {
       mediaData = movieData;
     } else {
       const [showId, seasonNumber] = mediaid.split("-");
+      console.log({ showId, seasonNumber });
 
       const showRes = await tmdbClient.get(`tv/${showId}`, {
         params: {
@@ -43,6 +44,12 @@ export const fetchMediaData = async (mediaType: string, mediaid: string) => {
       );
       const seasonData: ISeason & { credits: { cast: any[]; crew: any[] } } =
         seasonRes.data;
+
+      console.log(
+        "show and season res",
+        showData.name,
+        seasonData.episodes.length
+      );
 
       const transformedSeasonData: any = seasonData;
       transformedSeasonData.adult = showData.adult;
@@ -64,6 +71,7 @@ export const fetchMediaData = async (mediaType: string, mediaid: string) => {
       transformedSeasonData.runtime = totalRunTime / seasonData.episodes.length;
 
       mediaData = transformedSeasonData;
+      console.log({ mediaDataaaaaaaaaaaaaaaaa });
     }
 
     const tagData =
