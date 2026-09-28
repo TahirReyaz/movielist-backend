@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "node -r ts-node/register/transpile-only --test tests/stats.test.ts tests/rateLimit.test.ts tests/search.test.ts",
+    "test": "node -r ts-node/register/transpile-only --test tests/stats.test.ts tests/rateLimit.test.ts tests/search.test.ts tests/cloudinary.test.ts",
+    "migrate:images": "ts-node --transpile-only scripts/migrateImagesToCloudinary.ts",
     "start": "node dist/src/index.js",
     "dev": "nodemon src/index.ts",
     "build": "tsc",

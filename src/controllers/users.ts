@@ -156,6 +156,21 @@ export const deleteUser = async (
   }
 };
 
+/** Fields that must not be editable via PATCH /user/:id */
+const PROTECTED_USER_FIELDS = [
+  "_id",
+  "username",
+  "email",
+  "verified",
+  "authentication",
+  "authorisation",
+  "roles",
+  "statsDirty",
+  "statsGeneratedAt",
+  "createdAt",
+  "updatedAt",
+];
+
 export const updateUser = async (
   req: express.Request,
   res: express.Response
@@ -170,7 +185,17 @@ export const updateUser = async (
       return res.status(404).send({ message: "User not found" });
     }
 
+    // Image fields must be http(s) URLs (e.g. the Cloudinary secure_url)
+    for (const key of ["avatar", "banner"]) {
+      const value = req.body[key];
+      if (value !== undefined && !/^https?:\/\//.test(String(value))) {
+        return res.status(400).send({ message: `${key} must be an image URL` });
+      }
+    }
+
     for (const key in req.body) {
+      // never let a user change these through this endpoint
+      if (PROTECTED_USER_FIELDS.includes(key)) continue;
       if (req.body[key]) {
         user.set(key, req.body[key]);
       }

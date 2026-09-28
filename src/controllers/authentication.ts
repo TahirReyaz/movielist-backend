@@ -22,21 +22,21 @@ export const login = async (req: express.Request, res: express.Response) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).send({ message: "Missing Fields" });
+      return res.status(400).send({ message: "Please enter your email and password" });
     }
 
     const user = await getUserByEmail(email).select(
       "+authentication.salt +authentication.password"
     );
     if (!user) {
-      return res.status(400).send({ message: "User not found" });
+      return res.status(400).send({ message: "No account found with this email" });
     }
 
     const expectedHash = authentication(user.authentication.salt, password);
 
     if (user.authentication.password != expectedHash) {
       console.error("Wrong password");
-      return res.status(403).send({ message: "Wrong Password" });
+      return res.status(403).send({ message: "Incorrect password" });
     }
 
     const salt = random();
@@ -61,10 +61,13 @@ export const login = async (req: express.Request, res: express.Response) => {
       read: false,
     });
 
+    // Never send the password hash / salt back to the browser
+    const { authentication: _auth, ...safeUser } = user.toObject();
+
     return res
       .status(200)
       .json({
-        ...user.toObject(),
+        ...safeUser,
         message: "Successfully logged in",
         token: user.authentication.sessionToken,
         unreadNotifs: unreadNotificationCount,
@@ -72,7 +75,7 @@ export const login = async (req: express.Request, res: express.Response) => {
       .end();
   } catch (error) {
     console.error(error);
-    return res.status(500).send({ message: "Error loggin in" });
+    return res.status(500).send({ message: "Something went wrong while logging in" });
   }
 };
 
@@ -134,7 +137,7 @@ export const loginUsingToken = async (
       .end();
   } catch (error) {
     console.error(error);
-    return res.status(500).send({ message: "Error loggin in" });
+    return res.status(500).send({ message: "Something went wrong while logging in" });
   }
 };
 
@@ -210,7 +213,7 @@ export const changePassword = async (
     );
 
     if (user.authentication.password !== expectedOldHash) {
-      return res.status(403).send({ message: "Wrong Password" });
+      return res.status(403).send({ message: "Incorrect password" });
     }
 
     if (expectedNewHash === expectedOldHash) {

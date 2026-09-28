@@ -38,10 +38,24 @@ export const ENTRY_DATA_RETRY_HOURS = numEnv("ENTRY_DATA_RETRY_HOURS", 24);
 export const CRON_SECRET = process.env.CRON_SECRET;
 /** Free cron services usually time out at ~30s, Vercel at maxDuration (60s). */
 export const CRON_TIME_BUDGET_MS = numEnv("CRON_TIME_BUDGET_SECONDS", 25) * 1000;
-export const DEFAULT_AVATAR_URL =
+/* ---- Images (Cloudinary) ---- */
+export const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
+export const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY;
+export const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET;
+/** Top-level folder in your Cloudinary media library */
+export const CLOUDINARY_FOLDER = process.env.CLOUDINARY_FOLDER || "movielist";
+
+/** Old Firebase defaults – only used as fallbacks and by the migration script. */
+export const FIREBASE_DEFAULT_AVATAR_URL =
   "https://firebasestorage.googleapis.com/v0/b/movie-list-3532f.appspot.com/o/user-avatar%2FuserAvatar.png?alt=media";
-export const DEFAULT_ENTRY_BANNER_URL =
+export const FIREBASE_DEFAULT_ENTRY_BANNER_URL =
   "https://firebasestorage.googleapis.com/v0/b/movie-list-3532f.appspot.com/o/placeholders%2Fentry-banner-placeholder.jpg?alt=media&token=8ab96f18-9465-49a3-8448-c4f15561b001";
+
+/** Set these to the Cloudinary URLs printed by `npm run migrate:images`. */
+export const DEFAULT_AVATAR_URL =
+  process.env.DEFAULT_AVATAR_URL || FIREBASE_DEFAULT_AVATAR_URL;
+export const DEFAULT_ENTRY_BANNER_URL =
+  process.env.DEFAULT_ENTRY_BANNER_URL || FIREBASE_DEFAULT_ENTRY_BANNER_URL;
 
 export const notificationTypes = [
   "airing",
