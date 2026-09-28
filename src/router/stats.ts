@@ -1,6 +1,10 @@
 import express from "express";
 
-import { isAuthenticated, isUserExists } from "../middlewares";
+import {
+  isAuthenticated,
+  isCronAuthorized,
+  isUserExists,
+} from "../middlewares";
 import {
   generateAllUserStats,
   getOtherStats,
@@ -19,6 +23,7 @@ export default (router: express.Router) => {
     isUserExists,
     getOtherStats
   );
-  router.patch("/stats/update-all", generateAllUserStats);
+  // cron: send the secret as `x-cron-secret` header or `?secret=`
+  router.patch("/stats/update-all", isCronAuthorized, generateAllUserStats);
   router.patch("/stats/update", isAuthenticated, updateStats);
 };

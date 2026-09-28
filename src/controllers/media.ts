@@ -1,10 +1,9 @@
 import express from "express";
-import { AxiosResponse } from "axios";
 import lodash from "lodash";
 import mongoose from "mongoose";
 
-import { Season } from "../constants/types";
-import { getSeason } from "../helpers/time";
+import { isMediaType } from "../Interfaces/media";
+import { isSeason, searchMediaPage } from "../helpers/search";
 import { getUserById, searchUsers } from "../db/users";
 import { getEntries, getEntry } from "../db/listEntries";
 import { removeAnime, translateBulkType } from "../helpers/tmdb";
@@ -53,7 +52,11 @@ export const getMediaDetail = async (
 
     const response = await tmdbClient.get(`/${mediaType}/${mediaid}`);
 
-    const entry = await getEntry({ owner: userid });
+    // Only movies have an entry here; for tv the entries live on seasons.
+    const entry =
+      userid && mediaType === "movie"
+        ? await getEntry({ owner: userid, mediaType, mediaid })
+        : null;
 
     if (!entry) {
       return res.status(200).json(response.data);
@@ -83,7 +86,13 @@ export const getSeasonDetails = async (
       number_of_episodes: response.data.episodes?.length,
     };
 
-    const entry = await getEntry({ owner: userid });
+    const entry = userid
+      ? await getEntry({
+          owner: userid,
+          mediaType,
+          mediaid: `${mediaid}-${seasonNumber}`,
+        })
+      : null;
 
     if (!entry) {
       return res.status(200).json(seasonDetails);
@@ -253,6 +262,13 @@ export const searchMulti = async (
   }
 };
 
+/**
+ * GET /search/:mediaType?query=&page=&year=&season=&genres=
+ *
+ * movie / tv: 1 TMDB request per page (at most 3 for a text search that also
+ * filters by genre/season). Returns { results, page, nextPage, totalPages,
+ * totalResults }. Load more by passing `page=nextPage`.
+ */
 export const searchMedia = async (
   req: express.Request<
     { mediaType: string },
@@ -260,11 +276,11 @@ export const searchMedia = async (
     any,
     {
       query?: string;
-      include_adult?: boolean;
+      include_adult?: string;
       language?: string;
       page?: string;
       year?: string;
-      season?: Season;
+      season?: string;
       genres?: string;
     }
   >,
@@ -275,84 +291,46 @@ export const searchMedia = async (
     const { query, include_adult, language, page, year, season, genres } =
       req.query;
 
-    const searchParams = {
-      query,
-      page: page && page != "" ? page : "1",
-    };
-
     if (mediaType == "staff") {
       const response = await tmdbClient.get(`/search/person`, {
-        params: searchParams,
+        params: { query, page: page || "1" },
       });
       return res.status(200).json(response.data);
     } else if (mediaType == "user") {
-      const users = await searchUsers(query);
+      const users = await searchUsers(query ?? "");
       return res.status(200).json(users);
     }
 
-    if (mediaType !== "movie" && mediaType !== "tv") {
+    if (!isMediaType(mediaType)) {
       return res.status(400).json({ message: "Invalid media type" });
     }
 
-    const discoverParams = {
-      include_adult: !!include_adult,
-      page: page && page != "" ? page : "1",
-      ...(language && { language }),
-      ...(year && { primary_release_year: year }),
-      ...(genres && { with_genres: genres }),
-    };
+    const yearNum = Number(year);
+    const genreIds = (genres ?? "")
+      .split(",")
+      .map((g) => Number(g))
+      .filter((g) => Number.isInteger(g) && g > 0);
 
-    const searchResponses: AxiosResponse[] = await Promise.all(
-      Array.from({ length: 100 }, (_, page) => {
-        const nextPage = page + 1;
-        searchParams.page = nextPage.toString();
-        return tmdbClient.get(`/search/${mediaType}`, { params: searchParams });
-      })
-    );
-    const discoverResponses: AxiosResponse[] = await Promise.all(
-      Array.from({ length: 100 }, (_, page) => {
-        const nextPage = page + 1;
-        discoverParams.page = nextPage.toString();
-        return tmdbClient.get(`/discover/${mediaType}`, {
-          params: discoverParams,
-        });
-      })
-    );
-    const searchResults = searchResponses.flatMap(
-      (response) => response.data.results
-    );
-    const discoverResults = discoverResponses.flatMap(
-      (response) => response.data.results
-    );
-
-    let filteredResults;
-    if (searchResults.length === 0 || !query || query === "") {
-      filteredResults = discoverResults;
-    } else if (
-      discoverResults.length === 0 ||
-      ((!genres || genres === "") && (!year || year === ""))
-    ) {
-      filteredResults = searchResults;
-    } else {
-      filteredResults = searchResults.filter((searchResult: any) =>
-        discoverResults.some(
-          (discoverResult: any) => discoverResult.id === searchResult.id
-        )
-      );
+    const hasFilter =
+      !!query?.trim() || genreIds.length > 0 || !!year || isSeason(season);
+    if (!hasFilter) {
+      return res.status(400).json({ message: "Provide a query or a filter" });
     }
 
-    // Check if the season parameter is provided
-    if (season) {
-      // Filter the results based on the season
-      filteredResults = filteredResults.filter((result: any) => {
-        return result.release_date && getSeason(result.release_date) === season;
-      });
-    }
+    const result = await searchMediaPage(mediaType, {
+      query,
+      page: Number(page) || 1,
+      year: Number.isInteger(yearNum) && yearNum >= 1800 ? yearNum : undefined,
+      season: isSeason(season) ? season : undefined,
+      genres: genreIds,
+      includeAdult: include_adult === "true",
+      language: language || undefined,
+    });
 
-    res.status(200).json({ results: filteredResults });
+    return res.status(200).json(result);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "SOMETHING WENT WRONG" });
+    logTMDBError(req.path, error, "search results", req);
+    return res.status(500).json({ message: "Search failed" });
   }
 };
 

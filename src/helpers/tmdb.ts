@@ -1,5 +1,25 @@
-import { ISeason, TTV } from "Interfaces/tmdb";
 import tmdbClient from "../utils/api";
+import {
+  TmdbMovieDetailWithExtras,
+  TmdbSeasonDetailWithExtras,
+  TmdbShowDetailWithExtras,
+} from "../Interfaces/tmdb";
+import { EntryData, MediaType, parseMediaId } from "../Interfaces/media";
+import { movieToEntryData, seasonTitle, seasonToEntryData } from "./entryData";
+import { TtlCache } from "../utils/ttlCache";
+
+// A show is shared by all its seasons: fetch it once per hour, not once per season.
+const showCache = new TtlCache<TmdbShowDetailWithExtras>(60 * 60 * 1000, 300);
+// Normalised movie/season results: many users add the same popular titles.
+const mediaCache = new TtlCache<FetchedEntryMedia | null>(10 * 60 * 1000, 1000);
+
+const getShow = (showId: string) =>
+  showCache.getOrLoad(showId, async () => {
+    const { data } = await tmdbClient.get<TmdbShowDetailWithExtras>(`tv/${showId}`, {
+      params: { append_to_response: "keywords" },
+    });
+    return data;
+  });
 
 export const translateBulkType = {
   trending: "popular",
@@ -12,82 +32,78 @@ export const translateBulkType = {
   top_rated: "top_rated",
 };
 
-export const fetchMediaData = async (mediaType: string, mediaid: string) => {
-  try {
-    let mediaData;
+export type FetchedEntryMedia = {
+  data: EntryData;
+  /** Title to store on the entry. Seasons get "Show - Season N". */
+  title: string;
+  poster: string | null;
+  backdrop: string | null;
+};
 
-    if (mediaType === "movie") {
-      const { data: movieData } = await tmdbClient.get(`movie/${mediaid}`, {
-        params: {
-          append_to_response: "keywords,credits",
-        },
-      });
-      mediaData = movieData;
-    } else {
-      const [showId, seasonNumber] = mediaid.split("-");
+/**
+ * Fetches a trackable media item (movie or season) from TMDB and normalises it.
+ * Returns null if TMDB fails or the id points to something untrackable (a whole show).
+ */
+export const fetchEntryMedia = (
+  mediaType: MediaType,
+  mediaid: string
+): Promise<FetchedEntryMedia | null> =>
+  mediaCache
+    .getOrLoad(`${mediaType}:${mediaid}`, () => loadEntryMedia(mediaType, mediaid))
+    .catch((error): null => {
+      console.error("fetchEntryMedia failed", { mediaType, mediaid }, error?.message ?? error);
+      return null;
+    });
 
-      const showRes = await tmdbClient.get(`tv/${showId}`, {
-        params: {
-          append_to_response: "keywords",
-        },
-      });
-      const showData: TTV & { keywords: any[] } = showRes.data;
+/** Uncached loader. Throws on TMDB errors so failures aren't cached. */
+async function loadEntryMedia(
+  mediaType: MediaType,
+  mediaid: string
+): Promise<FetchedEntryMedia | null> {
+  const parsed = parseMediaId(mediaType, mediaid);
 
-      const seasonRes = await tmdbClient.get(
-        `tv/${showId}/season/${seasonNumber}`,
-        {
-          params: {
-            append_to_response: "credits",
-          },
-        }
-      );
-      const seasonData: ISeason & { credits: { cast: any[]; crew: any[] } } =
-        seasonRes.data;
-
-      const transformedSeasonData: any = seasonData;
-      transformedSeasonData.adult = showData.adult;
-      transformedSeasonData.release_date = seasonData.air_date;
-      transformedSeasonData.number_of_episodes = seasonData.episodes.length;
-      transformedSeasonData.genres = showData.genres;
-      transformedSeasonData.origin_country = showData.origin_country;
-      transformedSeasonData.keywords = showData.keywords;
-      transformedSeasonData.original_language = showData.original_language;
-      transformedSeasonData.vote_average = seasonData.vote_average;
-      transformedSeasonData.credits = seasonData.credits;
-      transformedSeasonData.title = showData.name;
-
-      let totalRunTime = 0;
-      seasonData.episodes.forEach(
-        (episode) => (totalRunTime += episode.runtime)
-      );
-
-      transformedSeasonData.runtime = totalRunTime / seasonData.episodes.length;
-
-      mediaData = transformedSeasonData;
-    }
-
-    const tagData =
-      mediaType == "tv"
-        ? mediaData.keywords?.results
-        : mediaData.keywords?.keywords;
-    mediaData.tags = tagData?.slice(0, 20);
-    mediaData.cast = mediaData.credits?.cast.slice(0, 20);
-    mediaData.crew = mediaData.credits?.crew.slice(0, 20);
-    delete mediaData.keywords;
-    delete mediaData.credits;
-
-    return mediaData;
-  } catch (error) {
-    console.error(error);
-    return null;
+  if (parsed.kind === "movie") {
+    const { data: movie } = await tmdbClient.get<TmdbMovieDetailWithExtras>(
+      `movie/${parsed.movieId}`,
+      { params: { append_to_response: "keywords,credits" } }
+    );
+    return {
+      data: movieToEntryData(movie),
+      title: movie.title,
+      poster: movie.poster_path,
+      backdrop: movie.backdrop_path,
+    };
   }
-};
 
-export const removeAnime = (results: any[]) => {
-  const filteredResults = results?.filter((result: any) => {
-    const hasGenre16 = result.genre_ids?.includes(16);
-    const hasOriginCountryJP = result.original_language === "ja";
-    return !(hasGenre16 && hasOriginCountryJP);
-  });
-  return filteredResults;
-};
+  if (parsed.kind === "season") {
+    const [show, { data: season }] = await Promise.all([
+      getShow(parsed.showId),
+      tmdbClient.get<TmdbSeasonDetailWithExtras>(
+        `tv/${parsed.showId}/season/${parsed.seasonNumber}`,
+        { params: { append_to_response: "credits" } }
+      ),
+    ]);
+    return {
+      data: seasonToEntryData(show, season),
+      title: seasonTitle(show, season),
+      poster: season.poster_path ?? show.poster_path,
+      backdrop: show.backdrop_path,
+    };
+  }
+
+  // A whole show can't be added to a list – only its seasons.
+  return null;
+}
+
+/** Kept for existing callers: returns only the normalised EntryData. */
+export const fetchMediaData = async (
+  mediaType: MediaType,
+  mediaid: string
+): Promise<EntryData | null> => (await fetchEntryMedia(mediaType, mediaid))?.data ?? null;
+
+export const removeAnime = <T extends { genre_ids?: number[]; original_language?: string }>(
+  results: T[] = []
+): T[] =>
+  results.filter(
+    (result) => !(result.genre_ids?.includes(16) && result.original_language === "ja")
+  );

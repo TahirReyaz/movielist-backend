@@ -1,7 +1,9 @@
 import express from "express";
+import crypto from "crypto";
 import mongoose from "mongoose";
 import lodash from "lodash";
 
+import { CRON_SECRET } from "../constants/misc";
 import {
   getUserById,
   getUserBySessionToken,
@@ -285,4 +287,32 @@ export const isUserExists = async (
     console.error(error);
     return res.sendStatus(400);
   }
+};
+
+/**
+ * Protects cron endpoints with a shared secret (env CRON_SECRET).
+ * Free cron services can send it either as a header `x-cron-secret: <secret>`
+ * or in the URL `?secret=<secret>`.
+ * If CRON_SECRET isn't set yet, requests are allowed but a warning is logged.
+ */
+export const isCronAuthorized = (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) => {
+  if (!CRON_SECRET) {
+    console.warn("CRON_SECRET is not set – cron endpoints are public!");
+    return next();
+  }
+  const provided = req.get("x-cron-secret") ?? req.query.secret;
+  if (typeof provided !== "string" || !safeEqual(provided, CRON_SECRET)) {
+    return res.status(401).send({ message: "Invalid cron secret" });
+  }
+  return next();
+};
+
+const safeEqual = (a: string, b: string) => {
+  const ab = new Uint8Array(Buffer.from(a));
+  const bb = new Uint8Array(Buffer.from(b));
+  return ab.length === bb.length && crypto.timingSafeEqual(ab, bb);
 };

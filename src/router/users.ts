@@ -27,5 +27,10 @@ export default (router: express.Router) => {
   router.patch("/user/update/username", isAuthenticated, changeUsername);
   router.patch("/user/fav/toggle", isAuthenticated, toggleFav);
   router.patch("/user/flag/delete", isAuthenticated, flagForDeletion);
-  router.patch("/user/:id/transformentries", isAuthenticated, transformEntries);
+  router.patch(
+    "/user/:id/transformentries",
+    isAuthenticated,
+    isOwner,
+    transformEntries
+  );
 };

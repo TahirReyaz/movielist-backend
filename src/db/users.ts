@@ -64,6 +64,9 @@ export const UserSchema = new mongoose.Schema(
     banner: String,
     genreOverview: [GenreOverviewSchema],
     preferences: { type: PrefSchema, required: true, default: {} },
+    /** true when list entries changed since stats were last generated */
+    statsDirty: { type: Boolean, default: true },
+    statsGeneratedAt: Date,
   },
   {
     timestamps: true,
@@ -120,3 +123,9 @@ export const deleteUserById = (id: mongoose.Types.ObjectId) =>
 
 export const updateUserById = (id: string, values: Record<string, any>) =>
   UserModel.findByIdAndUpdate(id, values);
+
+/** Call whenever a user's list entries change, so the stats cron picks them up. */
+export const markStatsDirty = (userIds: (string | mongoose.Types.ObjectId)[]) =>
+  userIds.length
+    ? UserModel.updateMany({ _id: { $in: userIds } }, { $set: { statsDirty: true } })
+    : Promise.resolve(null);

@@ -10,6 +10,7 @@ import comments from "./comments";
 import notifications from "./notifications";
 import stats from "./stats";
 import followers from "./followers";
+import maintenance from "./maintenance";
 
 const router = express.Router();
 
@@ -27,5 +28,6 @@ export default (): express.Router => {
   notifications(router);
   stats(router);
   followers(router);
+  maintenance(router);
   return router;
 };
